@@ -1,0 +1,25 @@
+project(tests)
+
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+
+add_executable(
+        hello_test
+        physical/dev.cpp
+)
+target_link_libraries(
+        hello_test
+        GTest::gtest_main
+        pixels-common
+)
+
+include(GoogleTest)
+include_directories(${CMAKE_SOURCE_DIR}/pixels-common/include)
+gtest_discover_tests(hello_test)
