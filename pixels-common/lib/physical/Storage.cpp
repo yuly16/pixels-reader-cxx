@@ -3,6 +3,15 @@
 //
 #include "physical/Storage.h"
 
+template<typename K, typename V>
+std::map<V,K> reverseMap(std::map<K,V> const &originalMap) {
+    std::map<V,K> reverseMap;
+    for (auto const &pair: originalMap) {
+        reverseMap[pair.second] = pair.first;
+    }
+    return reverseMap;
+}
+
 std::map<std::string, Storage::Scheme> Storage::schemeMap = {
     {"hdfs", Storage::hdfs},
     {"file", Storage::file},
@@ -13,13 +22,28 @@ std::map<std::string, Storage::Scheme> Storage::schemeMap = {
     {"mock", Storage::mock},
 };
 
+std::map<Storage::Scheme, std::string> Storage::reverseSchemeMap = reverseMap(Storage::schemeMap);
+
+Storage::Storage() {
+
+}
+
 Storage::Scheme Storage::from(std::string value) {
     std::transform(value.begin(), value.end(), value.begin(),
                    [](unsigned char c){ return std::tolower(c); });
     return Storage::schemeMap[value];
 }
 
-Storage::Scheme Storage::fromPath(std::string schemedPath) {
-    std::string scheme = schemedPath.substr(0, schemedPath.indexOf("://"));
-    return Scheme.from(scheme);
+Storage::Scheme Storage::fromPath(const std::string& schemedPath) {
+    std::size_t separatorIdx = schemedPath.find("://");
+    if (separatorIdx != std::string::npos) {
+        std::string scheme = schemedPath.substr(0, separatorIdx);
+        return from(scheme);
+    } else {
+        throw std::invalid_argument("Error: schemedPath doesn't contain separator.");
+    }
+}
+
+bool Storage::isValid(const std::string& value) {
+    return schemeMap.find(value) != schemeMap.end();
 }

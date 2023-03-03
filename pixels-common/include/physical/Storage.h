@@ -27,7 +27,8 @@ public:
         mock, // mock
     };
     static std::map<std::string, Scheme> schemeMap;
-    Storage() = default;
+    static std::map<Scheme, std::string> reverseSchemeMap;
+    Storage();
 
     /**
      * Case-insensitive parsing from String name to enum value.
@@ -40,7 +41,25 @@ public:
      * Parse the scheme from the path which is prefixed with the storage scheme.
      * @param schemedPath
      */
-    static Scheme fromPath(std::string schemedPath);
+    static Scheme fromPath(const std::string& schemedPath);
+
+    /**
+     * Whether the value is a valid storage scheme.
+     * @param value
+     * @return
+     */
+    static bool isValid(const std::string& value);
+
+    // TODO: if we need to implement the function "public boolean equals()" ?
+
+    virtual Scheme getScheme() = 0;
+
+    virtual std::string ensureSchemePrefix(std::string path) = 0;
+
+
+    // TODO: virtual List<Status> listStatus(std::string path)
+
+    // TODO: the remaining function to be implemented
 };
 
 
