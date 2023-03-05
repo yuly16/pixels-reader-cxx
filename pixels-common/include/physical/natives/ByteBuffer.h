@@ -25,10 +25,9 @@
 #include <cstdlib>
 #include <cstdint>
 #include <cstring>
-
+#include <fcntl.h>
 #include <vector>
 #include <memory>
-
 #include <iostream>
 #include <cstdio>
 
@@ -39,56 +38,30 @@ class ByteBuffer {
 public:
     ByteBuffer(uint32_t size = BB_DEFAULT_SIZE);
     ByteBuffer(uint8_t* arr, uint32_t size);
-    ~ByteBuffer() = default;
-
+    ~ByteBuffer();
     uint32_t bytesRemaining(); // Number of uint8_ts from the current read position till the end of the buffer
     void clear(); // Clear our the vector and reset read and write positions
-    std::unique_ptr<ByteBuffer> clone(); // Return a new instance of a ByteBuffer with the exact same contents and the same state (rpos, wpos)
-    //ByteBuffer compact(); // TODO?
-    bool equals(ByteBuffer* other); // Compare if the contents are equivalent
-    void resize(uint32_t newSize);
     uint32_t size(); // Size of internal vector
 
-    // Basic Searching (Linear)
-    template<typename T> int32_t find(T key, uint32_t start = 0) {
-        int32_t ret = -1;
-        uint32_t len = buf.size();
-        for (uint32_t i = start; i < len; i++) {
-            T data = read<T>(i);
-            // Wasn't actually found, bounds of buffer were exceeded
-            if ((key != 0) && (data == 0))
-                break;
-
-            // Key was found in array
-            if (data == key) {
-                ret = (int32_t) i;
-                break;
-            }
-        }
-        return ret;
-    }
-
-    // Replacement
-    void replace(uint8_t key, uint8_t rep, uint32_t start = 0, bool firstOccuranceOnly = false);
 
     // Read
 
-    uint8_t peek() const; // Relative peek. Reads and returns the next uint8_t in the buffer from the current position but does not increment the read position
-    uint8_t get() const; // Relative get method. Reads the uint8_t at the buffers current position then increments the position
-    uint8_t get(uint32_t index) const; // Absolute get method. Read uint8_t at index
-    void getBytes(uint8_t* buf, uint32_t len) const; // Absolute read into array buf of length len
-    char getChar() const; // Relative
-    char getChar(uint32_t index) const; // Absolute
-    double getDouble() const;
-    double getDouble(uint32_t index) const;
-    float getFloat() const;
-    float getFloat(uint32_t index) const;
-    uint32_t getInt() const;
-    uint32_t getInt(uint32_t index) const;
-    uint64_t getLong() const;
-    uint64_t getLong(uint32_t index) const;
-    uint16_t getShort() const;
-    uint16_t getShort(uint32_t index) const;
+    uint8_t peek(); // Relative peek. Reads and returns the next uint8_t in the buffer from the current position but does not increment the read position
+    uint8_t get(); // Relative get method. Reads the uint8_t at the buffers current position then increments the position
+    uint8_t get(uint32_t index); // Absolute get method. Read uint8_t at index
+    void getBytes(uint8_t* buf, uint32_t len); // Absolute read into array buf of length len
+    char getChar(); // Relative
+    char getChar(uint32_t index); // Absolute
+    double getDouble();
+    double getDouble(uint32_t index);
+    float getFloat();
+    float getFloat(uint32_t index);
+    uint32_t getInt();
+    uint32_t getInt(uint32_t index);
+    uint64_t getLong();
+    uint64_t getLong(uint32_t index);
+    uint16_t getShort();
+    uint16_t getShort(uint32_t index);
 
     // Write
 
@@ -116,7 +89,7 @@ public:
         rpos = r;
     }
 
-    uint32_t getReadPos() const {
+    uint32_t getReadPos() {
         return rpos;
     }
 
@@ -124,7 +97,7 @@ public:
         wpos = w;
     }
 
-    uint32_t getWritePos() const {
+    uint32_t getWritePos() {
         return wpos;
     }
 
@@ -141,19 +114,19 @@ public:
 private:
     uint32_t wpos;
     mutable uint32_t rpos;
-    std::vector<uint8_t> buf;
-
+    uint8_t * buf;
+    uint32_t bufSize;
     std::string name;
 
 
-    template<typename T> T read() const {
+    template<typename T> T read() {
         T data = read<T>(rpos);
         rpos += sizeof(T);
         return data;
     }
 
-    template<typename T> T read(uint32_t index) const {
-        if (index + sizeof(T) <= buf.size())
+    template<typename T> T read(uint32_t index) {
+        if (index + sizeof(T) <= size())
             return *((T*) &buf[index]);
         return 0;
     }
@@ -161,8 +134,9 @@ private:
     template<typename T> void append(T data) {
         uint32_t s = sizeof(data);
 
-        if (size() < (wpos + s))
-            buf.resize(wpos + s);
+        if (size() < (wpos + s)) {
+            throw std::runtime_error("Append exceeds the size of buffer");
+        }
         memcpy(&buf[wpos], (uint8_t*) &data, s);
         //printf("writing %c to %i\n", (uint8_t)data, wpos);
 
@@ -171,7 +145,7 @@ private:
 
     template<typename T> void insert(T data, uint32_t index) {
         if ((index + sizeof(data)) > size()) {
-            buf.resize(size() + (index + sizeof(data)));
+            throw std::runtime_error("Insert exceeds the size of buffer");
         }
 
         memcpy(&buf[index], (uint8_t*) &data, sizeof(data));

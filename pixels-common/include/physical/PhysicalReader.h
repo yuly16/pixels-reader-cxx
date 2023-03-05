@@ -7,14 +7,14 @@
 
 #include <string>
 #include <iostream>
-
+#include "physical/natives/ByteBuffer.h"
 class PhysicalReader {
 public:
-    virtual long getFileLength() = 0;
-    virtual void seek(long desired) = 0;
-    virtual char * readFully(int length) = 0;
-    virtual void readFully(char * buffer) = 0;
-    virtual void readFully(char * buffer, int offset, int length) = 0;
+//    virtual long getFileLength() = 0;
+//    virtual void seek(long desired) = 0;
+    virtual ByteBuffer * readFully(int length) = 0;
+//    virtual void readFully(char * buffer) = 0;
+//    virtual void readFully(char * buffer, int offset, int length) = 0;
 
     /**
      * If direct I/O is supported, {@link #readFully(int)} will directly read from the file
@@ -42,18 +42,18 @@ public:
      */
      // TODO: default CompletableFuture<ByteBuffer> readAsync(long offset, int length) throws IOException
 
-    virtual long readLong() = 0;
+//    virtual long readLong() = 0;
 
-    virtual int readInt() = 0;
-    virtual void close() = 0;
+//    virtual int readInt() = 0;
+//    virtual void close() = 0;
 
-    virtual std::string getPath() = 0;
+//    virtual std::string getPath() = 0;
 
     /**
     * Get the last domain in path.
     * @return
     */
-    virtual std::string getName() = 0;
+//    virtual std::string getName() = 0;
 
     /**
      * For a file or object in the storage, it may have one or more
@@ -69,7 +69,7 @@ public:
      * @return
      * @throws IOException
      */
-    virtual long getBlockId() = 0;
+//    virtual long getBlockId() = 0;
 
     /**
      * @return the scheme of the backed physical storage.
@@ -79,7 +79,7 @@ public:
     /**
      * @return the number of read requests sent to the storage.
      */
-    virtual int getNumReadRequests() = 0;
+//    virtual int getNumReadRequests() = 0;
 };
 
 #endif //PIXELS_READER_PHYSICALREADER_H

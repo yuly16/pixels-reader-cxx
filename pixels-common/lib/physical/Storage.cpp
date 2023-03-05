@@ -3,15 +3,6 @@
 //
 #include "physical/Storage.h"
 
-template<typename K, typename V>
-std::map<V,K> reverseMap(std::map<K,V> const &originalMap) {
-    std::map<V,K> reverseMap;
-    for (auto const &pair: originalMap) {
-        reverseMap[pair.second] = pair.first;
-    }
-    return reverseMap;
-}
-
 std::map<std::string, Storage::Scheme> Storage::schemeMap = {
     {"hdfs", Storage::hdfs},
     {"file", Storage::file},
@@ -21,8 +12,6 @@ std::map<std::string, Storage::Scheme> Storage::schemeMap = {
     {"gcs", Storage::gcs},
     {"mock", Storage::mock},
 };
-
-std::map<Storage::Scheme, std::string> Storage::reverseSchemeMap = reverseMap(Storage::schemeMap);
 
 Storage::Storage() {
 

@@ -3,10 +3,10 @@
 //
 
 #include "physical/storage/LocalFS.h"
+#include "physical/natives/DirectRandomAccessFile.h"
 
 
-
-std::string LocalFS::SchemePrefix = Storage::reverseSchemeMap[Storage::Scheme::file] + "://";
+std::string LocalFS::SchemePrefix = "file://";
 
 LocalFS::LocalFS() {
 
@@ -25,4 +25,13 @@ std::string LocalFS::ensureSchemePrefix(std::string path) {
                              "' already has a different scheme prefix than '" + SchemePrefix + "'.");
     }
     return SchemePrefix + path;
+}
+
+PixelsRandomAccessFile * LocalFS::openRaf(const std::string& path) {
+    if(true) {
+        // TODO: change this class to mmap class in the future.
+        return new DirectRandomAccessFile(path);
+    } else {
+        return new DirectRandomAccessFile(path);
+    }
 }

@@ -27,7 +27,6 @@ public:
         mock, // mock
     };
     static std::map<std::string, Scheme> schemeMap;
-    static std::map<Scheme, std::string> reverseSchemeMap;
     Storage();
 
     /**

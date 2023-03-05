@@ -6,7 +6,7 @@
 #define PIXELS_TEST_LOCALFS_H
 
 #include "physical/Storage.h"
-
+#include "physical/natives/PixelsRandomAccessFile.h"
 /**
  * This implementation is used to access all kinds of POSIX file systems that are mounted
  * on a local directory. The file system does not need to be local physically. For example,
@@ -21,7 +21,7 @@ public:
     LocalFS();
     Scheme getScheme() override;
     std::string ensureSchemePrefix(std::string path) override;
-
+    PixelsRandomAccessFile * openRaf(const std::string& path);
 
 private:
     // TODO: read the configuration from pixels.properties for the following to values.

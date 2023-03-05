@@ -5,7 +5,8 @@ set(pixels_common_cxx
         lib/physical/Storage.cpp
         lib/physical/natives/PixelsRandomAccessFile.cpp
         lib/physical/natives/DirectRandomAccessFile.cpp
-        lib/physical/natives/ByteBuffer.cpp)
+        lib/physical/natives/ByteBuffer.cpp
+        lib/physical/io/PhysicalLocalReader.cpp)
 
 add_library(pixels-common ${pixels_common_cxx})
 include_directories(include)

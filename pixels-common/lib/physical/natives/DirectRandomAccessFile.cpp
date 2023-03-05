@@ -3,13 +3,11 @@
 //
 #include "physical/natives/DirectRandomAccessFile.h"
 #include <cstdio>
-
+#include <malloc.h>
 DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
-    // TODO: changing this flag to O_DIRECT when copying the code to linux. Windows doesn't support O_DIRECT
-    fd = open(file.c_str(), O_RDONLY);
-    FILE* fp = fopen(file.c_str(), "r");
+    FILE * fp = fopen(file.c_str(), "r");
     // checking if the file exist or not
-    if (fp == NULL) {
+    if (fp == nullptr) {
         throw std::runtime_error("File not found");
     }
     fseek(fp, 0L, SEEK_END);
@@ -17,5 +15,43 @@ DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
     length = ftell(fp);
     // closing the file
     fclose(fp);
+    // TODO: when the code runs on server, oflag should be changed to O_DIRECT
+    fd = open(file.c_str(), O_RDONLY);
+    offset = 0;
+    // TODO: blockSize should read from pixels.properties.
+    blockSize = 4096;
+    bufferValid = false;
+    try {
+        smallBuffer = new ByteBuffer(blockSize);
+    } catch (...){
+        throw std::runtime_error("failed to allocate buffer");
+    }
 }
+
+void DirectRandomAccessFile::close() {
+    if(smallBuffer != nullptr) {
+        delete smallBuffer;
+        smallBuffer = nullptr;
+    }
+    largeBuffers.clear();
+    if(fd != -1 && ::close(fd) != 0) {
+        throw std::runtime_error("File is not closed properly");
+    }
+    fd = -1;
+    offset = 0;
+    length = 0;
+}
+
+ByteBuffer * DirectRandomAccessFile::readFully(int len) {
+    auto * buffer = new uint8_t(len);
+    if(pread(fd, buffer, len, 0) == -1) {
+        throw std::runtime_error("pread fail");
+    }
+    auto * bb = new ByteBuffer(buffer, static_cast<uint32_t>(len));
+    largeBuffers.push_back(bb);
+    return bb;
+}
+
+DirectRandomAccessFile::~DirectRandomAccessFile() = default;
+
 

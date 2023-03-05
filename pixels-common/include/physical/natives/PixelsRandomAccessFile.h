@@ -6,14 +6,15 @@
 #define PIXELS_PIXELSRANDOMACCESSFILE_H
 
 #include <iostream>
+#include "physical/natives/ByteBuffer.h"
 class PixelsRandomAccessFile {
 public:
-    virtual void seek(long offset) = 0;
-    virtual long length() = 0;
-    virtual char * readFully(int len) = 0;
-    virtual std::string readLine();
-    virtual std::string readUTF();
-
+//    virtual void seek(long offset) = 0;
+//    virtual long length() = 0;
+    virtual ByteBuffer * readFully(int len) = 0;
+    virtual void close() = 0;
+//    virtual std::string readLine();
+//    virtual std::string readUTF();
 };
 
 #endif //PIXELS_PIXELSRANDOMACCESSFILE_H

@@ -7,14 +7,21 @@
 
 #include "physical/PhysicalReader.h"
 #include "physical/storage/LocalFS.h"
+#include "physical/natives/DirectRandomAccessFile.h"
+#include <iostream>
+#include <atomic>
 
 class PhysicalLocalReader: public PhysicalReader {
 public:
-
+    PhysicalLocalReader(Storage * storage, std::string path);
+    ByteBuffer * readFully(int length) override;
+    void close();
 private:
-    LocalFS local;
+    LocalFS * local;
     std::string path;
     long id;
+    std::atomic<int> numRequests;
+    PixelsRandomAccessFile * raf;
 };
 
 #endif //PIXELS_READER_PHYSICALLOCALREADER_H
