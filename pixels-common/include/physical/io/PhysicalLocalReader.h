@@ -16,6 +16,8 @@ public:
     PhysicalLocalReader(Storage * storage, std::string path);
     ByteBuffer * readFully(int length) override;
     void close();
+    long getFileLength() override;
+    void seek(long desired) override;
 private:
     LocalFS * local;
     std::string path;

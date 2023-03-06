@@ -55,5 +55,29 @@ TEST(physical, PhysicalReader) {
     ByteBuffer * bb3 = localReader.readFully(2);
     ByteBuffer * bb4 = localReader.readFully(4);
     ByteBuffer * bb5 = localReader.readFully(5);
+    localReader.seek(10);
     localReader.close();
+}
+
+TEST(physical, RandomFile) {
+    auto * localfs = new LocalFS();
+    std::string path = "/home/liyu/files/file_64M";
+    int fd = open(path.c_str(), O_RDONLY);
+    long len = 64;
+    auto * buffer = new uint8_t(len);
+    if(pread(fd, buffer, len, 0) == -1) {
+        throw std::runtime_error("the open file fail!");
+    }
+    ::close(fd);
+
+//    PhysicalLocalReader localReader(localfs, path);
+    auto * buffer1 = new int(300000);
+//    ByteBuffer * bb1 = localReader.readFully(3);
+//    ByteBuffer * bb2 = localReader.readFully(1);
+//    ByteBuffer * bb3 = localReader.readFully(2);
+//    ByteBuffer * bb4 = localReader.readFully(4);
+//    ByteBuffer * bb5 = localReader.readFully(5);
+//    localReader.seek(10);
+//    localReader.close();
+    std::cout<<"fuck"<<std::endl;
 }

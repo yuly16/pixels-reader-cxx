@@ -15,6 +15,8 @@ public:
     explicit DirectRandomAccessFile(const std::string& file);
     void close() override;
     ByteBuffer * readFully(int len) override;
+    long length() override;
+    void seek(long off) override;
     ~DirectRandomAccessFile();
 private:
     std::vector<ByteBuffer *> largeBuffers;
@@ -22,7 +24,7 @@ private:
     bool bufferValid;
     int blockSize;
     long offset;
-    long length;
+    long len;
     int fd;
 
 

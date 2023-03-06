@@ -32,3 +32,13 @@ void PhysicalLocalReader::close() {
     numRequests++;
     raf->close();
 }
+
+long PhysicalLocalReader::getFileLength() {
+    numRequests++;
+    return raf->length();
+}
+
+void PhysicalLocalReader::seek(long desired) {
+    numRequests++;
+    raf->seek(desired);
+}

@@ -10,8 +10,8 @@
 #include "physical/natives/ByteBuffer.h"
 class PhysicalReader {
 public:
-//    virtual long getFileLength() = 0;
-//    virtual void seek(long desired) = 0;
+    virtual long getFileLength() = 0;
+    virtual void seek(long desired) = 0;
     virtual ByteBuffer * readFully(int length) = 0;
 //    virtual void readFully(char * buffer) = 0;
 //    virtual void readFully(char * buffer, int offset, int length) = 0;

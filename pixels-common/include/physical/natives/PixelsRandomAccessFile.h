@@ -9,8 +9,8 @@
 #include "physical/natives/ByteBuffer.h"
 class PixelsRandomAccessFile {
 public:
-//    virtual void seek(long offset) = 0;
-//    virtual long length() = 0;
+    virtual void seek(long off) = 0;
+    virtual long length() = 0;
     virtual ByteBuffer * readFully(int len) = 0;
     virtual void close() = 0;
 //    virtual std::string readLine();

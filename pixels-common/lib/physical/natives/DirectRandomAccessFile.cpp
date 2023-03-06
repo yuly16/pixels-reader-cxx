@@ -12,7 +12,7 @@ DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
     }
     fseek(fp, 0L, SEEK_END);
     // calculating the size of the file
-    length = ftell(fp);
+    len = ftell(fp);
     // closing the file
     fclose(fp);
     // TODO: when the code runs on server, oflag should be changed to O_DIRECT
@@ -39,18 +39,33 @@ void DirectRandomAccessFile::close() {
     }
     fd = -1;
     offset = 0;
-    length = 0;
+    len = 0;
 }
 
-ByteBuffer * DirectRandomAccessFile::readFully(int len) {
-    auto * buffer = new uint8_t(len);
-    if(pread(fd, buffer, len, 0) == -1) {
+ByteBuffer * DirectRandomAccessFile::readFully(int len_) {
+    auto * buffer = new uint8_t(len_);
+    if(pread(fd, buffer, len_, 0) == -1) {
         throw std::runtime_error("pread fail");
     }
-    auto * bb = new ByteBuffer(buffer, static_cast<uint32_t>(len));
+    auto * bb = new ByteBuffer(buffer, static_cast<uint32_t>(len_));
     largeBuffers.push_back(bb);
     return bb;
 }
+
+long DirectRandomAccessFile::length() {
+    return len;
+}
+
+void DirectRandomAccessFile::seek(long off) {
+    if(bufferValid && off > offset - smallBuffer->getReadPos() &&
+            off < offset + smallBuffer->bytesRemaining()) {
+        smallBuffer->setReadPos(off - offset + smallBuffer->getReadPos());
+    } else {
+        bufferValid = false;
+    }
+    offset = off;
+}
+
 
 DirectRandomAccessFile::~DirectRandomAccessFile() = default;
 
