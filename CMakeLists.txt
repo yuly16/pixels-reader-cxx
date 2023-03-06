@@ -3,5 +3,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 project(pixels)
 
+
 add_subdirectory(pixels-common)
+add_subdirectory(pixels-core)
 add_subdirectory(tests)

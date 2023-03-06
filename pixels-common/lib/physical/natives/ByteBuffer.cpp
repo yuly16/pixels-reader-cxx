@@ -27,7 +27,7 @@
  * @param size Size (in bytes) of space to preallocate internally. Default is set in DEFAULT_SIZE
  */
 ByteBuffer::ByteBuffer(uint32_t size) {
-    buf = new uint8_t(size);
+    buf = new uint8_t[size];
     bufSize = size;
     clear();
     name = "";

@@ -43,7 +43,7 @@ void DirectRandomAccessFile::close() {
 }
 
 ByteBuffer * DirectRandomAccessFile::readFully(int len_) {
-    auto * buffer = new uint8_t(len_);
+    auto * buffer = new uint8_t[len_];
     if(pread(fd, buffer, len_, 0) == -1) {
         throw std::runtime_error("pread fail");
     }
