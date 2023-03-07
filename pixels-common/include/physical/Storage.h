@@ -28,7 +28,7 @@ public:
     };
     static std::map<std::string, Scheme> schemeMap;
     Storage();
-
+    ~Storage();
     /**
      * Case-insensitive parsing from String name to enum value.
      * @param value the name of storage scheme.
@@ -58,6 +58,7 @@ public:
 
     // TODO: virtual List<Status> listStatus(std::string path)
 
+    virtual void close() = 0;
     // TODO: the remaining function to be implemented
 };
 

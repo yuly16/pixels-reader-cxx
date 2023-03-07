@@ -7,6 +7,7 @@
 #include "physical/natives/ByteBuffer.h"
 #include "physical/natives/DirectRandomAccessFile.h"
 #include "physical/io/PhysicalLocalReader.h"
+#include "physical/StorageFactory.h"
 
 TEST(physical, StorageFunctionTest) {
     EXPECT_EQ(Storage::file, Storage::from("FiLe"));
@@ -79,4 +80,17 @@ TEST(physical, RandomFile) {
     ByteBuffer * bb5 = localReader.readFully(5);
     localReader.seek(10);
     localReader.close();
+}
+
+
+TEST(physical, StorageFactory) {
+    StorageFactory * sf = StorageFactory::getInstance();
+    auto enabledSchemes = sf->getEnabledSchemes();
+    EXPECT_EQ(Storage::file, enabledSchemes[0]);
+    EXPECT_EQ(1, enabledSchemes.size());
+    EXPECT_TRUE(sf->isEnabled(Storage::file));
+    EXPECT_FALSE(sf->isEnabled(Storage::s3));
+    sf->reloadAll();
+    sf->reloadAll();
+    std::cout<<"finish"<<std::endl;
 }

@@ -6,10 +6,18 @@
 #define PIXELS_STORAGEFACTORY_H
 #include <bits/stdc++.h>
 #include "physical/Storage.h"
+#include "physical/storage/LocalFS.h"
 
 class StorageFactory {
 public:
     static StorageFactory * getInstance();
+    std::vector<Storage::Scheme> getEnabledSchemes();
+    bool isEnabled(Storage::Scheme scheme);
+    void closeAll();
+    void reloadAll();
+    void reload(Storage::Scheme scheme);
+    Storage * getStorage(const std::string& schemeOrPath);
+    Storage * getStorage(Storage::Scheme scheme);
 private:
     //TODO: logger
     StorageFactory();

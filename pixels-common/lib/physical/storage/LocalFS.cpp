@@ -35,3 +35,8 @@ PixelsRandomAccessFile * LocalFS::openRaf(const std::string& path) {
         return new DirectRandomAccessFile(path);
     }
 }
+
+void LocalFS::close() {
+}
+
+LocalFS::~LocalFS() = default;

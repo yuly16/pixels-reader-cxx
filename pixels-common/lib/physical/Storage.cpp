@@ -36,3 +36,7 @@ Storage::Scheme Storage::fromPath(const std::string& schemedPath) {
 bool Storage::isValid(const std::string& value) {
     return schemeMap.find(value) != schemeMap.end();
 }
+
+Storage::~Storage() {
+
+}
