@@ -6,13 +6,16 @@
 #define PIXELS_PIXELSREADERBUILDER_H
 
 #include "PixelsReaderImpl.h"
+#include "physical/PhysicalReaderUtil.h"
 
 class PixelsReaderBuilder {
 public:
     PixelsReaderBuilder();
     PixelsReaderBuilder * setStorage(Storage * storage);
+    PixelsReaderBuilder * setPath(const std::string & path);
     PixelsReader * build();
 private:
-    Storage * buildStorage;
+    Storage * builderStorage;
+    std::string builderPath;
 };
 #endif //PIXELS_PIXELSREADERBUILDER_H

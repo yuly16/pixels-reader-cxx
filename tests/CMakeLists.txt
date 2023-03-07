@@ -19,8 +19,10 @@ target_link_libraries(
         hello_test
         GTest::gtest_main
         pixels-common
+        pixels-core
 )
 
 include(GoogleTest)
+include_directories(${CMAKE_SOURCE_DIR}/pixels-core/include)
 include_directories(${CMAKE_SOURCE_DIR}/pixels-common/include)
 gtest_discover_tests(hello_test)

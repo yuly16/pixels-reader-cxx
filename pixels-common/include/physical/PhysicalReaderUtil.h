@@ -7,6 +7,8 @@
 
 #include "io/PhysicalLocalReader.h"
 #include "Storage.h"
+#include "StorageFactory.h"
+
 class PhysicalReaderUtil {
 public:
     static PhysicalReader * newPhysicalReader(Storage * storage, std::string path) {
@@ -45,11 +47,11 @@ public:
         return reader;
     }
 
-    static PhysicalReader newPhysicalReader(Storage::Scheme scheme, std::string path) {
+    static PhysicalReader * newPhysicalReader(Storage::Scheme scheme, std::string path) {
         if(path.size() == 0) {
             throw std::runtime_error("path should not be empty");
         }
-        // TODO: StorageFactory
+        return newPhysicalReader(StorageFactory::getInstance()->getStorage(scheme), path);
     }
 };
 #endif //PIXELS_PHYSICALREADERUTIL_H

@@ -6,13 +6,17 @@
 #define PIXELS_PIXELSREADERIMPL_H
 
 #include "PixelsReader.h"
-
+#include "reader/PixelsRecordReaderImpl.h"
+#include <iostream>
+#include <vector>
 class PixelsReaderBuilder;
 
 class PixelsReaderImpl: public PixelsReader {
 public:
+    PixelsRecordReader * read();
     friend class PixelsReaderBuilder;
 private:
+    std::vector<PixelsRecordReader *> recordReaders;
     PixelsReaderImpl(PhysicalReader * reader);
     PhysicalReader * physicalReader;
 };

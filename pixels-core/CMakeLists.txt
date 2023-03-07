@@ -2,7 +2,8 @@ project(pixels-core)
 
 set(pixels_core_cxx
         lib/PixelsReaderImpl.cpp
-        )
+        lib/PixelsReaderBuilder.cpp
+        lib/reader/PixelsRecordReaderImpl.cpp)
 
 add_library(pixels-core ${pixels_core_cxx})
 

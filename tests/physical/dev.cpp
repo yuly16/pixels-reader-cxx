@@ -8,6 +8,8 @@
 #include "physical/natives/DirectRandomAccessFile.h"
 #include "physical/io/PhysicalLocalReader.h"
 #include "physical/StorageFactory.h"
+#include "PixelsReaderImpl.h"
+#include "PixelsReaderBuilder.h"
 
 TEST(physical, StorageFunctionTest) {
     EXPECT_EQ(Storage::file, Storage::from("FiLe"));
@@ -93,4 +95,15 @@ TEST(physical, StorageFactory) {
     sf->reloadAll();
     sf->reloadAll();
     std::cout<<"finish"<<std::endl;
+}
+
+TEST(physical, PixelsReaderImpl) {
+    Storage * storage = StorageFactory::getInstance()->getStorage(Storage::file);
+    auto * builder = new PixelsReaderBuilder();
+    PixelsReader * pixelsReader = builder
+        ->setStorage(storage)
+        ->setPath("/home/liyu/files/file_64M")
+        ->build();
+    std::cout<<"fuck"<<std::endl;
+
 }
