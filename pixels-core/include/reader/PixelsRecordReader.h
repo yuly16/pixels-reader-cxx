@@ -5,6 +5,9 @@
 #ifndef PIXELS_PIXELSRECORDREADER_H
 #define PIXELS_PIXELSRECORDREADER_H
 
+#include "vector/VectorizedRowBatch.h"
+#include "physical/RequestBatch.h"
+
 class PixelsRecordReader {
     /**
      * Prepare for the next row batch. This method is independent from readBatch().
@@ -13,13 +16,8 @@ class PixelsRecordReader {
      * @return the real batch size
      */
 //    virtual int prepareBatch(int batchSize) = 0;
+    virtual VectorizedRowBatch readBatch(int batchSize, bool reuse) = 0;
 
-    /**
-     * Read the next row batch. This method is thread-safe and independent from prepareBatch().
-     *
-     * @param batchSize the row batch size
-     * @return vectorized row batch
-     */
 
 
 };

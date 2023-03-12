@@ -10,6 +10,11 @@
 #include "physical/StorageFactory.h"
 #include "PixelsReaderImpl.h"
 #include "PixelsReaderBuilder.h"
+#include <iostream>
+#include <future>
+#include <thread>
+#include "physical/scheduler/NoopScheduler.h"
+#include "physical/SchedulerFactory.h"
 
 TEST(physical, StorageFunctionTest) {
     EXPECT_EQ(Storage::file, Storage::from("FiLe"));
@@ -105,5 +110,31 @@ TEST(physical, PixelsReaderImpl) {
         ->setPath("/home/liyu/files/file_64M")
         ->build();
     std::cout<<"fuck"<<std::endl;
+
+}
+
+TEST(physical, NoopScheduler) {
+    Scheduler * noop = SchedulerFactory::Instance()->getScheduler();
+    long queryId = 0;
+    auto * localfs = new LocalFS();
+    RequestBatch batch;
+    batch.add(queryId, 5, 9);
+    batch.add(queryId, 1, 4);
+    batch.add(queryId, 2, 5);
+    batch.add(queryId, 3, 7);
+    PhysicalLocalReader localReader(localfs, "/home/liyu/files/hello.txt");
+    auto bbs = noop->executeBatch(&localReader, batch, queryId);
+    std::cout<<"fuck"<<std::endl;
+}
+
+TEST(physical, PixelsRecordReaderImpl) {
+    Storage * storage = StorageFactory::getInstance()->getStorage(Storage::file);
+    auto * builder = new PixelsReaderBuilder();
+    PixelsReader * pixelsReader = builder
+            ->setStorage(storage)
+            ->setPath("/home/liyu/files/file_64M")
+            ->build();
+    PixelsRecordReader * pixelsRecordReader = pixelsReader->read();
+    auto v = pixelsRecordReader->readBatch(1, false);
 
 }

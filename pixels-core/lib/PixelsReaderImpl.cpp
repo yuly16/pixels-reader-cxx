@@ -10,7 +10,7 @@ PixelsReaderImpl::PixelsReaderImpl(PhysicalReader * reader) {
 
 PixelsRecordReader *PixelsReaderImpl::read() {
     // TODO: add a function parameter, and the code before creating PixelsRecordReaderImpl
-    PixelsRecordReader * recordReader = new PixelsRecordReaderImpl();
+    PixelsRecordReader * recordReader = new PixelsRecordReaderImpl(physicalReader);
     recordReaders.push_back(recordReader);
     return recordReader;
 }
