@@ -13,6 +13,8 @@ public:
     virtual long length() = 0;
     virtual ByteBuffer * readFully(int len) = 0;
     virtual void close() = 0;
+    virtual long readLong() = 0;
+    virtual char readChar() = 0;
 //    virtual std::string readLine();
 //    virtual std::string readUTF();
 };

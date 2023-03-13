@@ -42,10 +42,9 @@ public:
     uint32_t bytesRemaining(); // Number of uint8_ts from the current read position till the end of the buffer
     void clear(); // Clear our the vector and reset read and write positions
     uint32_t size(); // Size of internal vector
-
-
+    uint8_t * getPointer(); // get the pointer of bytebuffer
+    void resetPosition();
     // Read
-
     uint8_t peek(); // Relative peek. Reads and returns the next uint8_t in the buffer from the current position but does not increment the read position
     uint8_t get(); // Relative get method. Reads the uint8_t at the buffers current position then increments the position
     uint8_t get(uint32_t index); // Absolute get method. Read uint8_t at index
@@ -56,15 +55,14 @@ public:
     double getDouble(uint32_t index);
     float getFloat();
     float getFloat(uint32_t index);
-    uint32_t getInt();
-    uint32_t getInt(uint32_t index);
-    uint64_t getLong();
-    uint64_t getLong(uint32_t index);
-    uint16_t getShort();
-    uint16_t getShort(uint32_t index);
+    int getInt();
+    int getInt(uint32_t index);
+    long getLong();
+    long getLong(uint32_t index);
+    short getShort();
+    short getShort(uint32_t index);
 
     // Write
-
     void put(ByteBuffer* src); // Relative write of the entire contents of another ByteBuffer (src)
     void put(uint8_t b); // Relative write
     void put(uint8_t b, uint32_t index); // Absolute write at index
@@ -76,12 +74,12 @@ public:
     void putDouble(double value, uint32_t index);
     void putFloat(float value);
     void putFloat(float value, uint32_t index);
-    void putInt(uint32_t value);
-    void putInt(uint32_t value, uint32_t index);
-    void putLong(uint64_t value);
-    void putLong(uint64_t value, uint32_t index);
-    void putShort(uint16_t value);
-    void putShort(uint16_t value, uint32_t index);
+    void putInt(int value);
+    void putInt(int value, uint32_t index);
+    void putLong(long value);
+    void putLong(long value, uint32_t index);
+    void putShort(short value);
+    void putShort(short value, uint32_t index);
 
     // Buffer Position Accessors & Mutators
 

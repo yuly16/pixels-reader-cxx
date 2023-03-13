@@ -9,12 +9,7 @@
 #include "physical/RequestBatch.h"
 
 class PixelsRecordReader {
-    /**
-     * Prepare for the next row batch. This method is independent from readBatch().
-     *
-     * @param batchSize the willing batch size
-     * @return the real batch size
-     */
+public:
 //    virtual int prepareBatch(int batchSize) = 0;
     virtual VectorizedRowBatch readBatch(int batchSize, bool reuse) = 0;
 

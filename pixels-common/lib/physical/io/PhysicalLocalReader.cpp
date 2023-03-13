@@ -42,3 +42,11 @@ void PhysicalLocalReader::seek(long desired) {
     numRequests++;
     raf->seek(desired);
 }
+
+long PhysicalLocalReader::readLong() {
+    return raf->readLong();
+}
+
+char PhysicalLocalReader::readChar() {
+    return raf->readChar();
+}

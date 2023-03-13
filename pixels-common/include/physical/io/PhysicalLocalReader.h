@@ -18,6 +18,8 @@ public:
     void close();
     long getFileLength() override;
     void seek(long desired) override;
+    long readLong() override;
+    char readChar() override;
 private:
     LocalFS * local;
     std::string path;

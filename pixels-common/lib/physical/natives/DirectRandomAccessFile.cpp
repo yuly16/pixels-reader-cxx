@@ -67,6 +67,33 @@ void DirectRandomAccessFile::seek(long off) {
     offset = off;
 }
 
+long DirectRandomAccessFile::readLong() {
+    if(!bufferValid || smallBuffer->bytesRemaining() < sizeof(long)) {
+        populatedBuffer();
+    }
+    offset += sizeof(long);
+    return smallBuffer->getLong();
+}
+
+char DirectRandomAccessFile::readChar() {
+    if(!bufferValid || smallBuffer->bytesRemaining() < sizeof(char)) {
+        populatedBuffer();
+    }
+    offset += sizeof(char);
+    return smallBuffer->getChar();
+}
+
+void DirectRandomAccessFile::populatedBuffer() {
+    // TODO: direct IO enabled?
+    if(pread(fd, smallBuffer->getPointer(), blockSize, offset) == -1) {
+        throw std::runtime_error("pread fail");
+    }
+    smallBuffer->resetPosition();
+    bufferValid = true;
+}
+
+
+
 
 DirectRandomAccessFile::~DirectRandomAccessFile() = default;
 

@@ -78,6 +78,7 @@ bool PixelsRecordReaderImpl::read() {
             }
         }
     }
+    return true;
 
 }
 

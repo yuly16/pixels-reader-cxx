@@ -28,6 +28,14 @@ PixelsReader * PixelsReaderBuilder::build() {
     PhysicalReader * fsReader = PhysicalReaderUtil::newPhysicalReader(
             builderStorage, builderPath);
     // TODO: PixelsProto and metric files
+    // TODO: we need concurrenthashmap for builderPixelsFooterCache
+    if(fsReader == nullptr) {
+        throw std::runtime_error("Failed to create PixelsReader due to error of creating PhysicalReader");
+    }
+    long fileLen = fsReader->getFileLength();
+    fsReader->seek(fileLen - (long)sizeof(long));
+
+
 
     return new PixelsReaderImpl(fsReader);
 }

@@ -29,7 +29,7 @@
 ByteBuffer::ByteBuffer(uint32_t size) {
     buf = new uint8_t[size];
     bufSize = size;
-    clear();
+    resetPosition();
     name = "";
 }
 
@@ -41,10 +41,10 @@ ByteBuffer::ByteBuffer(uint32_t size) {
  * @param arr uint8_t array of data (should be of length len)
  * @param size Size of space to allocate
  */
-ByteBuffer::ByteBuffer(uint8_t* arr, uint32_t size) {
+ByteBuffer::ByteBuffer(uint8_t * arr, uint32_t size) {
     buf = arr;
     bufSize = size;
-    clear();
+    resetPosition();
     name = "";
 }
 
@@ -58,15 +58,18 @@ uint32_t ByteBuffer::bytesRemaining() {
     return size() - rpos;
 }
 
-/**
- * Clear
- * Clears out all data from the internal vector (original preallocated size remains), resets the positions to 0
- */
+
 void ByteBuffer::clear() {
+    resetPosition();
+    delete buf;
+    buf = nullptr;
+    bufSize = 0;
+}
+
+void ByteBuffer::resetPosition() {
     rpos = 0;
     wpos = 0;
 }
-
 /**
  * Size
  * Returns the size of the internal buffer...not necessarily the length of bytes used as data!
@@ -124,28 +127,28 @@ float ByteBuffer::getFloat(uint32_t index) {
     return read<float>(index);
 }
 
-uint32_t ByteBuffer::getInt() {
-    return read<uint32_t>();
+int ByteBuffer::getInt() {
+    return read<int>();
 }
 
-uint32_t ByteBuffer::getInt(uint32_t index) {
-    return read<uint32_t>(index);
+int ByteBuffer::getInt(uint32_t index) {
+    return read<int>(index);
 }
 
-uint64_t ByteBuffer::getLong() {
-    return read<uint64_t>();
+long ByteBuffer::getLong() {
+    return read<long>();
 }
 
-uint64_t ByteBuffer::getLong(uint32_t index) {
-    return read<uint64_t>(index);
+long ByteBuffer::getLong(uint32_t index) {
+    return read<long>(index);
 }
 
-uint16_t ByteBuffer::getShort() {
-    return read<uint16_t>();
+short ByteBuffer::getShort() {
+    return read<short>();
 }
 
-uint16_t ByteBuffer::getShort(uint32_t index) {
-    return read<uint16_t>(index);
+short ByteBuffer::getShort(uint32_t index) {
+    return read<short>(index);
 }
 
 // Write Functions
@@ -201,28 +204,28 @@ void ByteBuffer::putFloat(float value, uint32_t index) {
     insert<float>(value, index);
 }
 
-void ByteBuffer::putInt(uint32_t value) {
-    append<uint32_t>(value);
+void ByteBuffer::putInt(int value) {
+    append<int>(value);
 }
 
-void ByteBuffer::putInt(uint32_t value, uint32_t index) {
-    insert<uint32_t>(value, index);
+void ByteBuffer::putInt(int value, uint32_t index) {
+    insert<int>(value, index);
 }
 
-void ByteBuffer::putLong(uint64_t value) {
-    append<uint64_t>(value);
+void ByteBuffer::putLong(long value) {
+    append<long>(value);
 }
 
-void ByteBuffer::putLong(uint64_t value, uint32_t index) {
-    insert<uint64_t>(value, index);
+void ByteBuffer::putLong(long value, uint32_t index) {
+    insert<long>(value, index);
 }
 
-void ByteBuffer::putShort(uint16_t value) {
-    append<uint16_t>(value);
+void ByteBuffer::putShort(short value) {
+    append<short>(value);
 }
 
-void ByteBuffer::putShort(uint16_t value, uint32_t index) {
-    insert<uint16_t>(value, index);
+void ByteBuffer::putShort(short value, uint32_t index) {
+    insert<short>(value, index);
 }
 
 // Utility Functions
@@ -286,6 +289,10 @@ void ByteBuffer::printPosition() {
 ByteBuffer::~ByteBuffer() {
     delete buf;
     buf = nullptr;
+}
+
+uint8_t *ByteBuffer::getPointer() {
+    return buf;
 }
 
 

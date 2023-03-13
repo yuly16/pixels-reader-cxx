@@ -42,8 +42,8 @@ public:
      */
      // TODO: default CompletableFuture<ByteBuffer> readAsync(long offset, int length) throws IOException
 
-//    virtual long readLong() = 0;
-
+    virtual long readLong() = 0;
+    virtual char readChar() = 0;
 //    virtual int readInt() = 0;
 //    virtual void close() = 0;
 

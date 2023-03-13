@@ -135,6 +135,6 @@ TEST(physical, PixelsRecordReaderImpl) {
             ->setPath("/home/liyu/files/file_64M")
             ->build();
     PixelsRecordReader * pixelsRecordReader = pixelsReader->read();
-    auto v = pixelsRecordReader->readBatch(1, false);
+//    auto v = pixelsRecordReader->readBatch(1, false);
 
 }

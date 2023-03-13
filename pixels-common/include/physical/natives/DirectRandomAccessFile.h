@@ -17,8 +17,11 @@ public:
     ByteBuffer * readFully(int len) override;
     long length() override;
     void seek(long off) override;
+    long readLong() override;
+    char readChar() override;
     ~DirectRandomAccessFile();
 private:
+    void populatedBuffer();
     std::vector<ByteBuffer *> largeBuffers;
     ByteBuffer * smallBuffer;
     bool bufferValid;

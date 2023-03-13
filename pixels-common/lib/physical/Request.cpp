@@ -4,6 +4,7 @@
 
 #include "physical/Request.h"
 
+
 Request::Request(long queryId_, long start_, int length_) {
     queryId = queryId_;
     start = start_;
