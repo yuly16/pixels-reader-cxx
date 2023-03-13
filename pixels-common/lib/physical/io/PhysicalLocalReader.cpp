@@ -50,3 +50,7 @@ long PhysicalLocalReader::readLong() {
 char PhysicalLocalReader::readChar() {
     return raf->readChar();
 }
+
+int PhysicalLocalReader::readInt() {
+    return raf->readInt();
+}

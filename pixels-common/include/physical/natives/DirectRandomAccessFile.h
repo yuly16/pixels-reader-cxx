@@ -19,6 +19,7 @@ public:
     void seek(long off) override;
     long readLong() override;
     char readChar() override;
+    int readInt() override;
     ~DirectRandomAccessFile();
 private:
     void populatedBuffer();

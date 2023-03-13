@@ -75,6 +75,14 @@ long DirectRandomAccessFile::readLong() {
     return smallBuffer->getLong();
 }
 
+int DirectRandomAccessFile::readInt() {
+    if(!bufferValid || smallBuffer->bytesRemaining() < sizeof(int)) {
+        populatedBuffer();
+    }
+    offset += sizeof(int);
+    return smallBuffer->getInt();
+}
+
 char DirectRandomAccessFile::readChar() {
     if(!bufferValid || smallBuffer->bytesRemaining() < sizeof(char)) {
         populatedBuffer();
@@ -89,6 +97,7 @@ void DirectRandomAccessFile::populatedBuffer() {
         throw std::runtime_error("pread fail");
     }
     smallBuffer->resetPosition();
+
     bufferValid = true;
 }
 

@@ -19,6 +19,7 @@ public:
     long getFileLength() override;
     void seek(long desired) override;
     long readLong() override;
+    int readInt() override;
     char readChar() override;
 private:
     LocalFS * local;

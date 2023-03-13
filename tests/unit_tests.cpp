@@ -14,6 +14,7 @@
 #include <thread>
 #include "physical/scheduler/NoopScheduler.h"
 #include "physical/SchedulerFactory.h"
+#include "PixelsVersion.h"
 
 TEST(reader, ByteBufferPopulateChar) {
     std::string path = "/home/liyu/files/file_1G";
@@ -41,6 +42,11 @@ TEST(reader, ByteBufferPopulateChar) {
     for(long i = 0; i < length; i++) {
         EXPECT_EQ(fsReader->readChar(), target[i]);
     }
+}
+
+TEST(reader, PixelsVersion) {
+    EXPECT_EQ(PixelsVersion::V1, PixelsVersion::currentVersion());
+    EXPECT_EQ(PixelsVersion::V1, PixelsVersion::from(1));
 }
 
 TEST(reader, recordReader) {

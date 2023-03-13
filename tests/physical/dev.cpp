@@ -16,6 +16,7 @@
 #include "physical/scheduler/NoopScheduler.h"
 #include "physical/SchedulerFactory.h"
 
+
 TEST(physical, StorageFunctionTest) {
     EXPECT_EQ(Storage::file, Storage::from("FiLe"));
     EXPECT_NE(Storage::s3, Storage::from("s4"));
@@ -63,7 +64,9 @@ TEST(physical, PhysicalReader) {
     ByteBuffer * bb3 = localReader.readFully(2);
     ByteBuffer * bb4 = localReader.readFully(4);
     ByteBuffer * bb5 = localReader.readFully(5);
-    localReader.seek(10);
+    localReader.seek(11);
+    char c = localReader.readChar();
+    char d = localReader.readChar();
     localReader.close();
 }
 

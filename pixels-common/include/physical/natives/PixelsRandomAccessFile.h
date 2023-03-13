@@ -15,6 +15,7 @@ public:
     virtual void close() = 0;
     virtual long readLong() = 0;
     virtual char readChar() = 0;
+    virtual int readInt() = 0;
 //    virtual std::string readLine();
 //    virtual std::string readUTF();
 };

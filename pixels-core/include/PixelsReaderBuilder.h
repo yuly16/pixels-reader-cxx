@@ -8,6 +8,7 @@
 #include "PixelsReaderImpl.h"
 #include "physical/PhysicalReaderUtil.h"
 #include "pixels-common/pixels.pb.h"
+#include "PixelsVersion.h"
 
 class PixelsReaderBuilder {
 public:
