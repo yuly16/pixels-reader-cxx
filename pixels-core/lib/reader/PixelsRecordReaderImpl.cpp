@@ -4,8 +4,14 @@
 
 #include "reader/PixelsRecordReaderImpl.h"
 
-PixelsRecordReaderImpl::PixelsRecordReaderImpl(PhysicalReader * reader) {
+PixelsRecordReaderImpl::PixelsRecordReaderImpl(PhysicalReader *reader,
+                                               const pixels::proto::PostScript& pixelsPostScript,
+                                               const pixels::proto::Footer& pixelsFooter,
+                                               const PixelsFooterCache& pixelsFooterCache) {
     physicalReader = reader;
+    footer = pixelsFooter;
+    postScript = pixelsPostScript;
+    footerCache = pixelsFooterCache;
     // TODO: intialize all kinds of variables
     queryId = 0;
     everRead = false;
@@ -13,9 +19,10 @@ PixelsRecordReaderImpl::PixelsRecordReaderImpl(PhysicalReader * reader) {
     curRGIdx = 0;
     curRowInRG = 0;
     chunkBuffers = nullptr;
-
-
 }
+
+
+
 
 VectorizedRowBatch PixelsRecordReaderImpl::readBatch(int batchSize, bool reuse) {
     VectorizedRowBatch resultRowBatch;
@@ -81,4 +88,5 @@ bool PixelsRecordReaderImpl::read() {
     return true;
 
 }
+
 

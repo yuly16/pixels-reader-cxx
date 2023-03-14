@@ -15,7 +15,9 @@
 #include <thread>
 #include "physical/scheduler/NoopScheduler.h"
 #include "physical/SchedulerFactory.h"
-
+#include "tbb/concurrent_hash_map.h"
+#include "utils/Constants.h"
+#include "exception/PixelsFileMagicInvalidException.h"
 
 TEST(physical, StorageFunctionTest) {
     EXPECT_EQ(Storage::file, Storage::from("FiLe"));
@@ -140,4 +142,21 @@ TEST(physical, PixelsRecordReaderImpl) {
     PixelsRecordReader * pixelsRecordReader = pixelsReader->read();
 //    auto v = pixelsRecordReader->readBatch(1, false);
 
+}
+
+TEST(physical, Concurrent) {
+    tbb::concurrent_hash_map<int, int> table;
+    tbb::concurrent_hash_map<int, int>::accessor accessor;
+    if(table.insert(accessor, 1)) {
+        accessor->second = 2;
+    }
+
+    if(table.find(accessor, 1)) {
+        std::cout<<accessor->second<<std::endl;
+    }
+}
+
+TEST(utils, Constants) {
+    std::cout<<Constants::AI_LOCK_PATH_PREFIX<<std::endl;
+    std::cout<<Constants::INIT_DICT_SIZE<<std::endl;
 }

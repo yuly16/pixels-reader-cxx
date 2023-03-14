@@ -20,6 +20,11 @@ PixelsReaderBuilder * PixelsReaderBuilder::setPath(const std::string &path) {
 }
 
 
+PixelsReaderBuilder *PixelsReaderBuilder::setPixelsFooterCache(const PixelsFooterCache &pixelsFooterCache) {
+    builderPixelsFooterCache = pixelsFooterCache;
+    return this;
+}
+
 PixelsReader * PixelsReaderBuilder::build() {
     if(builderStorage == nullptr || builderPath.empty()) {
         throw std::runtime_error("Missing argument to build PixelsReader");
@@ -27,31 +32,44 @@ PixelsReader * PixelsReaderBuilder::build() {
     // get PhysicalReader
     PhysicalReader * fsReader = PhysicalReaderUtil::newPhysicalReader(
             builderStorage, builderPath);
-    // TODO: PixelsProto and metric files
-    // TODO: we need concurrenthashmap for builderPixelsFooterCache
+    // try to get file tail from cache
+    std::string fileName = fsReader->getName();
     pixels::proto::FileTail fileTail;
-    if(fsReader == nullptr) {
-        throw std::runtime_error("Failed to create PixelsReader due to error of creating PhysicalReader");
-    }
-    // get FileTail
-    long fileLen = fsReader->getFileLength();
-    fsReader->seek(fileLen - (long)sizeof(long));
-    long fileTailOffset = fsReader->readLong();
-    int fileTailLength = (int) (fileLen - fileTailOffset - sizeof(long));
-    fsReader->seek(fileTailOffset);
-    ByteBuffer * fileTailBuffer = fsReader->readFully(fileTailLength);
-    if(!fileTail.ParseFromArray(fileTailBuffer->getPointer(),
-                               fileTailLength)) {
-        throw std::runtime_error("paring FileTail error!");
+    if(builderPixelsFooterCache.containsFileTail(fileName)) {
+        fileTail = builderPixelsFooterCache.getFileTail(fileName);
+    } else {
+        if(fsReader == nullptr) {
+            throw PixelsReaderException(
+                    "Failed to create PixelsReader due to error of creating PhysicalReader");
+        }
+        // get FileTail
+        long fileLen = fsReader->getFileLength();
+        fsReader->seek(fileLen - (long)sizeof(long));
+        long fileTailOffset = fsReader->readLong();
+        int fileTailLength = (int) (fileLen - fileTailOffset - sizeof(long));
+        fsReader->seek(fileTailOffset);
+        ByteBuffer * fileTailBuffer = fsReader->readFully(fileTailLength);
+        if(!fileTail.ParseFromArray(fileTailBuffer->getPointer(),
+                                    fileTailLength)) {
+            throw InvalidArgumentException("paring FileTail error!");
+        }
+        builderPixelsFooterCache.putFileTail(fileName, fileTail);
     }
 
     // check file MAGIC and file version
     pixels::proto::PostScript postScript = fileTail.postscript();
     uint32_t fileVersion = postScript.version();
-    std::string fileMagic = postScript.magic();
+    const std::string& fileMagic = postScript.magic();
     if(PixelsVersion::currentVersion() != fileVersion) {
-
+        throw PixelsFileVersionInvalidException(fileVersion);
     }
-    return new PixelsReaderImpl(fsReader);
+    if(fileMagic != Constants::MAGIC) {
+        throw PixelsFileMagicInvalidException(fileMagic);
+    }
+
+    // TODO: the remaining things, such as builderSchema, coreCOnfig, metric
+    return new PixelsReaderImpl(fsReader, fileTail,
+                                builderPixelsFooterCache);
 }
+
 

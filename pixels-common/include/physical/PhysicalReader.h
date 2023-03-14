@@ -15,7 +15,7 @@ public:
     virtual ByteBuffer * readFully(int length) = 0;
 //    virtual void readFully(char * buffer) = 0;
 //    virtual void readFully(char * buffer, int offset, int length) = 0;
-
+    virtual std::string getName() = 0;
     /**
      * If direct I/O is supported, {@link #readFully(int)} will directly read from the file
      * without going through the OS cache. This is currently supported on LocalFS.

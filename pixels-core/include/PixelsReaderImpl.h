@@ -9,6 +9,9 @@
 #include "reader/PixelsRecordReaderImpl.h"
 #include <iostream>
 #include <vector>
+#include "pixels-common/pixels.pb.h"
+#include "PixelsFooterCache.h"
+
 class PixelsReaderBuilder;
 
 class PixelsReaderImpl: public PixelsReader {
@@ -17,8 +20,13 @@ public:
     friend class PixelsReaderBuilder;
 private:
     std::vector<PixelsRecordReader *> recordReaders;
-    PixelsReaderImpl(PhysicalReader * reader);
+    PixelsReaderImpl(PhysicalReader *reader,
+                     const pixels::proto::FileTail& fileTail,
+                     const PixelsFooterCache& footerCache);
     PhysicalReader * physicalReader;
+    PixelsFooterCache pixelsFooterCache;
+    pixels::proto::PostScript postScript;
+    pixels::proto::Footer footer;
 };
 
 #endif //PIXELS_PIXELSREADERIMPL_H

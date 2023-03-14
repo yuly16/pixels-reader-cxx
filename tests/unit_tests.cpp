@@ -15,8 +15,11 @@
 #include "physical/scheduler/NoopScheduler.h"
 #include "physical/SchedulerFactory.h"
 #include "PixelsVersion.h"
+#include "PixelsFooterCache.h"
+#include "exception/PixelsReaderException.h"
 
 TEST(reader, ByteBufferPopulateChar) {
+    // randomly generate a file
     std::string path = "/home/liyu/files/file_1G";
     // read target data
     FILE * fp = fopen(path.c_str(), "r");
@@ -49,15 +52,55 @@ TEST(reader, PixelsVersion) {
     EXPECT_EQ(PixelsVersion::V1, PixelsVersion::from(1));
 }
 
-TEST(reader, recordReader) {
+ TEST(reader, recordReader) {
     std::string dataset = "/home/liyu/pixels-reader-cxx/tests/data/20230224150144_3.pxl";
+    PixelsFooterCache footerCache;
     auto * builder = new PixelsReaderBuilder;
     Storage * storage = StorageFactory::getInstance()->getStorage(Storage::file);
     PixelsReader * pixelsReader = builder
             ->setPath(dataset)
             ->setStorage(storage)
+            ->setPixelsFooterCache(footerCache)
             ->build();
     PixelsRecordReader * pixelsRecordReader = pixelsReader->read();
     VectorizedRowBatch v = pixelsRecordReader->readBatch(1, false);
+}
+
+TEST(reader, fileTail) {
+    std::string path = "/home/liyu/pixels-reader-cxx/tests/data/20230224150144_3.pxl";
+    Storage * storage = StorageFactory::getInstance()->getStorage(Storage::file);
+    PhysicalReader * fsReader = PhysicalReaderUtil::newPhysicalReader(
+            storage, path);
+    pixels::proto::FileTail fileTail;
+
+    if(fsReader == nullptr) {
+        throw std::runtime_error("Failed to create PixelsReader due to error of creating PhysicalReader");
+    }
+
+    PixelsFooterCache pixelsFooterCache;
+    std::string filename = fsReader->getName();
+    EXPECT_EQ(filename, "20230224150144_3.pxl");
+    for(int i = 0; i < 2; i++) {
+        if(pixelsFooterCache.containsFileTail(filename)) {
+            EXPECT_EQ(i, 1);
+            fileTail = pixelsFooterCache.getFileTail(filename);
+        } else {
+            // get FileTail
+            EXPECT_EQ(i, 0);
+            long fileLen = fsReader->getFileLength();
+            fsReader->seek(fileLen - (long)sizeof(long));
+            long fileTailOffset = fsReader->readLong();
+            int fileTailLength = (int) (fileLen - fileTailOffset - sizeof(long));
+            fsReader->seek(fileTailOffset);
+            ByteBuffer * fileTailBuffer = fsReader->readFully(fileTailLength);
+            if(!fileTail.ParseFromArray(fileTailBuffer->getPointer(),
+                                        fileTailLength)) {
+                throw std::runtime_error("paring FileTail error!");
+            }
+            pixelsFooterCache.putFileTail(filename, fileTail);
+        }
+    }
+
 
 }
+

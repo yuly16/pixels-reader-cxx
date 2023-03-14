@@ -3,7 +3,7 @@ project(pixels-core)
 set(pixels_core_cxx
         lib/PixelsReaderImpl.cpp
         lib/PixelsReaderBuilder.cpp
-        lib/reader/PixelsRecordReaderImpl.cpp lib/PixelsVersion.cpp)
+        lib/reader/PixelsRecordReaderImpl.cpp lib/PixelsVersion.cpp lib/PixelsFooterCache.cpp lib/exception/PixelsReaderException.cpp lib/exception/PixelsFileMagicInvalidException.cpp lib/exception/PixelsFileVersionInvalidException.cpp)
 
 add_library(pixels-core ${pixels_core_cxx})
 

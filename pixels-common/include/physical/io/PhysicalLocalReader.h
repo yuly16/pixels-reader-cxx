@@ -21,6 +21,7 @@ public:
     long readLong() override;
     int readInt() override;
     char readChar() override;
+    std::string getName() override;
 private:
     LocalFS * local;
     std::string path;

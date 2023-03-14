@@ -10,6 +10,8 @@
 #include "vector/VectorizedRowBatch.h"
 #include "physical/Scheduler.h"
 #include "physical/SchedulerFactory.h"
+#include "pixels-common/pixels.pb.h"
+#include "PixelsFooterCache.h"
 
 class ChunkId {
 public:
@@ -28,10 +30,17 @@ public:
 
 class PixelsRecordReaderImpl: public PixelsRecordReader {
 public:
-    explicit PixelsRecordReaderImpl(PhysicalReader * reader);
+    explicit PixelsRecordReaderImpl(PhysicalReader *reader,
+                                    const pixels::proto::PostScript& pixelsPostScript,
+                                    const pixels::proto::Footer& pixelsFooter,
+                                    const PixelsFooterCache& pixelsFooterCache
+                                    );
     VectorizedRowBatch readBatch(int batchSize, bool reuse) override;
 private:
     PhysicalReader * physicalReader;
+    pixels::proto::Footer footer;
+    pixels::proto::PostScript postScript;
+    PixelsFooterCache footerCache;
     long queryId;
     bool everRead;
     int targetRGNum;

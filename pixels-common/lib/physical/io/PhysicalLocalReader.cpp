@@ -54,3 +54,10 @@ char PhysicalLocalReader::readChar() {
 int PhysicalLocalReader::readInt() {
     return raf->readInt();
 }
+
+std::string PhysicalLocalReader::getName() {
+    if(path.empty()) {
+        return "";
+    }
+    return path.substr(path.find_last_of('/') + 1);
+}
