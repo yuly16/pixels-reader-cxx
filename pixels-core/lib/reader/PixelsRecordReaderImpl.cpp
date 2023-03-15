@@ -7,18 +7,24 @@
 PixelsRecordReaderImpl::PixelsRecordReaderImpl(PhysicalReader *reader,
                                                const pixels::proto::PostScript& pixelsPostScript,
                                                const pixels::proto::Footer& pixelsFooter,
+                                               const PixelsReaderOption& opt,
                                                const PixelsFooterCache& pixelsFooterCache) {
     physicalReader = reader;
     footer = pixelsFooter;
     postScript = pixelsPostScript;
     footerCache = pixelsFooterCache;
+    option = opt;
     // TODO: intialize all kinds of variables
-    queryId = 0;
+    queryId = option.getQueryId();
+    RGStart = option.getRGStart();
+    RGLen = option.getRGLen();
     everRead = false;
     targetRGNum = 0;
     curRGIdx = 0;
     curRowInRG = 0;
     chunkBuffers = nullptr;
+    fileName = physicalReader->getName();
+    rowGroupFooters = nullptr;
 }
 
 
@@ -26,16 +32,91 @@ PixelsRecordReaderImpl::PixelsRecordReaderImpl(PhysicalReader *reader,
 
 VectorizedRowBatch PixelsRecordReaderImpl::readBatch(int batchSize, bool reuse) {
     VectorizedRowBatch resultRowBatch;
-    if(!everRead) {
-        if(!read()) {
-            throw std::runtime_error("failed to read file");
-        }
-    }
+    read();
+//    if(!everRead) {
+//        if(!read()) {
+//            throw std::runtime_error("failed to read file");
+//        }
+//    }
 
     return resultRowBatch;
 }
 
+void PixelsRecordReaderImpl::prepareRead() {
+    // TODO: finish the remaining part of this function
+    auto rowGroupStatistics = footer.rowgroupstats();
+    std::vector<bool> includedRGs;
+    includedRGs.reserve(RGLen);
+
+    uint64_t includedRowNum = 0;
+    // read row group statistics and find target row groups
+    for(int i = 0; i < RGLen; i++) {
+        includedRGs.emplace_back(true);
+        includedRowNum += footer.rowgroupinfos(RGStart + i).numberofrows();
+    }
+
+    targetRGs.clear();
+    targetRGs.reserve(RGLen);
+    int targetRGIdx = 0;
+    for(int i = 0; i < RGLen; i++) {
+        if(includedRGs[i]) {
+            targetRGs.emplace_back(i + RGStart);
+            targetRGIdx++;
+        }
+    }
+    targetRGNum = targetRGIdx;
+
+    // TODO: if taregetRGNum == 0
+
+    // read row group footers
+    delete[] rowGroupFooters;
+    rowGroupFooters = new pixels::proto::RowGroupFooter[targetRGNum];
+
+    /**
+     * Issue #114:
+     * Use request batch and read scheduler to execute the read requests.
+     *
+     * Here, we create an empty batch as footer cache is very likely to be hit in
+     * the subsequent queries on the same table.
+     */
+    RequestBatch requestBatch;
+    std::vector<int> fis;
+    std::vector<std::string> rgCacheIds;
+    for(int i = 0; i < targetRGNum; i++) {
+        int rgId = targetRGs[i];
+        std::string rgCacheId = fileName + "-" + std::to_string(rgId);
+        rgCacheIds.emplace_back(rgCacheId);
+        if(footerCache.containsRGFooter(rgCacheId)) {
+            // cache hit
+            pixels::proto::RowGroupFooter rowGroupFooter = footerCache.getRGFooter(rgCacheId);
+            rowGroupFooters[i] = rowGroupFooter;
+        } else {
+            // cache miss, read from disk and put it into cache
+            pixels::proto::RowGroupInformation rowGroupInformation = footer.rowgroupinfos(rgId);
+            uint64_t footerOffset = rowGroupInformation.footeroffset();
+            uint64_t footerLength = rowGroupInformation.footerlength();
+            fis.push_back(i);
+            requestBatch.add(queryId, (int) footerOffset, (int) footerLength);
+        }
+
+
+    }
+    Scheduler * scheduler = SchedulerFactory::Instance()->getScheduler();
+    auto bbs = scheduler->executeBatch(physicalReader, requestBatch, queryId);
+    // TODO: the return value should be unique_ptr?
+    for(int i = 0; i < bbs.size(); i++) {
+        pixels::proto::RowGroupFooter parsed;
+        parsed.ParseFromArray(bbs[i]->getPointer(), (int)bbs[i]->size());
+        rowGroupFooters[fis[i]] = parsed;
+        footerCache.putRGFooter(rgCacheIds[fis[i]], parsed);
+    }
+
+    bbs.clear();
+
+}
+
 bool PixelsRecordReaderImpl::read() {
+    prepareRead();
     everRead = true;
     // TODO: change targetRGNum number to the correct one
     targetRGNum = 1;
@@ -88,5 +169,11 @@ bool PixelsRecordReaderImpl::read() {
     return true;
 
 }
+
+PixelsRecordReaderImpl::~PixelsRecordReaderImpl() {
+    // TODO: chunkBuffers, physicalReader should be deleted?
+}
+
+
 
 

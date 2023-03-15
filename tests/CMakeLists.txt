@@ -20,6 +20,7 @@ target_link_libraries(
         GTest::gtest_main
         pixels-common
         pixels-core
+        uring
 )
 
 add_executable(
@@ -31,6 +32,7 @@ target_link_libraries(
         GTest::gtest_main
         pixels-common
         pixels-core
+
 )
 
 include(GoogleTest)

@@ -16,6 +16,7 @@
 #include "physical/storage/LocalFS.h"
 #include "physical/PhysicalReader.h"
 #include "reader/PixelsRecordReader.h"
+#include "reader/PixelsReaderOption.h"
 
 class PixelsReader {
 public:
@@ -24,7 +25,7 @@ public:
      *
      * @return record reader
      */
-    virtual PixelsRecordReader * read() = 0;
+    virtual PixelsRecordReader * read(PixelsReaderOption option) = 0;
 };
 
 #endif //PIXELS_PIXELSREADER_H

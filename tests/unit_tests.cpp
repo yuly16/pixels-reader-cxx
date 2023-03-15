@@ -17,6 +17,7 @@
 #include "PixelsVersion.h"
 #include "PixelsFooterCache.h"
 #include "exception/PixelsReaderException.h"
+#include "reader/PixelsReaderOption.h"
 
 TEST(reader, ByteBufferPopulateChar) {
     // randomly generate a file
@@ -53,6 +54,21 @@ TEST(reader, PixelsVersion) {
 }
 
  TEST(reader, recordReader) {
+    PixelsReaderOption option;
+    option.setSkipCorruptRecords(true);
+    option.setTolerantSchemaEvolution(true);
+    option.setEnableEncodedColumnVector(true);
+
+    // includeCols comes from the caller of PixelsPageSource
+    std::vector<std::string> includeCols;
+    includeCols.emplace_back("n_nationkey");
+    includeCols.emplace_back("n_name");
+    includeCols.emplace_back("n_regionkey");
+    includeCols.emplace_back("n_comment");
+    option.setIncludeCols(includeCols);
+    option.setRGRange(0, 1);
+    option.setQueryId(1);
+
     std::string dataset = "/home/liyu/pixels-reader-cxx/tests/data/20230224150144_3.pxl";
     PixelsFooterCache footerCache;
     auto * builder = new PixelsReaderBuilder;
@@ -62,8 +78,9 @@ TEST(reader, PixelsVersion) {
             ->setStorage(storage)
             ->setPixelsFooterCache(footerCache)
             ->build();
-    PixelsRecordReader * pixelsRecordReader = pixelsReader->read();
+    PixelsRecordReader * pixelsRecordReader = pixelsReader->read(option);
     VectorizedRowBatch v = pixelsRecordReader->readBatch(1, false);
+    VectorizedRowBatch v1 = pixelsRecordReader->readBatch(1, false);
 }
 
 TEST(reader, fileTail) {
@@ -100,7 +117,5 @@ TEST(reader, fileTail) {
             pixelsFooterCache.putFileTail(filename, fileTail);
         }
     }
-
-
 }
 

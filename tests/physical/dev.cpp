@@ -18,7 +18,9 @@
 #include "tbb/concurrent_hash_map.h"
 #include "utils/Constants.h"
 #include "exception/PixelsFileMagicInvalidException.h"
-
+#include <vector>
+#include "liburing.h"
+#include "liburing/io_uring.h"
 TEST(physical, StorageFunctionTest) {
     EXPECT_EQ(Storage::file, Storage::from("FiLe"));
     EXPECT_NE(Storage::s3, Storage::from("s4"));
@@ -132,17 +134,6 @@ TEST(physical, NoopScheduler) {
     std::cout<<"fuck"<<std::endl;
 }
 
-TEST(physical, PixelsRecordReaderImpl) {
-    Storage * storage = StorageFactory::getInstance()->getStorage(Storage::file);
-    auto * builder = new PixelsReaderBuilder();
-    PixelsReader * pixelsReader = builder
-            ->setStorage(storage)
-            ->setPath("/home/liyu/files/file_64M")
-            ->build();
-    PixelsRecordReader * pixelsRecordReader = pixelsReader->read();
-//    auto v = pixelsRecordReader->readBatch(1, false);
-
-}
 
 TEST(physical, Concurrent) {
     tbb::concurrent_hash_map<int, int> table;
@@ -159,4 +150,50 @@ TEST(physical, Concurrent) {
 TEST(utils, Constants) {
     std::cout<<Constants::AI_LOCK_PATH_PREFIX<<std::endl;
     std::cout<<Constants::INIT_DICT_SIZE<<std::endl;
+}
+
+TEST(physical, vector) {
+    std::vector<int> a;
+    a.reserve(10);
+    a.emplace_back(1);
+    std::cout<<a.size()<<std::endl;
+    a.emplace_back(1);
+    std::cout<<a.size()<<std::endl;
+
+}
+
+TEST(physical, uring) {
+    std::vector<std::string> paths;
+    paths.emplace_back("/home/liyu/demo/uringDemo/a");
+    paths.emplace_back("/home/liyu/demo/uringDemo/b");
+    paths.emplace_back("/home/liyu/demo/uringDemo/c");
+    paths.emplace_back("/home/liyu/demo/uringDemo/d");
+    std::vector<int> fds;
+    for(auto path: paths) {
+        int fd = open(path.c_str(), O_RDONLY);
+        fds.emplace_back(fd);
+    }
+    int size = 6;
+    std::vector<char *> bufs;
+    for(int i = 0; i < paths.size(); i++) {
+        char * buffer = new char[size];
+        bufs.emplace_back(buffer);
+    }
+
+    struct io_uring ring{};
+    if(io_uring_queue_init(4, &ring, 0) < 0) {
+        throw std::runtime_error("initialize io_uring fails.");
+    }
+
+    for(int i = 0; i < paths.size(); i++) {
+        struct io_uring_sqe * sqe = io_uring_get_sqe(&ring);
+        io_uring_prep_read(sqe, fds[i], bufs[i], size, 0);
+        io_uring_sqe_set_data64(sqe, i);
+    }
+    for(int i = 0; i < paths.size(); i++) {
+        io_uring_submit_and_wait(&ring, 1);
+    }
+
+    io_uring_queue_exit(&ring);
+
 }

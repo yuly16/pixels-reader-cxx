@@ -7,7 +7,7 @@
 #include <utility>
 
 PhysicalLocalReader::PhysicalLocalReader(Storage * storage, std::string path_) {
-
+    // TODO: should support async
     if(dynamic_cast<LocalFS *>(storage) != nullptr) {
         local = dynamic_cast<LocalFS *>(storage);
     } else {

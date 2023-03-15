@@ -12,6 +12,8 @@
 #include "physical/SchedulerFactory.h"
 #include "pixels-common/pixels.pb.h"
 #include "PixelsFooterCache.h"
+#include "reader/PixelsReaderOption.h"
+//#include <linux/io_uring.h>
 
 class ChunkId {
 public:
@@ -33,27 +35,43 @@ public:
     explicit PixelsRecordReaderImpl(PhysicalReader *reader,
                                     const pixels::proto::PostScript& pixelsPostScript,
                                     const pixels::proto::Footer& pixelsFooter,
+                                    const PixelsReaderOption& opt,
                                     const PixelsFooterCache& pixelsFooterCache
                                     );
     VectorizedRowBatch readBatch(int batchSize, bool reuse) override;
+    ~PixelsRecordReaderImpl();
 private:
+    bool read();
+    void prepareRead();
     PhysicalReader * physicalReader;
     pixels::proto::Footer footer;
     pixels::proto::PostScript postScript;
     PixelsFooterCache footerCache;
+    PixelsReaderOption option;
     long queryId;
+    int RGStart;
+    int RGLen;
     bool everRead;
     int targetRGNum;
     int curRGIdx;
     int curRowInRG;
+    std::string fileName;
     /**
      * Columns included by reader option; if included, set true
      */
     std::vector<bool> includedColumns;
-    bool read();
+    /**
+     * Target row groups to read after matching reader option,
+     * each element represents a row group id.
+     */
+    std::vector<int> targetRGs;
+
     // buffers of each chunk in this file, arranged by chunk's row group id and column id
     ByteBuffer ** chunkBuffers;
     std::vector<int> targetColumns;
+
+
+    pixels::proto::RowGroupFooter * rowGroupFooters;
 
 };
 #endif //PIXELS_PIXELSRECORDREADERIMPL_H

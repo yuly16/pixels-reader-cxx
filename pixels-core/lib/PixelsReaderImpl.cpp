@@ -20,11 +20,11 @@ PixelsReaderImpl::PixelsReaderImpl(PhysicalReader *reader,
  * @param batchSize the willing batch size
  * @return the real batch size
  */
-PixelsRecordReader *PixelsReaderImpl::read() {
+PixelsRecordReader *PixelsReaderImpl::read(PixelsReaderOption option) {
     // TODO: add a function parameter, and the code before creating PixelsRecordReaderImpl
     PixelsRecordReader * recordReader = new PixelsRecordReaderImpl(
             physicalReader, postScript,
-            footer, pixelsFooterCache);
+            footer, option, pixelsFooterCache);
     recordReaders.push_back(recordReader);
     return recordReader;
 }

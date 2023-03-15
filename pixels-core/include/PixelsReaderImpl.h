@@ -11,12 +11,14 @@
 #include <vector>
 #include "pixels-common/pixels.pb.h"
 #include "PixelsFooterCache.h"
+#include "reader/PixelsReaderOption.h"
+
 
 class PixelsReaderBuilder;
 
 class PixelsReaderImpl: public PixelsReader {
 public:
-    PixelsRecordReader * read();
+    PixelsRecordReader * read(PixelsReaderOption option);
     friend class PixelsReaderBuilder;
 private:
     std::vector<PixelsRecordReader *> recordReaders;
