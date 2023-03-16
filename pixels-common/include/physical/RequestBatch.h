@@ -15,7 +15,7 @@ class RequestBatch {
 public:
     RequestBatch();
     explicit RequestBatch(int capacity);
-    void add(long queryId, long start, int length);
+    void add(uint64_t queryId, uint64_t start, uint64_t length);
     void add(Request request);
     int getSize();
     std::vector<Request> getRequests();

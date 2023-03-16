@@ -69,7 +69,7 @@ TEST(reader, PixelsVersion) {
     option.setRGRange(0, 1);
     option.setQueryId(1);
 
-    std::string dataset = "/home/liyu/pixels-reader-cxx/tests/data/20230224150144_3.pxl";
+    std::string dataset = "/home/liyu/pixels-reader-cxx/tests/data/20230316154717_0.pxl";
     PixelsFooterCache footerCache;
     auto * builder = new PixelsReaderBuilder;
     Storage * storage = StorageFactory::getInstance()->getStorage(Storage::file);

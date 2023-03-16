@@ -29,7 +29,7 @@ std::vector<Request> RequestBatch::getRequests() {
 //    return &pro;
 //}
 
-void RequestBatch::add(long queryId, long start, int length) {
+void RequestBatch::add(uint64_t queryId, uint64_t start, uint64_t length) {
     Request request = Request(queryId, start, length);
     requests.push_back(request);
     size++;

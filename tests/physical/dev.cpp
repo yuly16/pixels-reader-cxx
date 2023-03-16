@@ -20,6 +20,7 @@
 #include "exception/PixelsFileMagicInvalidException.h"
 #include <vector>
 #include "liburing.h"
+#include "utils/String.h"
 #include "liburing/io_uring.h"
 TEST(physical, StorageFunctionTest) {
     EXPECT_EQ(Storage::file, Storage::from("FiLe"));

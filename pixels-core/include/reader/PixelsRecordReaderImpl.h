@@ -13,16 +13,16 @@
 #include "pixels-common/pixels.pb.h"
 #include "PixelsFooterCache.h"
 #include "reader/PixelsReaderOption.h"
-//#include <linux/io_uring.h>
+#include "utils/String.h"
 
 class ChunkId {
 public:
-    int rowGroupId;
-    int columnId;
-    long offset;
-    long length;
+    uint32_t rowGroupId;
+    uint32_t columnId;
+    uint64_t offset;
+    uint64_t length;
 
-    ChunkId(int rgId, int cId, long off, long len) {
+    ChunkId(int rgId, int cId, uint64_t off, uint64_t len) {
         rowGroupId = rgId;
         columnId = cId;
         offset = off;
@@ -43,6 +43,7 @@ public:
 private:
     bool read();
     void prepareRead();
+    void checkBeforeRead();
     PhysicalReader * physicalReader;
     pixels::proto::Footer footer;
     pixels::proto::PostScript postScript;
@@ -67,11 +68,14 @@ private:
     std::vector<int> targetRGs;
 
     // buffers of each chunk in this file, arranged by chunk's row group id and column id
-    ByteBuffer ** chunkBuffers;
+    std::vector<ByteBuffer *> chunkBuffers;
     std::vector<int> targetColumns;
+    std::vector<int> resultColumns;
+    std::vector<bool> resultColumnsEncoded;
+    bool enableEncodedVector;
+    std::vector<pixels::proto::RowGroupFooter> rowGroupFooters;
 
-
-    pixels::proto::RowGroupFooter * rowGroupFooters;
+    int includedColumnNum; // the number of columns to read
 
 };
 #endif //PIXELS_PIXELSRECORDREADERIMPL_H

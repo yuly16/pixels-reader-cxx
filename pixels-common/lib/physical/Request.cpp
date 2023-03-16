@@ -5,7 +5,7 @@
 #include "physical/Request.h"
 
 
-Request::Request(long queryId_, long start_, int length_) {
+Request::Request(uint64_t queryId_, uint64_t start_, uint64_t length_) {
     queryId = queryId_;
     start = start_;
     length = length_;
