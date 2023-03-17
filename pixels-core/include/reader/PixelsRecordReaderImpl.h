@@ -14,6 +14,7 @@
 #include "PixelsFooterCache.h"
 #include "reader/PixelsReaderOption.h"
 #include "utils/String.h"
+#include "TypeDescription.h"
 
 class ChunkId {
 public:
@@ -76,6 +77,9 @@ private:
     std::vector<pixels::proto::RowGroupFooter> rowGroupFooters;
 
     int includedColumnNum; // the number of columns to read
+    std::vector<pixels::proto::Type> includedColumnTypes;
 
+    std::shared_ptr<TypeDescription> fileSchema;
+    std::shared_ptr<TypeDescription> resultSchema;
 };
 #endif //PIXELS_PIXELSRECORDREADERIMPL_H

@@ -29,7 +29,15 @@ PixelsRecordReaderImpl::PixelsRecordReaderImpl(PhysicalReader *reader,
 }
 
 void PixelsRecordReaderImpl::checkBeforeRead() {
-    auto fileColTypes = footer.types();
+    // get file schema
+    auto fileColTypesFooterType = footer.types();
+    auto fileColTypes = std::vector<pixels::proto::Type>(
+            fileColTypesFooterType.begin(),
+            fileColTypesFooterType.end());
+    // TODO: if fileCOlTypes == null
+    fileSchema = std::make_shared<TypeDescription>
+            (TypeDescription::createSchema(fileColTypes));
+    // TODO: getChildren == NULL
     // filter included columns
     includedColumnNum = 0;
     auto optionIncludedCols = option.getIncludedCols();
@@ -41,7 +49,7 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
     for(const auto& col: optionIncludedCols) {
         bool isIncluded = false;
         for(int j = 0; j < fileColTypes.size(); j ++) {
-            if(icompare(col, fileColTypes.Get(j).name())) {
+            if(icompare(col, fileColTypes.at(j).name())) {
                 optionColsIndices.emplace_back(j);
                 isIncluded = true;
                 includedColumnNum++;
@@ -69,6 +77,15 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
             targetColumns.emplace_back(i);
         }
     }
+
+    // create column readers
+    includedColumnTypes.clear();
+    for(int resultColumn: resultColumns) {
+        includedColumnTypes.emplace_back(fileColTypes.at(resultColumn));
+    }
+    resultSchema = std::make_shared<TypeDescription>(
+            TypeDescription::createSchema(includedColumnTypes));
+
 }
 
 

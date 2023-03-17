@@ -11,8 +11,63 @@
  * Schema description in a Pixels file.
  */
 
+#include <iostream>
+#include <vector>
+#include <string>
+#include <memory>
+#include <map>
+#include <pixels-common/pixels.pb.h>
+
+struct CategoryProperty {
+    bool isPrimitive;
+    std::vector<std::string> names;
+};
+
 class TypeDescription {
 public:
+    enum Category {
+        BOOLEAN,
+        BYTE,
+        SHORT,
+        INT,
+        LONG,
+        FLOAT,
+        DOUBLE,
+        DECIMAL,
+        STRING,
+        DATE,
+        TIME,
+        TIMESTAMP,
+        VARBINARY,
+        BINARY,
+        VARCHAR,
+        CHAR,
+        STRUCT
+    };
+    TypeDescription() = default;
+    TypeDescription(Category c);
+    static TypeDescription createBoolean();
+    static TypeDescription createByte();
+    static TypeDescription createShort();
+    static TypeDescription createInt();
+    static TypeDescription createLong();
+    static TypeDescription createFloat();
+    static TypeDescription createDouble();
+    static TypeDescription createString();
+    static TypeDescription createDate();
+    static TypeDescription createTime();
+    static TypeDescription createTimestamp();
+    static TypeDescription createVarbinary();
+    static TypeDescription createBinary();
+    static TypeDescription createVarchar();
+    static TypeDescription createChar();
+    static TypeDescription createStruct();
+    static TypeDescription createSchema(const std::vector<pixels::proto::Type>& types);
+    std::shared_ptr<TypeDescription> addField(const std::string& field, const std::shared_ptr<TypeDescription>& fieldType);
+    void setParent(const std::shared_ptr<TypeDescription>& p);
+
+    static std::map<Category, CategoryProperty> categoryMap;
+
     static int SHORT_DECIMAL_MAX_PRECISION;
     static int LONG_DECIMAL_MAX_PRECISION;
 
@@ -32,7 +87,18 @@ public:
     static int DEFAULT_TIMESTAMP_PRECISION;
 
     static int MAX_TIMESTAMP_PRECISION;
+
+
 private:
     static long serialVersionUID;
+    int id;
+    int maxId;
+    std::shared_ptr<TypeDescription> parent;
+    Category category;
+    std::vector<std::shared_ptr<TypeDescription>> children;
+    std::vector<std::string> fieldNames;
+    int maxLength;
+    int precision;
+    int scale;
 };
 #endif //PIXELS_TYPEDESCRIPTION_H
