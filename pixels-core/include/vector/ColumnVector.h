@@ -18,6 +18,8 @@
  * structure that is used in the inner loop of query execution.
  */
 
+#include <iostream>
+
 class ColumnVector {
 public:
     /**
@@ -25,6 +27,12 @@ public:
       * <b>DO NOT</b> modify it or used it as the number of values in-used.
       */
     int length;
+    int writeIndex;
+    long memoryUsage;
+
+    ColumnVector() = default;
+    explicit ColumnVector(int len);
+    void close();
 };
 
 #endif //PIXELS_COLUMNVECTOR_H

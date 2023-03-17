@@ -23,6 +23,8 @@ class VectorizedRowBatch {
 public:
     int numCols;                      // number of columns
     std::vector<ColumnVector> cols;   // a vector for each column
-
+    static int DEFAULT_SIZE;
+    int maxSize;                      // capacity, i.e. the maximum number of rows can be stored in this row batch
+    explicit VectorizedRowBatch(int nCols, int size = DEFAULT_SIZE);
 };
 #endif //PIXELS_VECTORIZEDROWBATCH_H

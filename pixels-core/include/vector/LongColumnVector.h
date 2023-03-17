@@ -1,0 +1,23 @@
+//
+// Created by liyu on 3/17/23.
+//
+
+#ifndef PIXELS_TEMPLATE_H
+#define PIXELS_TEMPLATE_H
+
+#include "vector/ColumnVector.h"
+#include "vector/VectorizedRowBatch.h"
+
+class LongColumnVector: public ColumnVector {
+public:
+    long * vector;
+
+    /**
+    * Use this constructor by default. All column vectors
+    * should normally be the default size.
+    */
+    LongColumnVector(int len = VectorizedRowBatch::DEFAULT_SIZE);
+
+    void close();
+};
+#endif //PIXELS_TEMPLATE_H

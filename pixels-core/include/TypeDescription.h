@@ -17,6 +17,9 @@
 #include <memory>
 #include <map>
 #include <pixels-common/pixels.pb.h>
+#include <vector/VectorizedRowBatch.h>
+#include "vector/LongColumnVector.h"
+#include "vector/ByteColumnVector.h"
 
 struct CategoryProperty {
     bool isPrimitive;
@@ -65,7 +68,7 @@ public:
     static TypeDescription createSchema(const std::vector<pixels::proto::Type>& types);
     std::shared_ptr<TypeDescription> addField(const std::string& field, const std::shared_ptr<TypeDescription>& fieldType);
     void setParent(const std::shared_ptr<TypeDescription>& p);
-
+    std::shared_ptr<VectorizedRowBatch> createRowBatch(int maxSize, const std::vector<bool>& useEncodedVector);
     static std::map<Category, CategoryProperty> categoryMap;
 
     static int SHORT_DECIMAL_MAX_PRECISION;
@@ -90,6 +93,7 @@ public:
 
 
 private:
+    std::shared_ptr<ColumnVector> createColumn(int maxSize, std::vector<bool> useEncodedVector);
     static long serialVersionUID;
     int id;
     int maxId;
@@ -97,8 +101,8 @@ private:
     Category category;
     std::vector<std::shared_ptr<TypeDescription>> children;
     std::vector<std::string> fieldNames;
-    int maxLength;
-    int precision;
-    int scale;
+    uint32_t maxLength;
+    uint32_t precision;
+    uint32_t scale;
 };
 #endif //PIXELS_TYPEDESCRIPTION_H

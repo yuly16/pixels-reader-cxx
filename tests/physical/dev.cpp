@@ -22,6 +22,10 @@
 #include "liburing.h"
 #include "utils/String.h"
 #include "liburing/io_uring.h"
+#include "vector/LongColumnVector.h"
+
+
+
 TEST(physical, StorageFunctionTest) {
     EXPECT_EQ(Storage::file, Storage::from("FiLe"));
     EXPECT_NE(Storage::s3, Storage::from("s4"));
@@ -197,4 +201,10 @@ TEST(physical, uring) {
 
     io_uring_queue_exit(&ring);
 
+}
+
+
+TEST(physical, columnVector) {
+    LongColumnVector a;
+    a.close();
 }

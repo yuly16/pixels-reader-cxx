@@ -116,6 +116,14 @@ TypeDescription TypeDescription::createSchema(const std::vector<pixels::proto::T
             case pixels::proto::Type_Kind_DOUBLE:
                 fieldType = TypeDescription::createDouble();
                 break;
+            case pixels::proto::Type_Kind_VARCHAR:
+                fieldType = TypeDescription::createVarchar();
+                fieldType.maxLength = type.maximumlength();
+                break;
+            case pixels::proto::Type_Kind_CHAR:
+                fieldType = TypeDescription::createChar();
+                fieldType.maxLength = type.maximumlength();
+                break;
             case pixels::proto::Type_Kind_STRING:
                 fieldType = TypeDescription::createString();
                 break;
@@ -212,5 +220,52 @@ std::shared_ptr<TypeDescription> TypeDescription::addField(const std::string& fi
 
 void TypeDescription::setParent(const std::shared_ptr<TypeDescription>& p) {
     parent = p;
+}
+
+std::shared_ptr<VectorizedRowBatch> TypeDescription::createRowBatch(int maxSize, const std::vector<bool> &useEncodedVector) {
+    std::shared_ptr<VectorizedRowBatch> result;
+    if(category == STRUCT) {
+        if(useEncodedVector.empty() || useEncodedVector.size() == children.size()) {
+            throw InvalidArgumentException(
+                    "There must be 0 or children.size() element in useEncodedVector");
+        }
+        result = std::make_shared<VectorizedRowBatch>(
+                VectorizedRowBatch(children.size(), maxSize)
+                );
+        std::vector<std::string> columnNames;
+        for(int i = 0; i < result->cols.size(); i++) {
+            std::string fieldName = fieldNames.at(i);
+//            ColumnVector * cv = children.at(i)
+        }
+    } else {
+
+    }
+
+    return result;
+}
+
+std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::vector<bool> useEncodedVector) {
+    assert(!useEncodedVector.empty());
+    // the length of useEncodedVector is already checked, not need to check again.
+    switch (category) {
+        case SHORT:
+        case INT:
+        case LONG:
+            return std::make_shared<LongColumnVector>(maxSize);
+        case STRING:
+        case BINARY:
+        case VARBINARY:
+        case CHAR:
+        case VARCHAR:
+            if(!useEncodedVector.at(0)) {
+                // binary should be supported here
+                assert(false);
+            } else {
+                // TODO: dict should be supported here
+                assert(false);
+            }
+        default:
+            throw InvalidArgumentException("Unknown type when creating column");
+    }
 }
 
