@@ -7,7 +7,6 @@
 LongColumnVector::LongColumnVector(int len): ColumnVector(len) {
     vector = new long[len];
     memoryUsage += (long) sizeof(long) * len;
-    std::cout<<"long"<<std::endl;
 }
 
 void LongColumnVector::close() {

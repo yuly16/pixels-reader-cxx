@@ -7,6 +7,7 @@
 #include <utility>
 #include "exception/InvalidArgumentException.h"
 
+
 long TypeDescription::serialVersionUID = 4270695889340023552L;
 
 /**
@@ -225,7 +226,7 @@ void TypeDescription::setParent(const std::shared_ptr<TypeDescription>& p) {
 std::shared_ptr<VectorizedRowBatch> TypeDescription::createRowBatch(int maxSize, const std::vector<bool> &useEncodedVector) {
     std::shared_ptr<VectorizedRowBatch> result;
     if(category == STRUCT) {
-        if(useEncodedVector.empty() || useEncodedVector.size() == children.size()) {
+        if(!(useEncodedVector.empty() || useEncodedVector.size() == children.size())) {
             throw InvalidArgumentException(
                     "There must be 0 or children.size() element in useEncodedVector");
         }
@@ -235,14 +236,36 @@ std::shared_ptr<VectorizedRowBatch> TypeDescription::createRowBatch(int maxSize,
         std::vector<std::string> columnNames;
         for(int i = 0; i < result->cols.size(); i++) {
             std::string fieldName = fieldNames.at(i);
-//            ColumnVector * cv = children.at(i)
+            auto cv = children.at(i)->createColumn(
+                    maxSize, !useEncodedVector.empty()
+                    && useEncodedVector.at(i));
+            // TODO: what if the duplication happens
+            columnNames.emplace_back(fieldName);
+            result->cols.at(i) = cv;
         }
     } else {
-
+        if(!(useEncodedVector.empty() || useEncodedVector.size() == 1)) {
+            throw InvalidArgumentException(
+                    "For null structure type, There must be 0 or 1 element in useEncodedVector");
+        }
+        result = std::make_shared<VectorizedRowBatch>(1, maxSize);
+        result->cols.at(0) = createColumn(
+                maxSize, useEncodedVector.size() == 1
+                && useEncodedVector[0]);
     }
-
+    // TODO: reset the result
     return result;
 }
+
+
+std::vector<std::shared_ptr<TypeDescription>> TypeDescription::getChildren() {
+    return children;
+}
+
+std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, bool useEncodedVector) {
+    return createColumn(maxSize, std::vector<bool>{useEncodedVector});
+}
+
 
 std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::vector<bool> useEncodedVector) {
     assert(!useEncodedVector.empty());
@@ -258,8 +281,7 @@ std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::ve
         case CHAR:
         case VARCHAR:
             if(!useEncodedVector.at(0)) {
-                // binary should be supported here
-                assert(false);
+                return std::make_shared<BinaryColumnVector>(maxSize);
             } else {
                 // TODO: dict should be supported here
                 assert(false);
@@ -268,4 +290,11 @@ std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::ve
             throw InvalidArgumentException("Unknown type when creating column");
     }
 }
+
+TypeDescription::Category TypeDescription::getCategory() {
+    return category;
+}
+
+
+
 

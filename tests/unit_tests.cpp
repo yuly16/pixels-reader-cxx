@@ -79,8 +79,8 @@ TEST(reader, PixelsVersion) {
             ->setPixelsFooterCache(footerCache)
             ->build();
     PixelsRecordReader * pixelsRecordReader = pixelsReader->read(option);
-    VectorizedRowBatch v = pixelsRecordReader->readBatch(1, false);
-    VectorizedRowBatch v1 = pixelsRecordReader->readBatch(1, false);
+    std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(1, false);
+    std::shared_ptr<VectorizedRowBatch> v1 = pixelsRecordReader->readBatch(1, false);
 }
 
 TEST(reader, fileTail) {

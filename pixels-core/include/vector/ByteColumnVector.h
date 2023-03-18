@@ -2,8 +2,8 @@
 // Created by liyu on 3/17/23.
 //
 
-#ifndef PIXELS_TEMPLATE_H
-#define PIXELS_TEMPLATE_H
+#ifndef PIXELS_BYTECOLUMNVECTOR_H
+#define PIXELS_BYTECOLUMNVECTOR_H
 
 #include "vector/ColumnVector.h"
 #include "vector/VectorizedRowBatch.h"
@@ -18,6 +18,6 @@ public:
     */
     ByteColumnVector(int len = VectorizedRowBatch::DEFAULT_SIZE);
 
-    void close();
+    void close() override;
 };
-#endif //PIXELS_TEMPLATE_H
+#endif //PIXELS_BYTECOLUMNVECTOR_H

@@ -20,6 +20,7 @@
 #include <vector/VectorizedRowBatch.h>
 #include "vector/LongColumnVector.h"
 #include "vector/ByteColumnVector.h"
+#include "vector/BinaryColumnVector.h"
 
 struct CategoryProperty {
     bool isPrimitive;
@@ -69,6 +70,8 @@ public:
     std::shared_ptr<TypeDescription> addField(const std::string& field, const std::shared_ptr<TypeDescription>& fieldType);
     void setParent(const std::shared_ptr<TypeDescription>& p);
     std::shared_ptr<VectorizedRowBatch> createRowBatch(int maxSize, const std::vector<bool>& useEncodedVector);
+    std::vector<std::shared_ptr<TypeDescription>> getChildren();
+    Category getCategory();
     static std::map<Category, CategoryProperty> categoryMap;
 
     static int SHORT_DECIMAL_MAX_PRECISION;
@@ -93,6 +96,7 @@ public:
 
 
 private:
+    std::shared_ptr<ColumnVector> createColumn(int maxSize, bool useEncodedVector);
     std::shared_ptr<ColumnVector> createColumn(int maxSize, std::vector<bool> useEncodedVector);
     static long serialVersionUID;
     int id;

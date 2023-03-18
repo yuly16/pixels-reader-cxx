@@ -79,7 +79,15 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
     }
 
     // create column readers
-    includedColumnTypes.clear();
+    auto columnSchemas = fileSchema->getChildren();
+    readers.clear();
+    readers.resize(resultColumns.size());
+    for(int i = 0; i < resultColumns.size(); i++) {
+        int index = resultColumns[i];
+//        readers.at(i) =
+    }
+
+    // create result vectorized row batch
     for(int resultColumn: resultColumns) {
         includedColumnTypes.emplace_back(fileColTypes.at(resultColumn));
     }
@@ -90,7 +98,7 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
 
 
 
-VectorizedRowBatch PixelsRecordReaderImpl::readBatch(int batchSize, bool reuse) {
+std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchSize, bool reuse) {
 
     read();
 //    if(!everRead) {
@@ -98,8 +106,18 @@ VectorizedRowBatch PixelsRecordReaderImpl::readBatch(int batchSize, bool reuse) 
 //            throw std::runtime_error("failed to read file");
 //        }
 //    }
-    VectorizedRowBatch resultRowBatch;
+    std::shared_ptr<VectorizedRowBatch> resultRowBatch;
+    resultRowBatch = resultSchema->createRowBatch(batchSize, resultColumnsEncoded);
+    // TODO: resultRowBatch.projectionSize
 
+    int rgRowCount = 0;
+    int curBatchSize = 0;
+    auto columnVectors = resultRowBatch->cols;
+    if(curRGIdx < targetRGNum) {
+        rgRowCount = (int) footer.rowgroupinfos(targetRGs.at(curRGIdx)).numberofrows();
+    }
+
+    while (resultRowBatch)
     return resultRowBatch;
 }
 
@@ -181,11 +199,6 @@ void PixelsRecordReaderImpl::prepareRead() {
                 .columnchunkencodings(targetColumns[i])
                 .kind() != pixels::proto::ColumnEncoding_Kind_NONE &&
                 enableEncodedVector;
-        if(firstRgEncoding
-                   .columnchunkencodings(targetColumns[i])
-                   .kind() == pixels::proto::ColumnEncoding_Kind_NONE) {
-            std::cout<<"caonima"<<std::endl;
-        }
     }
 }
 

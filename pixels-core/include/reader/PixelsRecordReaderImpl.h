@@ -39,7 +39,7 @@ public:
                                     const PixelsReaderOption& opt,
                                     const PixelsFooterCache& pixelsFooterCache
                                     );
-    VectorizedRowBatch readBatch(int batchSize, bool reuse) override;
+    std::shared_ptr<VectorizedRowBatch> readBatch(int batchSize, bool reuse) override;
     ~PixelsRecordReaderImpl();
 private:
     bool read();
@@ -70,6 +70,8 @@ private:
 
     // buffers of each chunk in this file, arranged by chunk's row group id and column id
     std::vector<ByteBuffer *> chunkBuffers;
+    // column readers for each target columns
+    std::vector<std::shared_ptr<ColumnVector>> readers;
     std::vector<int> targetColumns;
     std::vector<int> resultColumns;
     std::vector<bool> resultColumnsEncoded;
