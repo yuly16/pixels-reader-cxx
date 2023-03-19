@@ -14,7 +14,7 @@ class DirectRandomAccessFile: public PixelsRandomAccessFile {
 public:
     explicit DirectRandomAccessFile(const std::string& file);
     void close() override;
-    ByteBuffer * readFully(int len) override;
+    std::shared_ptr<ByteBuffer> readFully(int len) override;
     long length() override;
     void seek(long off) override;
     long readLong() override;
@@ -23,7 +23,7 @@ public:
     ~DirectRandomAccessFile();
 private:
     void populatedBuffer();
-    std::vector<ByteBuffer *> largeBuffers;
+    std::vector<std::shared_ptr<ByteBuffer>> largeBuffers;
     ByteBuffer * smallBuffer;
     bool bufferValid;
     int blockSize;

@@ -57,22 +57,22 @@ TEST(physical, ByteBufferTest) {
 
 TEST(physical, DirectRandomAccessFile) {
     DirectRandomAccessFile p("/home/liyu/files/hello.txt");
-    ByteBuffer * bb1 = p.readFully(3);
-    ByteBuffer * bb2 = p.readFully(1);
-    ByteBuffer * bb3 = p.readFully(2);
-    ByteBuffer * bb4 = p.readFully(4);
-    ByteBuffer * bb5 = p.readFully(5);
+    std::shared_ptr<ByteBuffer> bb1 = p.readFully(3);
+    std::shared_ptr<ByteBuffer> bb2 = p.readFully(1);
+    std::shared_ptr<ByteBuffer> bb3 = p.readFully(2);
+    std::shared_ptr<ByteBuffer> bb4 = p.readFully(4);
+    std::shared_ptr<ByteBuffer> bb5 = p.readFully(5);
     p.close();
 }
 
 TEST(physical, PhysicalReader) {
     auto * localfs = new LocalFS();
     PhysicalLocalReader localReader(localfs, "/home/liyu/files/hello.txt");
-    ByteBuffer * bb1 = localReader.readFully(3);
-    ByteBuffer * bb2 = localReader.readFully(1);
-    ByteBuffer * bb3 = localReader.readFully(2);
-    ByteBuffer * bb4 = localReader.readFully(4);
-    ByteBuffer * bb5 = localReader.readFully(5);
+    std::shared_ptr<ByteBuffer> bb1 = localReader.readFully(3);
+    std::shared_ptr<ByteBuffer> bb2 = localReader.readFully(1);
+    std::shared_ptr<ByteBuffer> bb3 = localReader.readFully(2);
+    std::shared_ptr<ByteBuffer> bb4 = localReader.readFully(4);
+    std::shared_ptr<ByteBuffer> bb5 = localReader.readFully(5);
     localReader.seek(11);
     char c = localReader.readChar();
     char d = localReader.readChar();
@@ -92,11 +92,11 @@ TEST(physical, RandomFile) {
 
     PhysicalLocalReader localReader(localfs, path);
 
-    ByteBuffer * bb1 = localReader.readFully(3);
-    ByteBuffer * bb2 = localReader.readFully(1);
-    ByteBuffer * bb3 = localReader.readFully(2);
-    ByteBuffer * bb4 = localReader.readFully(4);
-    ByteBuffer * bb5 = localReader.readFully(5);
+    std::shared_ptr<ByteBuffer> bb1 = localReader.readFully(3);
+    std::shared_ptr<ByteBuffer> bb2 = localReader.readFully(1);
+    std::shared_ptr<ByteBuffer> bb3 = localReader.readFully(2);
+    std::shared_ptr<ByteBuffer> bb4 = localReader.readFully(4);
+    std::shared_ptr<ByteBuffer> bb5 = localReader.readFully(5);
     localReader.seek(10);
     localReader.close();
 }
@@ -121,7 +121,7 @@ TEST(physical, PixelsReaderImpl) {
         ->setStorage(storage)
         ->setPath("/home/liyu/files/file_64M")
         ->build();
-    std::cout<<"fuck"<<std::endl;
+
 
 }
 
@@ -155,6 +155,9 @@ TEST(physical, Concurrent) {
 TEST(utils, Constants) {
     std::cout<<Constants::AI_LOCK_PATH_PREFIX<<std::endl;
     std::cout<<Constants::INIT_DICT_SIZE<<std::endl;
+    std::vector<bool> a;
+    a.resize(10);
+    std::cout<<a.at(0)<<std::endl;
 }
 
 TEST(physical, vector) {

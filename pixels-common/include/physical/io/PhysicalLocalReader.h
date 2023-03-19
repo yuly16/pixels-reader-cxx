@@ -14,7 +14,7 @@
 class PhysicalLocalReader: public PhysicalReader {
 public:
     PhysicalLocalReader(Storage * storage, std::string path);
-    ByteBuffer * readFully(int length) override;
+    std::shared_ptr<ByteBuffer> readFully(int length) override;
     void close();
     long getFileLength() override;
     void seek(long desired) override;

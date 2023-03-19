@@ -16,7 +16,7 @@ set(pixels_core_cxx
         lib/vector/VectorizedRowBatch.cpp
         lib/vector/ColumnVector.cpp
         lib/vector/ByteColumnVector.cpp
-        lib/vector/BinaryColumnVector.cpp)
+        lib/vector/BinaryColumnVector.cpp lib/reader/ColumnReader.cpp lib/reader/ColumnReaderBuilder.cpp lib/reader/IntegerColumnReader.cpp lib/reader/CharColumnReader.cpp lib/reader/VarcharColumnReader.cpp)
 
 add_library(pixels-core ${pixels_core_cxx})
 

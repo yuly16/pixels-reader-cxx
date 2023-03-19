@@ -23,7 +23,7 @@ PhysicalLocalReader::PhysicalLocalReader(Storage * storage, std::string path_) {
     numRequests = 1;
 }
 
-ByteBuffer * PhysicalLocalReader::readFully(int length) {
+std::shared_ptr<ByteBuffer> PhysicalLocalReader::readFully(int length) {
     numRequests++;
     return raf->readFully(length);
 }

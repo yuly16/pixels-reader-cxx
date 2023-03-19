@@ -25,7 +25,7 @@ PixelsRecordReader *PixelsReaderImpl::read(PixelsReaderOption option) {
     PixelsRecordReader * recordReader = new PixelsRecordReaderImpl(
             physicalReader, postScript,
             footer, option, pixelsFooterCache);
-    recordReaders.push_back(recordReader);
+    recordReaders.emplace_back(recordReader);
     return recordReader;
 }
 

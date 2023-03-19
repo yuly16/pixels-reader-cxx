@@ -16,6 +16,6 @@ public:
       * @param batch
       * @param queryId
       */
-    virtual std::vector<ByteBuffer *> executeBatch(PhysicalReader * reader, RequestBatch batch, long queryId) = 0;
+    virtual std::vector<std::shared_ptr<ByteBuffer>> executeBatch(PhysicalReader * reader, RequestBatch batch, long queryId) = 0;
 };
 #endif //PIXELS_SCHEDULER_H

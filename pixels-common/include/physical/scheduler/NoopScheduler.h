@@ -11,7 +11,7 @@ class NoopScheduler : public Scheduler {
     // TODO: logger
 public:
     static Scheduler * Instance();
-    std::vector<ByteBuffer *> executeBatch(PhysicalReader * reader, RequestBatch batch, long queryId) override;
+    std::vector<std::shared_ptr<ByteBuffer>> executeBatch(PhysicalReader * reader, RequestBatch batch, long queryId) override;
 private:
     static Scheduler * instance;
 };

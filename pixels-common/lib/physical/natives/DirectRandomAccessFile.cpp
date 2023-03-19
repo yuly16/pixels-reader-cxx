@@ -42,14 +42,14 @@ void DirectRandomAccessFile::close() {
     len = 0;
 }
 
-ByteBuffer * DirectRandomAccessFile::readFully(int len_) {
+std::shared_ptr<ByteBuffer> DirectRandomAccessFile::readFully(int len_) {
     auto * buffer = new uint8_t[len_];
     if(pread(fd, buffer, len_, offset) == -1) {
         throw std::runtime_error("pread fail");
     }
-    auto * bb = new ByteBuffer(buffer, static_cast<uint32_t>(len_));
+    auto bb = std::make_shared<ByteBuffer>(buffer, static_cast<uint32_t>(len_));
     seek(offset + len_);
-    largeBuffers.push_back(bb);
+    largeBuffers.emplace_back(bb);
     return bb;
 }
 

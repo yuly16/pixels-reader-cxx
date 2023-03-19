@@ -25,15 +25,17 @@ PixelsRecordReaderImpl::PixelsRecordReaderImpl(PhysicalReader *reader,
     fileName = physicalReader->getName();
     enableEncodedVector = option.isEnableEncodedColumnVector();
     includedColumnNum = 0;
+    rowIndex = 0L;
     checkBeforeRead();
 }
 
 void PixelsRecordReaderImpl::checkBeforeRead() {
     // get file schema
-    auto fileColTypesFooterType = footer.types();
-    auto fileColTypes = std::vector<pixels::proto::Type>(
-            fileColTypesFooterType.begin(),
-            fileColTypesFooterType.end());
+    auto fileColTypesFooterTypes = footer.types();
+    auto fileColTypes = std::vector<pixels::proto::Type>{};
+    for(const auto& type : fileColTypesFooterTypes) {
+        fileColTypes.emplace_back(type);
+    }
     // TODO: if fileCOlTypes == null
     fileSchema = std::make_shared<TypeDescription>
             (TypeDescription::createSchema(fileColTypes));
@@ -44,26 +46,25 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
     // TODO: if size of cols is 0, create an empty row batch
     // TODO: what if false is caused? we must debug this! Currently I didn't understand why we need includedColumns yet. So just leave it alone.
     includedColumns.clear();
-    includedColumns.reserve(fileColTypes.size());
+    includedColumns.resize(fileColTypes.size());
     std::vector<int> optionColsIndices;
     for(const auto& col: optionIncludedCols) {
-        bool isIncluded = false;
         for(int j = 0; j < fileColTypes.size(); j ++) {
             if(icompare(col, fileColTypes.at(j).name())) {
                 optionColsIndices.emplace_back(j);
-                isIncluded = true;
+                includedColumns.at(j) = true;
                 includedColumnNum++;
                 break;
             }
         }
-        includedColumns.emplace_back(isIncluded);
+
     }
     // TODO: check includedColumns
     // create result columns storing result column ids in user specified order
     resultColumns.clear();
-    resultColumns.reserve(includedColumnNum);
+    resultColumns.resize(includedColumnNum);
     for(int i = 0; i < includedColumnNum; i++) {
-        resultColumns.emplace_back(optionColsIndices[i]);
+        resultColumns.at(i) = optionColsIndices[i];
     }
 
 
@@ -71,10 +72,12 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
             optionColsIndices.begin(), optionColsIndices.end());
     int targetColumnNum = (int)optionColsIndicesSet.size();
     targetColumns.clear();
-    targetColumns.reserve(targetColumnNum);
+    targetColumns.resize(targetColumnNum);
+    int targetColIdx = 0;
     for(int i = 0; i < includedColumns.size(); i++) {
         if(includedColumns[i]) {
-            targetColumns.emplace_back(i);
+            targetColumns.at(targetColIdx) = i;
+            targetColIdx++;
         }
     }
 
@@ -84,7 +87,7 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
     readers.resize(resultColumns.size());
     for(int i = 0; i < resultColumns.size(); i++) {
         int index = resultColumns[i];
-//        readers.at(i) =
+        readers.at(i) = ColumnReaderBuilder::newColumnReader(columnSchemas.at(index));
     }
 
     // create result vectorized row batch
@@ -114,10 +117,57 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchS
     int curBatchSize = 0;
     auto columnVectors = resultRowBatch->cols;
     if(curRGIdx < targetRGNum) {
-        rgRowCount = (int) footer.rowgroupinfos(targetRGs.at(curRGIdx)).numberofrows();
+        rgRowCount = (int) footer.rowgroupinfos(
+                targetRGs.at(curRGIdx)).numberofrows();
     }
 
-    while (resultRowBatch)
+    while (resultRowBatch->rowCount < batchSize && curRowInRG < rgRowCount) {
+        // update current batch size
+        curBatchSize = rgRowCount - curRowInRG;
+        if (curBatchSize + resultRowBatch->rowCount >= batchSize)
+        {
+            curBatchSize = batchSize - resultRowBatch->rowCount;
+        }
+
+        // read vectors
+        for(int i = 0; i < resultColumns.size(); i++) {
+            // TODO: if !columnVectors[i].duplicate
+            pixels::proto::RowGroupFooter rowGroupFooter = rowGroupFooters.at(curRGIdx);
+            pixels::proto::ColumnEncoding encoding = rowGroupFooter.rowgroupencoding()
+                    .columnchunkencodings(resultColumns.at(i));
+            int index = curRGIdx * includedColumns.size() + resultColumns.at(i);
+            pixels::proto::ColumnChunkIndex chunkIndex = rowGroupFooter.rowgroupindexentry()
+                    .columnchunkindexentries(resultColumns.at(i));
+            readers.at(i)->read(chunkBuffers.at(index), encoding, curRowInRG, curBatchSize,
+                                postScript.pixelstride(), resultRowBatch->rowCount,
+                                columnVectors.at(i), chunkIndex);
+        }
+
+        // update current row index in the row group
+        curRowInRG += curBatchSize;
+        rowIndex += curBatchSize;
+        resultRowBatch->rowCount += curBatchSize;
+        // update row group index if current row index exceeds max row count in the row group
+        if(curRowInRG >= rgRowCount) {
+            curRGIdx++;
+            if(curRGIdx < targetRGNum) {
+                // if not end of file, update row count
+                rgRowCount = (int) footer.rowgroupinfos(targetRGs.at(curRGIdx)).numberofrows();
+                // refresh resultColumnsEncoded for reading the column vectors in the next row group.
+                pixels::proto::RowGroupEncoding rgEncoding = rowGroupFooters.at(curRGIdx).rowgroupencoding();
+                for(int i = 0; i < includedColumnNum; i++) {
+                    resultColumnsEncoded.at(i) =
+                            rgEncoding.columnchunkencodings(targetColumns.at(i))
+                            .kind() != pixels::proto::ColumnEncoding_Kind_NONE
+                            && enableEncodedVector;
+                }
+            } else {
+                // if end of file, set result vectorized row batch endOfFile
+                break;
+            }
+            curRowInRG = 0;
+        }
+    }
     return resultRowBatch;
 }
 
@@ -125,21 +175,21 @@ void PixelsRecordReaderImpl::prepareRead() {
     // TODO: finish the remaining part of this function
     auto rowGroupStatistics = footer.rowgroupstats();
     std::vector<bool> includedRGs;
-    includedRGs.reserve(RGLen);
+    includedRGs.resize(RGLen);
 
     uint64_t includedRowNum = 0;
     // read row group statistics and find target row groups
     for(int i = 0; i < RGLen; i++) {
-        includedRGs.emplace_back(true);
+        includedRGs.at(i) = true;
         includedRowNum += footer.rowgroupinfos(RGStart + i).numberofrows();
     }
 
     targetRGs.clear();
-    targetRGs.reserve(RGLen);
+    targetRGs.resize(RGLen);
     int targetRGIdx = 0;
     for(int i = 0; i < RGLen; i++) {
         if(includedRGs[i]) {
-            targetRGs.emplace_back(i + RGStart);
+            targetRGs.at(targetRGIdx) = i + RGStart;
             targetRGIdx++;
         }
     }
@@ -177,8 +227,6 @@ void PixelsRecordReaderImpl::prepareRead() {
             fis.push_back(i);
             requestBatch.add(queryId, (int) footerOffset, (int) footerLength);
         }
-
-
     }
     Scheduler * scheduler = SchedulerFactory::Instance()->getScheduler();
     auto bbs = scheduler->executeBatch(physicalReader, requestBatch, queryId);
@@ -193,7 +241,7 @@ void PixelsRecordReaderImpl::prepareRead() {
     bbs.clear();
     resultColumnsEncoded.clear();
     resultColumnsEncoded.resize(includedColumnNum);
-    pixels::proto::RowGroupEncoding firstRgEncoding = rowGroupFooters[0].rowgroupencoding();
+    pixels::proto::RowGroupEncoding firstRgEncoding = rowGroupFooters.at(0).rowgroupencoding();
     for(int i = 0; i < includedColumnNum; i++) {
         resultColumnsEncoded.at(i) = firstRgEncoding
                 .columnchunkencodings(targetColumns[i])
@@ -209,9 +257,6 @@ bool PixelsRecordReaderImpl::read() {
     // read chunk offset and length of each target column chunks
 
     // TODO: this should remove later
-    for(auto chunkBuffer: chunkBuffers) {
-        delete chunkBuffer;
-    }
     chunkBuffers.clear();
     chunkBuffers.resize(targetRGNum * includedColumns.size());
     std::vector<ChunkId> diskChunks;
@@ -236,11 +281,11 @@ bool PixelsRecordReaderImpl::read() {
         for(ChunkId chunk : diskChunks) {
             requestBatch.add(queryId, chunk.offset, (int)chunk.length);
         }
-        std::vector<ByteBuffer *> byteBuffers =
+        std::vector<std::shared_ptr<ByteBuffer>> byteBuffers =
                 scheduler->executeBatch(physicalReader, requestBatch, queryId);
         for(int index = 0; index < diskChunks.size(); index++) {
             ChunkId chunk = diskChunks[index];
-            ByteBuffer * bb = byteBuffers[index];
+            std::shared_ptr<ByteBuffer> bb = byteBuffers[index];
             uint32_t rgIdx = chunk.rowGroupId;
             uint32_t numCols = includedColumns.size();
             uint32_t colId = chunk.columnId;

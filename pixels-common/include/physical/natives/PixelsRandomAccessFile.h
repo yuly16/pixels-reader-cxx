@@ -11,7 +11,7 @@ class PixelsRandomAccessFile {
 public:
     virtual void seek(long off) = 0;
     virtual long length() = 0;
-    virtual ByteBuffer * readFully(int len) = 0;
+    virtual std::shared_ptr<ByteBuffer> readFully(int len) = 0;
     virtual void close() = 0;
     virtual long readLong() = 0;
     virtual char readChar() = 0;

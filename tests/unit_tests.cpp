@@ -109,7 +109,7 @@ TEST(reader, fileTail) {
             long fileTailOffset = fsReader->readLong();
             int fileTailLength = (int) (fileLen - fileTailOffset - sizeof(long));
             fsReader->seek(fileTailOffset);
-            ByteBuffer * fileTailBuffer = fsReader->readFully(fileTailLength);
+            std::shared_ptr<ByteBuffer> fileTailBuffer = fsReader->readFully(fileTailLength);
             if(!fileTail.ParseFromArray(fileTailBuffer->getPointer(),
                                         fileTailLength)) {
                 throw std::runtime_error("paring FileTail error!");

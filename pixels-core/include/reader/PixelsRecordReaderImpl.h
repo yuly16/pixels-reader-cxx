@@ -15,6 +15,8 @@
 #include "reader/PixelsReaderOption.h"
 #include "utils/String.h"
 #include "TypeDescription.h"
+#include "reader/ColumnReader.h"
+#include "reader/ColumnReaderBuilder.h"
 
 class ChunkId {
 public:
@@ -22,7 +24,7 @@ public:
     uint32_t columnId;
     uint64_t offset;
     uint64_t length;
-
+    ChunkId() = default;
     ChunkId(int rgId, int cId, uint64_t off, uint64_t len) {
         rowGroupId = rgId;
         columnId = cId;
@@ -58,6 +60,7 @@ private:
     int curRGIdx;
     int curRowInRG;
     std::string fileName;
+    long rowIndex;
     /**
      * Columns included by reader option; if included, set true
      */
@@ -69,9 +72,9 @@ private:
     std::vector<int> targetRGs;
 
     // buffers of each chunk in this file, arranged by chunk's row group id and column id
-    std::vector<ByteBuffer *> chunkBuffers;
+    std::vector<std::shared_ptr<ByteBuffer>> chunkBuffers;
     // column readers for each target columns
-    std::vector<std::shared_ptr<ColumnVector>> readers;
+    std::vector<std::shared_ptr<ColumnReader>> readers;
     std::vector<int> targetColumns;
     std::vector<int> resultColumns;
     std::vector<bool> resultColumnsEncoded;
