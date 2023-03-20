@@ -102,13 +102,11 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
 
 
 std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchSize, bool reuse) {
-
-    read();
-//    if(!everRead) {
-//        if(!read()) {
-//            throw std::runtime_error("failed to read file");
-//        }
-//    }
+    if(!everRead) {
+        if(!read()) {
+            throw std::runtime_error("failed to read file");
+        }
+    }
     std::shared_ptr<VectorizedRowBatch> resultRowBatch;
     resultRowBatch = resultSchema->createRowBatch(batchSize, resultColumnsEncoded);
     // TODO: resultRowBatch.projectionSize

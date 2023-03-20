@@ -39,7 +39,8 @@ public:
                       pixels::proto::ColumnChunkIndex chunkIndex) = 0;
 private:
     std::shared_ptr<TypeDescription> colType;
-    int elementIndex;
     bool hasNull;
+protected:
+    int elementIndex;
 };
 #endif //PIXELS_COLUMNREADER_H
