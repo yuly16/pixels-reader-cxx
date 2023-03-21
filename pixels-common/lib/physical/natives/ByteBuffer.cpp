@@ -31,6 +31,7 @@ ByteBuffer::ByteBuffer(uint32_t size) {
     bufSize = size;
     resetPosition();
     name = "";
+    fromOtherBB = false;
 }
 
 
@@ -46,8 +47,17 @@ ByteBuffer::ByteBuffer(uint8_t * arr, uint32_t size) {
     bufSize = size;
     resetPosition();
     name = "";
+    fromOtherBB = false;
 }
 
+ByteBuffer::ByteBuffer(ByteBuffer & bb, uint32_t startId, uint32_t length) {
+    assert(startId >= 0 && startId + length < bb.size() && length > 0);
+    buf = bb.getPointer() + startId;
+    bufSize = length;
+    resetPosition();
+    name = "";
+    fromOtherBB = true;
+}
 /**
  * Bytes Remaining
  * Returns the number of bytes from the current read position till the end of the buffer
@@ -61,7 +71,7 @@ uint32_t ByteBuffer::bytesRemaining() {
 
 void ByteBuffer::clear() {
     resetPosition();
-    delete buf;
+    delete[] buf;
     buf = nullptr;
     bufSize = 0;
 }
@@ -128,11 +138,11 @@ float ByteBuffer::getFloat(uint32_t index) {
 }
 
 int ByteBuffer::getInt() {
-    return read<int>();
+    return (int) __builtin_bswap32(read<int>());
 }
 
 int ByteBuffer::getInt(uint32_t index) {
-    return read<int>(index);
+    return (int) __builtin_bswap32(read<int>(index));
 }
 
 long ByteBuffer::getLong() {
@@ -288,12 +298,24 @@ void ByteBuffer::printPosition() {
 }
 
 ByteBuffer::~ByteBuffer() {
-    delete buf;
+    if(!fromOtherBB) {
+        delete[] buf;
+    }
     buf = nullptr;
 }
 
 uint8_t *ByteBuffer::getPointer() {
     return buf;
+}
+
+void ByteBuffer::markReaderIndex() {
+    rmark = rpos;
+}
+
+// this is different from resetPosition. This function should be called after markReaderIndex.
+// Then the rpos is reset to rmark.
+void ByteBuffer::resetReaderIndex() {
+    rpos = rmark;
 }
 
 

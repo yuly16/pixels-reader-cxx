@@ -211,3 +211,5 @@ TEST(physical, columnVector) {
     LongColumnVector a;
     a.close();
 }
+
+

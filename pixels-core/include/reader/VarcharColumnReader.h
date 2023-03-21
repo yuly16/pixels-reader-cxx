@@ -5,6 +5,7 @@
 #ifndef PIXELS_VARCHARCOLUMNREADER_H
 #define PIXELS_VARCHARCOLUMNREADER_H
 
+#include "reader/StringColumnReader.h"
 #include "reader/ColumnReader.h"
 class VarcharColumnReader: public ColumnReader {
 public:

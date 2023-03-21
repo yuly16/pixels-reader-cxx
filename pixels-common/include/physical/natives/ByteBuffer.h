@@ -30,7 +30,7 @@
 #include <memory>
 #include <iostream>
 #include <cstdio>
-
+#include <cassert>
 
 
 
@@ -38,6 +38,7 @@ class ByteBuffer {
 public:
     ByteBuffer(uint32_t size = BB_DEFAULT_SIZE);
     ByteBuffer(uint8_t* arr, uint32_t size);
+    ByteBuffer(ByteBuffer & bb, uint32_t startId, uint32_t length);
     ~ByteBuffer();
     uint32_t bytesRemaining(); // Number of uint8_ts from the current read position till the end of the buffer
     void clear(); // Clear our the vector and reset read and write positions
@@ -82,7 +83,6 @@ public:
     void putShort(short value, uint32_t index);
 
     // Buffer Position Accessors & Mutators
-
     void setReadPos(uint32_t r) {
         rpos = r;
     }
@@ -99,6 +99,8 @@ public:
         return wpos;
     }
 
+    void markReaderIndex();
+    void resetReaderIndex();
     // Utility Functions
     void setName(std::string n);
     std::string getName();
@@ -108,15 +110,15 @@ public:
     void printHex();
     void printPosition();
 
-
-private:
+protected:
     uint32_t wpos;
     mutable uint32_t rpos;
     uint8_t * buf;
     uint32_t bufSize;
     std::string name;
-
-
+    uint32_t rmark;
+    bool fromOtherBB;
+private:
     template<typename T> T read() {
         T data = read<T>(rpos);
         rpos += sizeof(T);
