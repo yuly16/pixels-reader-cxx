@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <memory>
+#include "exception/InvalidArgumentException.h"
 
 /**
  * ColumnVector derived from org.apache.hadoop.hive.ql.exec.vector.
@@ -48,6 +49,7 @@ public:
     explicit ColumnVector(int len);
     virtual void close();
     virtual void reset();
+    virtual void print();      // this is only used for debug
 };
 
 #endif //PIXELS_COLUMNVECTOR_H

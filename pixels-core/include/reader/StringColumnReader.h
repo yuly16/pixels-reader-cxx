@@ -24,7 +24,7 @@ private:
      */
     std::shared_ptr<ByteBuffer> contentBuf;
     std::shared_ptr<RunLenIntDecoder> lensDecoder;
-
+    int bufferOffset;
     /**
      * In this method, we have reduced most of significant memory copies.
      */

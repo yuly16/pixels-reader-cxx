@@ -74,8 +74,10 @@ void RunLenIntDecoder::readDirectValues(int8_t firstByte) {
     // write the unpacked value and zigzag decode to result buffer
     readInts(literals, numLiterals, len, fb, inputStream);
     if(isSigned) {
-        literals[numLiterals] = zigzagDecode(literals[numLiterals]);
-        numLiterals++;
+        for (int i = 0; i < len; i++) {
+            literals[numLiterals] = zigzagDecode(literals[numLiterals]);
+            numLiterals++;
+        }
     } else {
         numLiterals += len;
     }
@@ -96,10 +98,14 @@ void RunLenIntDecoder::readInts(long *buffer, int offset, int len, int bitSize,
         case 4:
             encodingUtils.unrolledUnPack4(buffer, offset, len, input);
             return;
+        case 8:
+            encodingUtils.unrolledUnPack8(buffer, offset, len, input);
+            return;
         default:
             throw InvalidArgumentException("RunLenIntDecoder::readInts: "
                                            "not supported bitSize.");
     }
+    // TODO: if notthe case, we should write the following code.
 }
 
 

@@ -162,6 +162,16 @@ short ByteBuffer::getShort(uint32_t index) {
     return read<short>(index);
 }
 
+int ByteBuffer::read(uint8_t * buffer, uint32_t off, uint32_t len) {
+    int actualLen = std::min((int)len, (int)bytesRemaining());
+    if(actualLen == 0) {
+        return 0;
+    }
+    memcpy(buffer + off, buf + rpos, actualLen);
+    rpos += actualLen;
+    return actualLen;
+}
+
 // Write Functions
 
 void ByteBuffer::put(ByteBuffer* src) {
@@ -317,5 +327,6 @@ void ByteBuffer::markReaderIndex() {
 void ByteBuffer::resetReaderIndex() {
     rpos = rmark;
 }
+
 
 

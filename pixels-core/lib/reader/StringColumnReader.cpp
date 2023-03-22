@@ -5,7 +5,7 @@
 #include "reader/StringColumnReader.h"
 
 StringColumnReader::StringColumnReader(std::shared_ptr<TypeDescription> type) : ColumnReader(type) {
-
+    bufferOffset = 0;
 }
 
 void StringColumnReader::close() {
@@ -17,6 +17,7 @@ void StringColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::
                               pixels::proto::ColumnChunkIndex chunkIndex) {
     if(offset == 0) {
         elementIndex = 0;
+        bufferOffset = 0;
         readContent(input, input->bytesRemaining(), encoding);
     }
     // TODO: support dictionary
@@ -26,11 +27,13 @@ void StringColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::
     for(int i = 0; i < size; i++) {
         if(elementIndex % pixelStride == 0) {
             int pixelId = elementIndex / pixelStride;
-            int len = (int) lensDecoder->next();
-            // use setRef instead of setVal to reduce memory copy
-
-
+            // TODO: should write the remaining code
         }
+        int len = (int) lensDecoder->next();
+        // use setRef instead of setVal to reduce memory copy
+        columnVector->setRef(i + vectorIndex, contentBuf->getPointer(), bufferOffset, len);
+        bufferOffset += len;
+        elementIndex++;
     }
 }
 

@@ -53,6 +53,33 @@ TEST(reader, PixelsVersion) {
     EXPECT_EQ(PixelsVersion::V1, PixelsVersion::from(1));
 }
 
+TEST(ByteBuffer, read) {
+    srand(10);
+    int bufSize = 1000000;
+    auto * buf = new uint8_t[bufSize];
+    for(int i = 0; i < bufSize; i++) {
+        buf[i] = rand() % 256;
+    }
+
+    std::shared_ptr<ByteBuffer> bb = std::make_shared<ByteBuffer>(buf, bufSize);
+    int testNum = 100;
+    auto * target = new uint8_t[bufSize];
+    for(int i = 0; i < testNum; i++) {
+        int offset = rand() % bufSize;
+        int readPos = rand() % bufSize;
+        bb->setReadPos(readPos);
+        int length = rand() % (bufSize - std::max(offset, readPos));
+        int actualLength = bb->read(target, offset, length);
+        EXPECT_EQ(length, actualLength);
+        // check if target is the same as buffer
+        for(int j = 0; j < length; j++) {
+            EXPECT_EQ(target[offset + j], buf[readPos + j]);
+        }
+    }
+    delete[] target;
+    // don't delete buf. bb will delete it.
+}
+
  TEST(reader, recordReader) {
     PixelsReaderOption option;
     option.setSkipCorruptRecords(true);
@@ -62,7 +89,7 @@ TEST(reader, PixelsVersion) {
     // includeCols comes from the caller of PixelsPageSource
     std::vector<std::string> includeCols;
     includeCols.emplace_back("n_nationkey");
-    includeCols.emplace_back("n_name");
+//    includeCols.emplace_back("n_name");
     includeCols.emplace_back("n_regionkey");
     includeCols.emplace_back("n_comment");
     option.setIncludeCols(includeCols);
@@ -79,8 +106,21 @@ TEST(reader, PixelsVersion) {
             ->setPixelsFooterCache(footerCache)
             ->build();
     PixelsRecordReader * pixelsRecordReader = pixelsReader->read(option);
-    std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(10, false);
-    std::shared_ptr<VectorizedRowBatch> v1 = pixelsRecordReader->readBatch(10, false);
+    std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(13, false);
+
+    for(const auto& col: v->cols) {
+        std::cout<<"------"<<std::endl;
+        col->print();
+    }
+    std::shared_ptr<VectorizedRowBatch> v1 = pixelsRecordReader->readBatch(12, false);
+    std::cout<<"------"<<std::endl;
+    std::cout<<"------"<<std::endl;
+    std::cout<<"------"<<std::endl;
+    std::cout<<"------"<<std::endl;
+    for(const auto& col: v1->cols) {
+        std::cout<<"------"<<std::endl;
+        col->print();
+    }
 }
 
 TEST(reader, fileTail) {

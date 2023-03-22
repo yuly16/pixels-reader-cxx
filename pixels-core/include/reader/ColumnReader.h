@@ -8,6 +8,8 @@
 #include "TypeDescription.h"
 #include "physical/natives/ByteBuffer.h"
 #include "pixels-common/pixels.pb.h"
+
+
 class ColumnReader {
 public:
     ColumnReader(std::shared_ptr<TypeDescription> type);
