@@ -36,7 +36,7 @@ target_link_libraries(
 )
 
 include(GoogleTest)
-include_directories(${CMAKE_SOURCE_DIR}/pixels-core/include)
-include_directories(${CMAKE_SOURCE_DIR}/pixels-common/include)
+include_directories(../pixels-core/include)
+include_directories(../pixels-common/include)
 gtest_discover_tests(hello_test)
 gtest_discover_tests(unit_tests)

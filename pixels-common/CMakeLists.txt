@@ -26,4 +26,3 @@ target_link_libraries(pixels-common
         ${Protobuf_LIBRARIES}
         tbb
         )
-

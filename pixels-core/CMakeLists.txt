@@ -25,5 +25,5 @@ target_link_libraries(
         pixels-common
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/pixels-common/include)
+include_directories(../pixels-common/include)
 include_directories(include)
