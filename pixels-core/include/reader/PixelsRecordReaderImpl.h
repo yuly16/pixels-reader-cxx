@@ -42,6 +42,7 @@ public:
                                     const PixelsFooterCache& pixelsFooterCache
                                     );
     std::shared_ptr<VectorizedRowBatch> readBatch(int batchSize, bool reuse) override;
+	std::shared_ptr<TypeDescription> getResultSchema() override;
     ~PixelsRecordReaderImpl();
 private:
     bool read();

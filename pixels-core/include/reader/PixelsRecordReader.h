@@ -7,6 +7,7 @@
 
 #include "vector/VectorizedRowBatch.h"
 #include "physical/RequestBatch.h"
+#include "TypeDescription.h"
 
 class PixelsRecordReader {
 public:
@@ -14,6 +15,12 @@ public:
     virtual std::shared_ptr<VectorizedRowBatch> readBatch(int batchSize, bool reuse) = 0;
 
 
+	/**
+     * Get the schema of the included columns in the read option.
+     *
+     * @return result schema, null if PixelsRecordReader is not initialized successfully.
+	 */
+	virtual std::shared_ptr<TypeDescription> getResultSchema() = 0;
 
 };
 #endif //PIXELS_PIXELSRECORDREADER_H

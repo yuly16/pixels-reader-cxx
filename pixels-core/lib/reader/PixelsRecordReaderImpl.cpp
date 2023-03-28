@@ -300,7 +300,6 @@ PixelsRecordReaderImpl::~PixelsRecordReaderImpl() {
     // TODO: chunkBuffers, physicalReader should be deleted?
 }
 
-
-
-
-
+std::shared_ptr<TypeDescription> PixelsRecordReaderImpl::getResultSchema() {
+	return resultSchema;
+}
