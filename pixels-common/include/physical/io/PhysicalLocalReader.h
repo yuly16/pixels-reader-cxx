@@ -13,7 +13,7 @@
 
 class PhysicalLocalReader: public PhysicalReader {
 public:
-    PhysicalLocalReader(Storage * storage, std::string path);
+    PhysicalLocalReader(std::shared_ptr<Storage> storage, std::string path);
     std::shared_ptr<ByteBuffer> readFully(int length) override;
     void close();
     long getFileLength() override;
@@ -23,7 +23,7 @@ public:
     char readChar() override;
     std::string getName() override;
 private:
-    LocalFS * local;
+    std::shared_ptr<LocalFS> local;
     std::string path;
     long id;
     std::atomic<int> numRequests;

@@ -13,7 +13,7 @@ StorageFactory::StorageFactory() {
 
 StorageFactory * StorageFactory::getInstance() {
     if(instance == nullptr) {
-        instance = new StorageFactory();
+		instance = new StorageFactory();
         //TODO: close all here. Need a ShutdownHook. C++ doesn't have it.
     }
     return instance;
@@ -31,14 +31,14 @@ bool StorageFactory::isEnabled(Storage::Scheme scheme) {
 
 void StorageFactory::closeAll() {
     for(auto storageImpl : storageImpls) {
-        Storage * storage = storageImpl.second;
+        std::shared_ptr<Storage> storage = storageImpl.second;
         storage->close();
     }
 }
 
 
 
-Storage * StorageFactory::getStorage(Storage::Scheme scheme) {
+std::shared_ptr<Storage> StorageFactory::getStorage(Storage::Scheme scheme) {
     // TODO: make it synchronized
     if(enabledSchemes.find(scheme) == enabledSchemes.end()) {
         throw std::runtime_error("storage scheme is not enabled.");
@@ -46,13 +46,13 @@ Storage * StorageFactory::getStorage(Storage::Scheme scheme) {
     if(storageImpls.count(scheme)) {
         return storageImpls[scheme];
     }
-    Storage * storage;
+	std::shared_ptr<Storage> storage;
     switch (scheme) {
         case Storage::hdfs:
             throw std::runtime_error("hdfs not support");
             break;
         case Storage::file:
-            storage = new LocalFS();
+            storage = std::make_shared<LocalFS>();
             break;
         case Storage::s3:
             throw std::runtime_error("hdfs not support");
@@ -80,7 +80,7 @@ Storage * StorageFactory::getStorage(Storage::Scheme scheme) {
  * @param schemeOrPath
  * @return
  */
-Storage *StorageFactory::getStorage(const std::string& schemeOrPath) {
+std::shared_ptr<Storage> StorageFactory::getStorage(const std::string& schemeOrPath) {
     // TODO: this function should be synchronized
     try {
         if(schemeOrPath.find("://", 0) != std::string::npos) {
@@ -116,13 +116,11 @@ void StorageFactory::reloadAll() {
  */
 void StorageFactory::reload(Storage::Scheme scheme) {
     // TODO: this function should be synchronized
-    Storage * storage;
+	std::shared_ptr<Storage> storage;
     if(storageImpls.find(scheme) != storageImpls.end()) {
         storage = storageImpls[scheme];
         storageImpls.erase(scheme);
         storage->close();
-        delete storage;
-        storage = nullptr;
     }
     storage = getStorage(scheme);
     storageImpls[scheme] = storage;

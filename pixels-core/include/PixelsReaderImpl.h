@@ -18,14 +18,14 @@ class PixelsReaderBuilder;
 
 class PixelsReaderImpl: public PixelsReader {
 public:
-    PixelsRecordReader * read(PixelsReaderOption option);
-    friend class PixelsReaderBuilder;
+    std::shared_ptr<PixelsRecordReader> read(PixelsReaderOption option);
+	PixelsReaderImpl(std::shared_ptr<PhysicalReader> reader,
+	                 const pixels::proto::FileTail& fileTail,
+	                 const PixelsFooterCache& footerCache);
 private:
-    std::vector<PixelsRecordReader *> recordReaders;
-    PixelsReaderImpl(PhysicalReader *reader,
-                     const pixels::proto::FileTail& fileTail,
-                     const PixelsFooterCache& footerCache);
-    PhysicalReader * physicalReader;
+    std::vector<std::shared_ptr<PixelsRecordReader>> recordReaders;
+
+    std::shared_ptr<PhysicalReader> physicalReader;
     PixelsFooterCache pixelsFooterCache;
     pixels::proto::PostScript postScript;
     pixels::proto::Footer footer;

@@ -5,11 +5,10 @@
 #include "PixelsReaderBuilder.h"
 
 PixelsReaderBuilder::PixelsReaderBuilder() {
-    builderStorage = nullptr;
     builderPath = "";
 }
 
-PixelsReaderBuilder * PixelsReaderBuilder::setStorage(Storage *storage) {
+PixelsReaderBuilder * PixelsReaderBuilder::setStorage(std::shared_ptr<Storage> storage) {
     builderStorage = storage;
     return this;
 }
@@ -20,25 +19,25 @@ PixelsReaderBuilder * PixelsReaderBuilder::setPath(const std::string &path) {
 }
 
 
-PixelsReaderBuilder *PixelsReaderBuilder::setPixelsFooterCache(const PixelsFooterCache &pixelsFooterCache) {
+PixelsReaderBuilder * PixelsReaderBuilder::setPixelsFooterCache(const PixelsFooterCache &pixelsFooterCache) {
     builderPixelsFooterCache = pixelsFooterCache;
     return this;
 }
 
-PixelsReader * PixelsReaderBuilder::build() {
-    if(builderStorage == nullptr || builderPath.empty()) {
+std::shared_ptr<PixelsReader> PixelsReaderBuilder::build() {
+    if(builderStorage.get() == nullptr || builderPath.empty()) {
         throw std::runtime_error("Missing argument to build PixelsReader");
     }
     // get PhysicalReader
-    PhysicalReader * fsReader = PhysicalReaderUtil::newPhysicalReader(
-            builderStorage, builderPath);
+    std::shared_ptr<PhysicalReader> fsReader =
+	    PhysicalReaderUtil::newPhysicalReader(builderStorage, builderPath);
     // try to get file tail from cache
     std::string fileName = fsReader->getName();
     pixels::proto::FileTail fileTail;
     if(builderPixelsFooterCache.containsFileTail(fileName)) {
         fileTail = builderPixelsFooterCache.getFileTail(fileName);
     } else {
-        if(fsReader == nullptr) {
+        if(fsReader.get() == nullptr) {
             throw PixelsReaderException(
                     "Failed to create PixelsReader due to error of creating PhysicalReader");
         }
@@ -68,8 +67,9 @@ PixelsReader * PixelsReaderBuilder::build() {
     }
 
     // TODO: the remaining things, such as builderSchema, coreCOnfig, metric
-    return new PixelsReaderImpl(fsReader, fileTail,
-                                builderPixelsFooterCache);
+
+	return std::make_shared<PixelsReaderImpl>(fsReader, fileTail,
+	                                         builderPixelsFooterCache);
 }
 
 

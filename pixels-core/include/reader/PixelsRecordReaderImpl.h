@@ -35,7 +35,7 @@ public:
 
 class PixelsRecordReaderImpl: public PixelsRecordReader {
 public:
-    explicit PixelsRecordReaderImpl(PhysicalReader *reader,
+    explicit PixelsRecordReaderImpl(std::shared_ptr<PhysicalReader> reader,
                                     const pixels::proto::PostScript& pixelsPostScript,
                                     const pixels::proto::Footer& pixelsFooter,
                                     const PixelsReaderOption& opt,
@@ -48,7 +48,7 @@ private:
     bool read();
     void prepareRead();
     void checkBeforeRead();
-    PhysicalReader * physicalReader;
+    std::shared_ptr<PhysicalReader> physicalReader;
     pixels::proto::Footer footer;
     pixels::proto::PostScript postScript;
     PixelsFooterCache footerCache;

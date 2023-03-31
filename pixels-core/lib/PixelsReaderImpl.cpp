@@ -4,7 +4,7 @@
 
 #include "PixelsReaderImpl.h"
 
-PixelsReaderImpl::PixelsReaderImpl(PhysicalReader *reader,
+PixelsReaderImpl::PixelsReaderImpl(std::shared_ptr<PhysicalReader> reader,
                                    const pixels::proto::FileTail& fileTail,
                                    const PixelsFooterCache& footerCache) {
     physicalReader = reader;
@@ -20,9 +20,10 @@ PixelsReaderImpl::PixelsReaderImpl(PhysicalReader *reader,
  * @param batchSize the willing batch size
  * @return the real batch size
  */
-PixelsRecordReader *PixelsReaderImpl::read(PixelsReaderOption option) {
+std::shared_ptr<PixelsRecordReader> PixelsReaderImpl::read(PixelsReaderOption option) {
     // TODO: add a function parameter, and the code before creating PixelsRecordReaderImpl
-    PixelsRecordReader * recordReader = new PixelsRecordReaderImpl(
+	std::shared_ptr<PixelsRecordReader> recordReader =
+	    std::make_shared<PixelsRecordReaderImpl>(
             physicalReader, postScript,
             footer, option, pixelsFooterCache);
     recordReaders.emplace_back(recordReader);

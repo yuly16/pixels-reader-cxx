@@ -25,7 +25,7 @@ public:
      *
      * @return record reader
      */
-    virtual PixelsRecordReader * read(PixelsReaderOption option) = 0;
+    virtual std::shared_ptr<PixelsRecordReader> read(PixelsReaderOption option) = 0;
 };
 
 #endif //PIXELS_PIXELSREADER_H

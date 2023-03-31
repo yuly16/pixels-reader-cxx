@@ -6,10 +6,10 @@
 
 #include <utility>
 
-PhysicalLocalReader::PhysicalLocalReader(Storage * storage, std::string path_) {
+PhysicalLocalReader::PhysicalLocalReader(std::shared_ptr<Storage> storage, std::string path_) {
     // TODO: should support async
-    if(dynamic_cast<LocalFS *>(storage) != nullptr) {
-        local = dynamic_cast<LocalFS *>(storage);
+    if(std::dynamic_pointer_cast<LocalFS>(storage).get() != nullptr) {
+        local = std::dynamic_pointer_cast<LocalFS>(storage);
     } else {
         throw std::runtime_error("Storage is not LocalFS.");
     }

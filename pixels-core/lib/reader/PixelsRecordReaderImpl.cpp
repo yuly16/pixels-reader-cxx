@@ -4,7 +4,7 @@
 
 #include "reader/PixelsRecordReaderImpl.h"
 
-PixelsRecordReaderImpl::PixelsRecordReaderImpl(PhysicalReader *reader,
+PixelsRecordReaderImpl::PixelsRecordReaderImpl(std::shared_ptr<PhysicalReader> reader,
                                                const pixels::proto::PostScript& pixelsPostScript,
                                                const pixels::proto::Footer& pixelsFooter,
                                                const PixelsReaderOption& opt,

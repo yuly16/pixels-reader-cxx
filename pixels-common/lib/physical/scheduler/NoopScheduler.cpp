@@ -13,7 +13,7 @@ Scheduler * NoopScheduler::Instance() {
     return instance;
 }
 
-std::vector<std::shared_ptr<ByteBuffer>> NoopScheduler::executeBatch(PhysicalReader * reader, RequestBatch batch, long queryId) {
+std::vector<std::shared_ptr<ByteBuffer>> NoopScheduler::executeBatch(std::shared_ptr<PhysicalReader> reader, RequestBatch batch, long queryId) {
     if(batch.getSize() < 0) {
         return std::vector<std::shared_ptr<ByteBuffer>>{};
     }
