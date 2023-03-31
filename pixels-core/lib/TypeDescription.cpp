@@ -90,11 +90,11 @@ TypeDescription::TypeDescription(Category c) {
     category = c;
 }
 
-TypeDescription TypeDescription::createSchema(const std::vector<pixels::proto::Type>& types) {
-    TypeDescription schema(createStruct());
+std::shared_ptr<TypeDescription> TypeDescription::createSchema(const std::vector<pixels::proto::Type>& types) {
+	std::shared_ptr<TypeDescription> schema = createStruct();
     for(const auto& type : types) {
         const std::string& fieldName = type.name();
-        TypeDescription fieldType;
+        std::shared_ptr<TypeDescription> fieldType;
         switch (type.kind()) {
             case pixels::proto::Type_Kind_BOOLEAN:
                 fieldType = TypeDescription::createBoolean();
@@ -119,11 +119,11 @@ TypeDescription TypeDescription::createSchema(const std::vector<pixels::proto::T
                 break;
             case pixels::proto::Type_Kind_VARCHAR:
                 fieldType = TypeDescription::createVarchar();
-                fieldType.maxLength = type.maximumlength();
+                fieldType->maxLength = type.maximumlength();
                 break;
             case pixels::proto::Type_Kind_CHAR:
                 fieldType = TypeDescription::createChar();
-                fieldType.maxLength = type.maximumlength();
+                fieldType->maxLength = type.maximumlength();
                 break;
             case pixels::proto::Type_Kind_STRING:
                 fieldType = TypeDescription::createString();
@@ -137,74 +137,74 @@ TypeDescription TypeDescription::createSchema(const std::vector<pixels::proto::T
             default:
                 throw InvalidArgumentException("Unknown type: " + type.name());
         }
-        schema.addField(fieldName, std::make_shared<TypeDescription>(fieldType));
+        schema->addField(fieldName, fieldType);
     }
     return schema;
 }
 
-TypeDescription TypeDescription::createBoolean() {
-    return {BOOLEAN};
+std::shared_ptr<TypeDescription> TypeDescription::createBoolean() {
+	return std::make_shared<TypeDescription>(BOOLEAN);
 }
 
-TypeDescription TypeDescription::createByte() {
-    return {BYTE};
+std::shared_ptr<TypeDescription> TypeDescription::createByte() {
+	return std::make_shared<TypeDescription>(BYTE);
 }
 
-TypeDescription TypeDescription::createShort() {
-    return {SHORT};
+std::shared_ptr<TypeDescription> TypeDescription::createShort() {
+	return std::make_shared<TypeDescription>(SHORT);
 }
 
-TypeDescription TypeDescription::createInt() {
-    return {INT};
+std::shared_ptr<TypeDescription> TypeDescription::createInt() {
+	return std::make_shared<TypeDescription>(INT);
 }
 
-TypeDescription TypeDescription::createLong() {
-    return {LONG};
+std::shared_ptr<TypeDescription> TypeDescription::createLong() {
+	return std::make_shared<TypeDescription>(LONG);
 }
 
-TypeDescription TypeDescription::createFloat() {
-    return {FLOAT};
+std::shared_ptr<TypeDescription> TypeDescription::createFloat() {
+	return std::make_shared<TypeDescription>(FLOAT);
 }
 
-TypeDescription TypeDescription::createDouble() {
-    return {DOUBLE};
+std::shared_ptr<TypeDescription> TypeDescription::createDouble() {
+	return std::make_shared<TypeDescription>(DOUBLE);
 }
 
 
-TypeDescription TypeDescription::createString() {
-    return {STRING};
+std::shared_ptr<TypeDescription> TypeDescription::createString() {
+	return std::make_shared<TypeDescription>(STRING);
 }
 
-TypeDescription TypeDescription::createDate() {
-    return {DATE};
+std::shared_ptr<TypeDescription> TypeDescription::createDate() {
+	return std::make_shared<TypeDescription>(DATE);
 }
 
-TypeDescription TypeDescription::createTime() {
-    return {TIME};
+std::shared_ptr<TypeDescription> TypeDescription::createTime() {
+	return std::make_shared<TypeDescription>(TIME);
 }
 
-TypeDescription TypeDescription::createTimestamp() {
-    return {TIMESTAMP};
+std::shared_ptr<TypeDescription> TypeDescription::createTimestamp() {
+	return std::make_shared<TypeDescription>(TIMESTAMP);
 }
 
-TypeDescription TypeDescription::createVarbinary() {
-    return {VARBINARY};
+std::shared_ptr<TypeDescription> TypeDescription::createVarbinary() {
+	return std::make_shared<TypeDescription>(VARBINARY);
 }
 
-TypeDescription TypeDescription::createBinary() {
-    return {BINARY};
+std::shared_ptr<TypeDescription> TypeDescription::createBinary() {
+	return std::make_shared<TypeDescription>(BINARY);
 }
 
-TypeDescription TypeDescription::createVarchar() {
-    return {VARCHAR};
+std::shared_ptr<TypeDescription> TypeDescription::createVarchar() {
+	return std::make_shared<TypeDescription>(VARCHAR);
 }
 
-TypeDescription TypeDescription::createChar() {
-    return {CHAR};
+std::shared_ptr<TypeDescription> TypeDescription::createChar() {
+	return std::make_shared<TypeDescription>(CHAR);
 }
 
-TypeDescription TypeDescription::createStruct() {
-    return {STRUCT};
+std::shared_ptr<TypeDescription> TypeDescription::createStruct() {
+	return std::make_shared<TypeDescription>(STRUCT);
 }
 
 std::shared_ptr<TypeDescription> TypeDescription::addField(const std::string& field, const std::shared_ptr<TypeDescription>& fieldType) {
@@ -214,9 +214,8 @@ std::shared_ptr<TypeDescription> TypeDescription::addField(const std::string& fi
     }
     fieldNames.emplace_back(field);
     children.emplace_back(fieldType);
-    std::shared_ptr<TypeDescription> this_ptr(this);
-    fieldType->setParent(this_ptr);
-    return this_ptr;
+    fieldType->setParent(shared_from_this());
+    return shared_from_this();
 }
 
 void TypeDescription::setParent(const std::shared_ptr<TypeDescription>& p) {

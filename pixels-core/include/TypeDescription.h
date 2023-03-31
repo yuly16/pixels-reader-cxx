@@ -27,7 +27,7 @@ struct CategoryProperty {
     std::vector<std::string> names;
 };
 
-class TypeDescription {
+class TypeDescription: public std::enable_shared_from_this<TypeDescription> {
 public:
     enum Category {
         BOOLEAN,
@@ -50,23 +50,23 @@ public:
     };
     TypeDescription() = default;
     TypeDescription(Category c);
-    static TypeDescription createBoolean();
-    static TypeDescription createByte();
-    static TypeDescription createShort();
-    static TypeDescription createInt();
-    static TypeDescription createLong();
-    static TypeDescription createFloat();
-    static TypeDescription createDouble();
-    static TypeDescription createString();
-    static TypeDescription createDate();
-    static TypeDescription createTime();
-    static TypeDescription createTimestamp();
-    static TypeDescription createVarbinary();
-    static TypeDescription createBinary();
-    static TypeDescription createVarchar();
-    static TypeDescription createChar();
-    static TypeDescription createStruct();
-    static TypeDescription createSchema(const std::vector<pixels::proto::Type>& types);
+    static std::shared_ptr<TypeDescription> createBoolean();
+    static std::shared_ptr<TypeDescription> createByte();
+    static std::shared_ptr<TypeDescription> createShort();
+    static std::shared_ptr<TypeDescription> createInt();
+    static std::shared_ptr<TypeDescription> createLong();
+    static std::shared_ptr<TypeDescription> createFloat();
+    static std::shared_ptr<TypeDescription> createDouble();
+    static std::shared_ptr<TypeDescription> createString();
+    static std::shared_ptr<TypeDescription> createDate();
+    static std::shared_ptr<TypeDescription> createTime();
+    static std::shared_ptr<TypeDescription> createTimestamp();
+    static std::shared_ptr<TypeDescription> createVarbinary();
+    static std::shared_ptr<TypeDescription> createBinary();
+    static std::shared_ptr<TypeDescription> createVarchar();
+    static std::shared_ptr<TypeDescription> createChar();
+    static std::shared_ptr<TypeDescription> createStruct();
+    static std::shared_ptr<TypeDescription> createSchema(const std::vector<pixels::proto::Type>& types);
     std::shared_ptr<TypeDescription> addField(const std::string& field, const std::shared_ptr<TypeDescription>& fieldType);
     void setParent(const std::shared_ptr<TypeDescription>& p);
     std::shared_ptr<VectorizedRowBatch> createRowBatch(int maxSize, const std::vector<bool>& useEncodedVector);

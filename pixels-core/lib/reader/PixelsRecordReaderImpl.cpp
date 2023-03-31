@@ -37,8 +37,7 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
         fileColTypes.emplace_back(type);
     }
     // TODO: if fileCOlTypes == null
-    fileSchema = std::make_shared<TypeDescription>
-            (TypeDescription::createSchema(fileColTypes));
+    fileSchema = TypeDescription::createSchema(fileColTypes);
     // TODO: getChildren == NULL
     // filter included columns
     includedColumnNum = 0;
@@ -94,8 +93,7 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
     for(int resultColumn: resultColumns) {
         includedColumnTypes.emplace_back(fileColTypes.at(resultColumn));
     }
-    resultSchema = std::make_shared<TypeDescription>(
-            TypeDescription::createSchema(includedColumnTypes));
+    resultSchema = TypeDescription::createSchema(includedColumnTypes);
 
 }
 
