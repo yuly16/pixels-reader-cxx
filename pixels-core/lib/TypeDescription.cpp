@@ -222,6 +222,9 @@ void TypeDescription::setParent(const std::shared_ptr<TypeDescription>& p) {
     parent = p;
 }
 
+std::shared_ptr<VectorizedRowBatch> TypeDescription::createRowBatch(int maxSize) {
+    return createRowBatch(maxSize, std::vector<bool>());
+}
 std::shared_ptr<VectorizedRowBatch> TypeDescription::createRowBatch(int maxSize, const std::vector<bool> &useEncodedVector) {
     std::shared_ptr<VectorizedRowBatch> result;
     if(category == STRUCT) {
@@ -293,7 +296,6 @@ std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::ve
 TypeDescription::Category TypeDescription::getCategory() {
     return category;
 }
-
-
-
-
+std::vector<std::string> TypeDescription::getFieldNames() {
+	return fieldNames;
+}

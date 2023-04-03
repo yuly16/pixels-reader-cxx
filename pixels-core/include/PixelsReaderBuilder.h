@@ -15,6 +15,7 @@
 #include "exception/PixelsFileVersionInvalidException.h"
 #include "exception/PixelsFileMagicInvalidException.h"
 #include "utils/Constants.h"
+#include "TypeDescription.h"
 
 class PixelsReaderBuilder {
 public:
@@ -28,5 +29,6 @@ private:
     std::shared_ptr<Storage> builderStorage;
     std::string builderPath;
     PixelsFooterCache builderPixelsFooterCache;
+	std::shared_ptr<TypeDescription> builderSchema;
 };
 #endif //PIXELS_PIXELSREADERBUILDER_H

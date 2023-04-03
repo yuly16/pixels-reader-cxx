@@ -69,9 +69,11 @@ public:
     static std::shared_ptr<TypeDescription> createSchema(const std::vector<pixels::proto::Type>& types);
     std::shared_ptr<TypeDescription> addField(const std::string& field, const std::shared_ptr<TypeDescription>& fieldType);
     void setParent(const std::shared_ptr<TypeDescription>& p);
+	std::shared_ptr<VectorizedRowBatch> createRowBatch(int maxSize);
     std::shared_ptr<VectorizedRowBatch> createRowBatch(int maxSize, const std::vector<bool>& useEncodedVector);
     std::vector<std::shared_ptr<TypeDescription>> getChildren();
     Category getCategory();
+	std::vector<std::string> getFieldNames();
     static std::map<Category, CategoryProperty> categoryMap;
 
     static int SHORT_DECIMAL_MAX_PRECISION;

@@ -66,9 +66,16 @@ std::shared_ptr<PixelsReader> PixelsReaderBuilder::build() {
         throw PixelsFileMagicInvalidException(fileMagic);
     }
 
+
+	auto fileColTypes = std::vector<pixels::proto::Type>{};
+	for(const auto& type : fileTail.footer().types()) {
+		fileColTypes.emplace_back(type);
+	}
+	builderSchema = TypeDescription::createSchema(fileColTypes);
+
     // TODO: the remaining things, such as builderSchema, coreCOnfig, metric
 
-	return std::make_shared<PixelsReaderImpl>(fsReader, fileTail,
+	return std::make_shared<PixelsReaderImpl>(builderSchema, fsReader, fileTail,
 	                                         builderPixelsFooterCache);
 }
 

@@ -26,6 +26,7 @@ PixelsRecordReaderImpl::PixelsRecordReaderImpl(std::shared_ptr<PhysicalReader> r
     enableEncodedVector = option.isEnableEncodedColumnVector();
     includedColumnNum = 0;
     rowIndex = 0L;
+	endOfFile = false;
     checkBeforeRead();
 }
 
@@ -100,7 +101,11 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
 
 
 std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchSize, bool reuse) {
-    if(!everRead) {
+    if(endOfFile) {
+		endOfFile = true;
+		return createEmptyEOFRowBatch(0);
+	}
+	if(!everRead) {
         if(!read()) {
             throw std::runtime_error("failed to read file");
         }
@@ -159,6 +164,9 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchS
                 }
             } else {
                 // if end of file, set result vectorized row batch endOfFile
+				// TODO: set checkValid to false!
+				resultRowBatch->endOfFile = true;
+				endOfFile = true;
                 break;
             }
             curRowInRG = 0;
@@ -179,7 +187,6 @@ void PixelsRecordReaderImpl::prepareRead() {
         includedRGs.at(i) = true;
         includedRowNum += footer.rowgroupinfos(RGStart + i).numberofrows();
     }
-
     targetRGs.clear();
     targetRGs.resize(RGLen);
     int targetRGIdx = 0;
@@ -280,8 +287,8 @@ bool PixelsRecordReaderImpl::read() {
         std::vector<std::shared_ptr<ByteBuffer>> byteBuffers =
                 scheduler->executeBatch(physicalReader, requestBatch, queryId);
         for(int index = 0; index < diskChunks.size(); index++) {
-            ChunkId chunk = diskChunks[index];
-            std::shared_ptr<ByteBuffer> bb = byteBuffers[index];
+            ChunkId chunk = diskChunks.at(index);
+            std::shared_ptr<ByteBuffer> bb = byteBuffers.at(index);
             uint32_t rgIdx = chunk.rowGroupId;
             uint32_t numCols = includedColumns.size();
             uint32_t colId = chunk.columnId;
@@ -300,4 +307,22 @@ PixelsRecordReaderImpl::~PixelsRecordReaderImpl() {
 
 std::shared_ptr<TypeDescription> PixelsRecordReaderImpl::getResultSchema() {
 	return resultSchema;
+}
+
+/**
+     * Create a row batch without any data, only sets the number of rows (size) and OEF.
+     * Such a row batch is used for queries such as select count(*).
+     * @param size the number of rows in the row batch.
+     * @return the empty row batch.
+ */
+std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::createEmptyEOFRowBatch(int size) {
+	auto emptySchema = TypeDescription::createSchema(
+	    std::vector<pixels::proto::Type>());
+	auto emptyRowBatch = emptySchema->createRowBatch(0);
+	emptyRowBatch->rowCount = size;
+	emptyRowBatch->endOfFile = true;
+	return emptyRowBatch;
+}
+bool PixelsRecordReaderImpl::isEndOfFile() {
+	return endOfFile;
 }

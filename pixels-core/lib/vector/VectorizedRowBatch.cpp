@@ -24,7 +24,7 @@ VectorizedRowBatch::VectorizedRowBatch(int nCols, int size) {
     maxSize = size;
     cols.clear();
     cols.resize(numCols);
-
+	endOfFile = false;
 }
 
 /**

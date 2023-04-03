@@ -170,41 +170,41 @@ TEST(physical, vector) {
 
 }
 
-TEST(physical, uring) {
-    std::vector<std::string> paths;
-    paths.emplace_back("/home/liyu/demo/uringDemo/a");
-    paths.emplace_back("/home/liyu/demo/uringDemo/b");
-    paths.emplace_back("/home/liyu/demo/uringDemo/c");
-    paths.emplace_back("/home/liyu/demo/uringDemo/d");
-    std::vector<int> fds;
-    for(auto path: paths) {
-        int fd = open(path.c_str(), O_RDONLY);
-        fds.emplace_back(fd);
-    }
-    int size = 6;
-    std::vector<char *> bufs;
-    for(int i = 0; i < paths.size(); i++) {
-        char * buffer = new char[size];
-        bufs.emplace_back(buffer);
-    }
-
-    struct io_uring ring{};
-    if(io_uring_queue_init(4, &ring, 0) < 0) {
-        throw std::runtime_error("initialize io_uring fails.");
-    }
-
-    for(int i = 0; i < paths.size(); i++) {
-        struct io_uring_sqe * sqe = io_uring_get_sqe(&ring);
-        io_uring_prep_read(sqe, fds[i], bufs[i], size, 0);
-        io_uring_sqe_set_data64(sqe, i);
-    }
-    for(int i = 0; i < paths.size(); i++) {
-        io_uring_submit_and_wait(&ring, 1);
-    }
-
-    io_uring_queue_exit(&ring);
-
-}
+//TEST(physical, uring) {
+//    std::vector<std::string> paths;
+//    paths.emplace_back("/home/liyu/demo/uringDemo/a");
+//    paths.emplace_back("/home/liyu/demo/uringDemo/b");
+//    paths.emplace_back("/home/liyu/demo/uringDemo/c");
+//    paths.emplace_back("/home/liyu/demo/uringDemo/d");
+//    std::vector<int> fds;
+//    for(auto path: paths) {
+//        int fd = open(path.c_str(), O_RDONLY);
+//        fds.emplace_back(fd);
+//    }
+//    int size = 6;
+//    std::vector<char *> bufs;
+//    for(int i = 0; i < paths.size(); i++) {
+//        char * buffer = new char[size];
+//        bufs.emplace_back(buffer);
+//    }
+//
+//    struct io_uring ring{};
+//    if(io_uring_queue_init(4, &ring, 0) < 0) {
+//        throw std::runtime_error("initialize io_uring fails.");
+//    }
+//
+//    for(int i = 0; i < paths.size(); i++) {
+//        struct io_uring_sqe * sqe = io_uring_get_sqe(&ring);
+//        io_uring_prep_read(sqe, fds[i], bufs[i], size, 0);
+//        io_uring_sqe_set_data64(sqe, i);
+//    }
+//    for(int i = 0; i < paths.size(); i++) {
+//        io_uring_submit_and_wait(&ring, 1);
+//    }
+//
+//    io_uring_queue_exit(&ring);
+//
+//}
 
 
 TEST(physical, columnVector) {

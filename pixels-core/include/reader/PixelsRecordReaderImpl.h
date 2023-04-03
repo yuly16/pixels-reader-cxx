@@ -43,11 +43,13 @@ public:
                                     );
     std::shared_ptr<VectorizedRowBatch> readBatch(int batchSize, bool reuse) override;
 	std::shared_ptr<TypeDescription> getResultSchema() override;
+	bool isEndOfFile() override;
     ~PixelsRecordReaderImpl();
 private:
     bool read();
     void prepareRead();
     void checkBeforeRead();
+	std::shared_ptr<VectorizedRowBatch> createEmptyEOFRowBatch(int size);
     std::shared_ptr<PhysicalReader> physicalReader;
     pixels::proto::Footer footer;
     pixels::proto::PostScript postScript;
@@ -62,6 +64,7 @@ private:
     int curRowInRG;
     std::string fileName;
     long rowIndex;
+	bool endOfFile;
     /**
      * Columns included by reader option; if included, set true
      */
