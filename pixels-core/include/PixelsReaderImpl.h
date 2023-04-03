@@ -22,7 +22,7 @@ public:
 	PixelsReaderImpl(std::shared_ptr<TypeDescription> fileSchema,
 	                 std::shared_ptr<PhysicalReader> reader,
 	                 const pixels::proto::FileTail& fileTail,
-	                 const PixelsFooterCache& footerCache);
+	                 std::shared_ptr<PixelsFooterCache> footerCache);
 	std::shared_ptr<TypeDescription> getFileSchema() override;
 	PixelsVersion::Version getFileVersion() override;
 	long getNumberOfRows() override;
@@ -44,7 +44,7 @@ private:
     std::vector<std::shared_ptr<PixelsRecordReader>> recordReaders;
 	std::shared_ptr<TypeDescription> fileSchema;
     std::shared_ptr<PhysicalReader> physicalReader;
-    PixelsFooterCache pixelsFooterCache;
+	std::shared_ptr<PixelsFooterCache> pixelsFooterCache;
     pixels::proto::PostScript postScript;
     pixels::proto::Footer footer;
 };

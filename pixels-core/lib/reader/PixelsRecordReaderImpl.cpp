@@ -8,7 +8,7 @@ PixelsRecordReaderImpl::PixelsRecordReaderImpl(std::shared_ptr<PhysicalReader> r
                                                const pixels::proto::PostScript& pixelsPostScript,
                                                const pixels::proto::Footer& pixelsFooter,
                                                const PixelsReaderOption& opt,
-                                               const PixelsFooterCache& pixelsFooterCache) {
+                                               std::shared_ptr<PixelsFooterCache> pixelsFooterCache) {
     physicalReader = reader;
     footer = pixelsFooter;
     postScript = pixelsPostScript;
@@ -218,9 +218,9 @@ void PixelsRecordReaderImpl::prepareRead() {
         int rgId = targetRGs[i];
         std::string rgCacheId = fileName + "-" + std::to_string(rgId);
         rgCacheIds.emplace_back(rgCacheId);
-        if(footerCache.containsRGFooter(rgCacheId)) {
+        if(footerCache->containsRGFooter(rgCacheId)) {
             // cache hit
-            pixels::proto::RowGroupFooter rowGroupFooter = footerCache.getRGFooter(rgCacheId);
+            pixels::proto::RowGroupFooter rowGroupFooter = footerCache->getRGFooter(rgCacheId);
             rowGroupFooters.at(i) = rowGroupFooter;
         } else {
             // cache miss, read from disk and put it into cache
@@ -238,7 +238,7 @@ void PixelsRecordReaderImpl::prepareRead() {
         pixels::proto::RowGroupFooter parsed;
         parsed.ParseFromArray(bbs[i]->getPointer(), (int)bbs[i]->size());
         rowGroupFooters.at(fis[i]) = parsed;
-        footerCache.putRGFooter(rgCacheIds[fis[i]], parsed);
+        footerCache->putRGFooter(rgCacheIds[fis[i]], parsed);
     }
 
     bbs.clear();

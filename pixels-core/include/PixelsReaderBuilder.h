@@ -22,13 +22,13 @@ public:
     PixelsReaderBuilder();
 	PixelsReaderBuilder * setStorage(std::shared_ptr<Storage> storage);
 	PixelsReaderBuilder * setPath(const std::string & path);
-	PixelsReaderBuilder * setPixelsFooterCache(const PixelsFooterCache &pixelsFooterCache);
+	PixelsReaderBuilder * setPixelsFooterCache(std::shared_ptr<PixelsFooterCache> pixelsFooterCache);
 	std::shared_ptr<PixelsReader> build();
 
 private:
     std::shared_ptr<Storage> builderStorage;
     std::string builderPath;
-    PixelsFooterCache builderPixelsFooterCache;
+	std::shared_ptr<PixelsFooterCache> builderPixelsFooterCache;
 	std::shared_ptr<TypeDescription> builderSchema;
 };
 #endif //PIXELS_PIXELSREADERBUILDER_H

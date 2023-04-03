@@ -39,7 +39,7 @@ public:
                                     const pixels::proto::PostScript& pixelsPostScript,
                                     const pixels::proto::Footer& pixelsFooter,
                                     const PixelsReaderOption& opt,
-                                    const PixelsFooterCache& pixelsFooterCache
+                                    std::shared_ptr<PixelsFooterCache> pixelsFooterCache
                                     );
     std::shared_ptr<VectorizedRowBatch> readBatch(int batchSize, bool reuse) override;
 	std::shared_ptr<TypeDescription> getResultSchema() override;
@@ -53,7 +53,7 @@ private:
     std::shared_ptr<PhysicalReader> physicalReader;
     pixels::proto::Footer footer;
     pixels::proto::PostScript postScript;
-    PixelsFooterCache footerCache;
+	std::shared_ptr<PixelsFooterCache> footerCache;
     PixelsReaderOption option;
     long queryId;
     int RGStart;

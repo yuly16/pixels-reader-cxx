@@ -7,7 +7,7 @@
 PixelsReaderImpl::PixelsReaderImpl(std::shared_ptr<TypeDescription> fileSchema,
                                    std::shared_ptr<PhysicalReader> reader,
                                    const pixels::proto::FileTail& fileTail,
-                                   const PixelsFooterCache& footerCache) {
+                                   std::shared_ptr<PixelsFooterCache> footerCache) {
 	this->fileSchema = fileSchema;
 	this->physicalReader = reader;
 	this->footer = fileTail.footer();

@@ -19,7 +19,7 @@ PixelsReaderBuilder * PixelsReaderBuilder::setPath(const std::string &path) {
 }
 
 
-PixelsReaderBuilder * PixelsReaderBuilder::setPixelsFooterCache(const PixelsFooterCache &pixelsFooterCache) {
+PixelsReaderBuilder * PixelsReaderBuilder::setPixelsFooterCache(std::shared_ptr<PixelsFooterCache> pixelsFooterCache) {
     builderPixelsFooterCache = pixelsFooterCache;
     return this;
 }
@@ -34,8 +34,8 @@ std::shared_ptr<PixelsReader> PixelsReaderBuilder::build() {
     // try to get file tail from cache
     std::string fileName = fsReader->getName();
     pixels::proto::FileTail fileTail;
-    if(builderPixelsFooterCache.containsFileTail(fileName)) {
-        fileTail = builderPixelsFooterCache.getFileTail(fileName);
+    if(builderPixelsFooterCache->containsFileTail(fileName)) {
+        fileTail = builderPixelsFooterCache->getFileTail(fileName);
     } else {
         if(fsReader.get() == nullptr) {
             throw PixelsReaderException(
@@ -52,7 +52,7 @@ std::shared_ptr<PixelsReader> PixelsReaderBuilder::build() {
                                     fileTailLength)) {
             throw InvalidArgumentException("paring FileTail error!");
         }
-        builderPixelsFooterCache.putFileTail(fileName, fileTail);
+        builderPixelsFooterCache->putFileTail(fileName, fileTail);
     }
 
     // check file MAGIC and file version

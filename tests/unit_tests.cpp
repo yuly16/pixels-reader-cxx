@@ -97,7 +97,7 @@ TEST(reader, recordReader) {
     option.setQueryId(1);
 
     std::string dataset = "/home/liyu/pixels-reader-cxx/tests/data/20230316154717_0.pxl";
-    PixelsFooterCache footerCache;
+	auto footerCache = std::make_shared<PixelsFooterCache>();
     auto * builder = new PixelsReaderBuilder;
     auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
     auto pixelsReader = builder
