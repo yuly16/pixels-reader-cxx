@@ -81,7 +81,7 @@ TEST(ByteBuffer, read) {
 }
 
 TEST(reader, recordReader) {
-    std::string dataset = "/scratch/liyu/opt/pixels-reader-cxx/tests/data/nation_0_01.pxl";
+    std::string dataset = "/scratch/liyu/opt/pixels-reader-cxx/tests/data/nation_0_1.pxl";
 	auto footerCache = std::make_shared<PixelsFooterCache>();
     auto * builder = new PixelsReaderBuilder;
     auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
