@@ -122,14 +122,20 @@ protected:
     bool fromOtherBB;
 private:
     template<typename T> T read() {
+//		printf("-------------\n");
+//		printf("%p\n", buf);
+//		printf("%p\n", buf + rpos);
         T data = read<T>(rpos);
         rpos += sizeof(T);
         return data;
     }
 
     template<typename T> T read(uint32_t index) {
-        if (index + sizeof(T) <= size())
-            return *((T*) &buf[index]);
+        if (index + sizeof(T) <= size()) {
+			T value;
+			memcpy(&value, buf + index, sizeof(T));
+			return value;
+		}
         return 0;
     }
 
