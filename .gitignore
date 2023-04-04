@@ -1,6 +1,5 @@
 **/cmake-build-debug
 .idea
 demo
-tests/data
 **/CMakeCache.txt
 **/CMakeFiles
