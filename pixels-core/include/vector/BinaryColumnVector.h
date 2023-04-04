@@ -35,7 +35,6 @@ public:
      * in vector[0] and isRepeating from the superclass is set to true.
      */
     int * lens;
-    int size;
     /**
     * Use this constructor by default. All column vectors
     * should normally be the default size.

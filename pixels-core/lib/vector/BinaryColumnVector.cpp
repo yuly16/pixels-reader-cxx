@@ -10,16 +10,15 @@ BinaryColumnVector::BinaryColumnVector(int len): ColumnVector(len) {
     lens = new int[len];
 
     memoryUsage += (long) sizeof(uint8_t) * len;
-    size = len;
 }
 
 void BinaryColumnVector::close() {
     ColumnVector::close();
-    delete vector;
+    delete[] vector;
     vector = nullptr;
-    delete start;
+    delete[] start;
     start = nullptr;
-    delete lens;
+    delete[] lens;
     lens = nullptr;
 }
 
@@ -35,13 +34,13 @@ void BinaryColumnVector::setRef(int elementNum, uint8_t * const &sourceBuf, int 
 }
 
 void BinaryColumnVector::print() {
-    for(int i = 0; i < size; i++) {
-        int s = start[i];
-        int l = lens[i];
-        for(int j = 0; j < l; j++) {
-            std::cout<<(char)(*(vector[i] + s + j));
-        }
-        std::cout<<std::endl;
-
-    }
+	throw InvalidArgumentException("not support print binarycolumnvector.");
+//    for(int i = 0; i < size; i++) {
+//        int s = start[i];
+//        int l = lens[i];
+//        for(int j = 0; j < l; j++) {
+//            std::cout<<(char)(*(vector[i] + s + j));
+//        }
+//        std::cout<<std::endl;
+//    }
 }
