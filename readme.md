@@ -22,3 +22,6 @@ DecimalColumnVector and StringColumnVector use small endian.
 For `long`, we read it by big endian. Search for `__builtin_bswap64`
 to check who uses small endian. For `int`, we read it by small endian. 
 
+## 3. alignment
+
+StringColumn is not aligned(e.g. reading length in string column). We should fix it later
