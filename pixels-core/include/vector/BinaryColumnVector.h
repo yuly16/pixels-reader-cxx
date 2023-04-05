@@ -41,6 +41,7 @@ public:
     */
     BinaryColumnVector(int len = VectorizedRowBatch::DEFAULT_SIZE);
 
+	~BinaryColumnVector();
     /**
      * Set a field by reference.
      *

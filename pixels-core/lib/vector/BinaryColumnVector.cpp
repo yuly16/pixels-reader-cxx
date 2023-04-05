@@ -8,18 +8,19 @@ BinaryColumnVector::BinaryColumnVector(int len): ColumnVector(len) {
     vector = new uint8_t *[len];
     start = new int[len];
     lens = new int[len];
-
     memoryUsage += (long) sizeof(uint8_t) * len;
 }
 
 void BinaryColumnVector::close() {
-    ColumnVector::close();
-    delete[] vector;
-    vector = nullptr;
-    delete[] start;
-    start = nullptr;
-    delete[] lens;
-    lens = nullptr;
+	if(!closed) {
+		ColumnVector::close();
+		delete[] vector;
+		vector = nullptr;
+		delete[] start;
+		start = nullptr;
+		delete[] lens;
+		lens = nullptr;
+	}
 }
 
 void BinaryColumnVector::setRef(int elementNum, uint8_t * const &sourceBuf, int start, int length) {
@@ -43,4 +44,9 @@ void BinaryColumnVector::print() {
 //        }
 //        std::cout<<std::endl;
 //    }
+}
+BinaryColumnVector::~BinaryColumnVector() {
+	if(!closed) {
+		BinaryColumnVector::close();
+	}
 }

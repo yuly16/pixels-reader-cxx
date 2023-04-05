@@ -10,7 +10,9 @@ ByteColumnVector::ByteColumnVector(int len): ColumnVector(len) {
 }
 
 void ByteColumnVector::close() {
-    ColumnVector::close();
-    delete vector;
-    vector = nullptr;
+	if(!closed) {
+		ColumnVector::close();
+		delete vector;
+		vector = nullptr;
+	}
 }

@@ -23,5 +23,7 @@ public:
 	virtual std::shared_ptr<TypeDescription> getResultSchema() = 0;
 
 	virtual bool isEndOfFile() = 0;
+
+	virtual void close() = 0;
 };
 #endif //PIXELS_PIXELSRECORDREADER_H

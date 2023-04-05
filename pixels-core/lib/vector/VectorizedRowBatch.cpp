@@ -25,8 +25,14 @@ VectorizedRowBatch::VectorizedRowBatch(int nCols, int size) {
     cols.clear();
     cols.resize(numCols);
 	endOfFile = false;
+	closed = false;
 }
 
+VectorizedRowBatch::~VectorizedRowBatch() {
+	if(!closed) {
+		close();
+	}
+}
 /**
  * Returns the maximum size of the batch (number of rows it can hold)
  */
@@ -66,4 +72,15 @@ bool VectorizedRowBatch::isFull() {
  */
 int VectorizedRowBatch::freeSlots() {
     return maxSize - rowCount;
+}
+void VectorizedRowBatch::close() {
+	if(!closed) {
+		maxSize = 0;
+		endOfFile = false;
+		for(const auto& col : cols) {
+			col->close();
+		}
+		cols.clear();
+		closed = true;
+	}
 }

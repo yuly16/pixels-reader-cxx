@@ -11,9 +11,11 @@ LongColumnVector::LongColumnVector(int len): ColumnVector(len) {
 }
 
 void LongColumnVector::close() {
-    ColumnVector::close();
-    delete[] vector;
-    vector = nullptr;
+	if(!closed) {
+		ColumnVector::close();
+		delete[] vector;
+		vector = nullptr;
+	}
 }
 
 void LongColumnVector::print() {
@@ -21,4 +23,9 @@ void LongColumnVector::print() {
 //    for(int i = 0; i < size; i++) {
 //        std::cout<<vector[i]<<std::endl;
 //    }
+}
+LongColumnVector::~LongColumnVector() {
+	if(!closed) {
+		LongColumnVector::close();
+	}
 }

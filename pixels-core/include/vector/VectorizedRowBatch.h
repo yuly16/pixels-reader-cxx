@@ -31,11 +31,14 @@ public:
     // If this is true, then there is no data in the batch -- we have hit the end of input
     bool endOfFile;
     explicit VectorizedRowBatch(int nCols, int size = DEFAULT_SIZE);
+	~VectorizedRowBatch();
+	void close();
     int getMaxSize();
     int count();
     bool isEmpty();
     bool isFull();
     int freeSlots();
-
+private:
+	bool closed;
 };
 #endif //PIXELS_VECTORIZEDROWBATCH_H

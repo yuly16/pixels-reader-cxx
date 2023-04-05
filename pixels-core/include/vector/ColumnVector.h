@@ -44,9 +44,10 @@ public:
     int length;
     int writeIndex;
     long memoryUsage;
-
+	bool closed;
     ColumnVector() = default;
     explicit ColumnVector(int len);
+
     virtual void close();
     virtual void reset();
     virtual void print();      // this is only used for debug

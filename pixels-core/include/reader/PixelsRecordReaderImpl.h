@@ -45,6 +45,7 @@ public:
 	std::shared_ptr<TypeDescription> getResultSchema() override;
 	bool isEndOfFile() override;
     ~PixelsRecordReaderImpl();
+	void close() override;
 private:
     bool read();
     void prepareRead();

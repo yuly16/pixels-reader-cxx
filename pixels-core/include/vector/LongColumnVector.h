@@ -17,6 +17,7 @@ public:
     * should normally be the default size.
     */
     LongColumnVector(int len = VectorizedRowBatch::DEFAULT_SIZE);
+	~LongColumnVector();
     void print() override;
     void close() override;
 };

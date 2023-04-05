@@ -232,9 +232,7 @@ std::shared_ptr<VectorizedRowBatch> TypeDescription::createRowBatch(int maxSize,
             throw InvalidArgumentException(
                     "There must be 0 or children.size() element in useEncodedVector");
         }
-        result = std::make_shared<VectorizedRowBatch>(
-                VectorizedRowBatch(children.size(), maxSize)
-                );
+        result = std::make_shared<VectorizedRowBatch>(children.size(), maxSize);
         std::vector<std::string> columnNames;
         for(int i = 0; i < result->cols.size(); i++) {
             std::string fieldName = fieldNames.at(i);

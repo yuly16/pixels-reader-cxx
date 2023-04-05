@@ -326,3 +326,15 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::createEmptyEOFRowBat
 bool PixelsRecordReaderImpl::isEndOfFile() {
 	return endOfFile;
 }
+
+void PixelsRecordReaderImpl::close() {
+	// release chunk buffers
+	chunkBuffers.clear();
+	for(const auto& reader: readers) {
+		reader->close();
+	}
+	readers.clear();
+	rowGroupFooters.clear();
+	includedColumnTypes.clear();
+	endOfFile = true;
+}
