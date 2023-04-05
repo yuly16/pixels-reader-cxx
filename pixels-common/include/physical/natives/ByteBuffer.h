@@ -129,7 +129,10 @@ private:
 
     template<typename T> T read(uint32_t index) {
         if (index + sizeof(T) <= size()) {
-			return *((T*) &buf[index]);
+			T value;
+			memcpy(&value, buf + index, sizeof(T));
+			return value;
+//			return *((T*) &buf[index]);
 		}
         return 0;
     }

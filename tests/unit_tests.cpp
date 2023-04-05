@@ -80,8 +80,8 @@ TEST(ByteBuffer, read) {
     // don't delete buf. bb will delete it.
 }
 
-TEST(reader, recordReader) {
-    std::string dataset = "/home/yuly/project/pixels-reader-cxx/tests/data/supplier_0_1.pxl";
+TEST(reader, recordReaderSingleTable) {
+    std::string dataset = "/scratch/liyu/opt/pixels-reader-cxx/tests/data/nation_0_1.pxl";
 	auto footerCache = std::make_shared<PixelsFooterCache>();
     auto * builder = new PixelsReaderBuilder;
     auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
@@ -97,9 +97,7 @@ TEST(reader, recordReader) {
 	option.setEnableEncodedColumnVector(true);
 
 	// includeCols comes from the caller of PixelsPageSource
-//	std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
-    std::vector<std::string> includeCols;
-    includeCols.emplace_back("s_acctbal");
+	std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
 	option.setIncludeCols(includeCols);
 	option.setRGRange(0, 1);
 	option.setQueryId(1);
@@ -130,6 +128,92 @@ TEST(reader, recordReader) {
 	EXPECT_EQ(v2->rowCount, 0);
 
 }
+
+
+TEST(reader, recordReaderMultipleTable) {
+	{
+		std::string dataset = "/scratch/liyu/opt/pixels-reader-cxx/tests/data/nation_0_1.pxl";
+		auto footerCache = std::make_shared<PixelsFooterCache>();
+		auto * builder = new PixelsReaderBuilder;
+		auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
+		auto pixelsReader = builder
+		                        ->setPath(dataset)
+		                        ->setStorage(storage)
+		                        ->setPixelsFooterCache(footerCache)
+		                        ->build();
+
+		PixelsReaderOption option;
+		option.setSkipCorruptRecords(true);
+		option.setTolerantSchemaEvolution(true);
+		option.setEnableEncodedColumnVector(true);
+
+		// includeCols comes from the caller of PixelsPageSource
+		std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
+		option.setIncludeCols(includeCols);
+		option.setRGRange(0, 1);
+		option.setQueryId(1);
+		auto pixelsRecordReader = pixelsReader->read(option);
+		std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(13, false);
+		EXPECT_FALSE(v->endOfFile);
+		EXPECT_FALSE(pixelsRecordReader->isEndOfFile());
+		EXPECT_EQ(v->rowCount, 13);
+		//    for(const auto& col: v->cols) {
+		//        std::cout<<"------"<<std::endl;
+		//        col->print();
+		//    }
+		std::shared_ptr<VectorizedRowBatch> v1 = pixelsRecordReader->readBatch(120, false);
+		EXPECT_TRUE(v1->endOfFile);
+		EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
+		EXPECT_EQ(v1->rowCount, 12);
+		//	std::cout<<"------"<<std::endl;
+		//    std::cout<<"------"<<std::endl;
+		//    std::cout<<"------"<<std::endl;
+		//    std::cout<<"------"<<std::endl;
+		//    for(const auto& col: v1->cols) {
+		//        std::cout<<"------"<<std::endl;
+		//        col->print();
+		//    }
+		std::shared_ptr<VectorizedRowBatch> v2 = pixelsRecordReader->readBatch(120, false);
+		EXPECT_TRUE(v2->endOfFile);
+		EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
+		EXPECT_EQ(v2->rowCount, 0);
+	}
+	{
+		std::string dataset = "/scratch/liyu/opt/pixels-reader-cxx/tests/data/region_0_1.pxl";
+		auto footerCache = std::make_shared<PixelsFooterCache>();
+		auto * builder = new PixelsReaderBuilder;
+		auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
+		auto pixelsReader = builder
+		                        ->setPath(dataset)
+		                        ->setStorage(storage)
+		                        ->setPixelsFooterCache(footerCache)
+		                        ->build();
+
+		PixelsReaderOption option;
+		option.setSkipCorruptRecords(true);
+		option.setTolerantSchemaEvolution(true);
+		option.setEnableEncodedColumnVector(true);
+
+		// includeCols comes from the caller of PixelsPageSource
+		std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
+		option.setIncludeCols(includeCols);
+		option.setRGRange(0, 1);
+		option.setQueryId(1);
+		auto pixelsRecordReader = pixelsReader->read(option);
+		std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(13, false);
+		EXPECT_TRUE(v->endOfFile);
+		EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
+		EXPECT_EQ(v->rowCount, 5);
+		//    for(const auto& col: v->cols) {
+		//        std::cout<<"------"<<std::endl;
+		//        col->print();
+		//    }
+
+	}
+
+
+}
+
 
 TEST(reader, fileTail) {
     std::string path = "/home/liyu/pixels-reader-cxx/tests/data/20230224150144_3.pxl";
