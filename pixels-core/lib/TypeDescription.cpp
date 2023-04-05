@@ -117,6 +117,9 @@ std::shared_ptr<TypeDescription> TypeDescription::createSchema(const std::vector
             case pixels::proto::Type_Kind_DOUBLE:
                 fieldType = TypeDescription::createDouble();
                 break;
+		    case pixels::proto::Type_Kind_DECIMAL:
+			    fieldType = TypeDescription::createDecimal(type.precision(), type.scale());
+			    break;
             case pixels::proto::Type_Kind_VARCHAR:
                 fieldType = TypeDescription::createVarchar();
                 fieldType->maxLength = type.maximumlength();
@@ -168,6 +171,13 @@ std::shared_ptr<TypeDescription> TypeDescription::createFloat() {
 
 std::shared_ptr<TypeDescription> TypeDescription::createDouble() {
 	return std::make_shared<TypeDescription>(DOUBLE);
+}
+
+std::shared_ptr<TypeDescription> TypeDescription::createDecimal(int precision, int scale) {
+	auto type = std::make_shared<TypeDescription>(DECIMAL);
+	type->precision = precision;
+	type->scale = scale;
+	return type;
 }
 
 
@@ -275,17 +285,25 @@ std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::ve
         case INT:
         case LONG:
             return std::make_shared<LongColumnVector>(maxSize);
+	    case DECIMAL: {
+		    if (precision <= SHORT_DECIMAL_MAX_PRECISION) {
+				return std::make_shared<DecimalColumnVector>(maxSize, precision, scale);
+		    } else {
+				throw InvalidArgumentException("Currently we didn't implement LongDecimalColumnVector.");
+		    }
+	    }
         case STRING:
         case BINARY:
         case VARBINARY:
         case CHAR:
-        case VARCHAR:
-            if(!useEncodedVector.at(0)) {
-                return std::make_shared<BinaryColumnVector>(maxSize);
-            } else {
-                // TODO: dict should be supported here
-                assert(false);
-            }
+        case VARCHAR: {
+		    if (!useEncodedVector.at(0)) {
+			    return std::make_shared<BinaryColumnVector>(maxSize);
+		    } else {
+			    // TODO: dict should be supported here
+			    assert(false);
+		    }
+	    }
         default:
             throw InvalidArgumentException("Unknown type when creating column");
     }
@@ -294,6 +312,16 @@ std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::ve
 TypeDescription::Category TypeDescription::getCategory() {
     return category;
 }
+
 std::vector<std::string> TypeDescription::getFieldNames() {
 	return fieldNames;
 }
+
+int TypeDescription::getPrecision() {
+	return precision;
+}
+
+int TypeDescription::getScale() {
+	return scale;
+}
+

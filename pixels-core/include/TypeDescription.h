@@ -58,6 +58,7 @@ public:
     static std::shared_ptr<TypeDescription> createLong();
     static std::shared_ptr<TypeDescription> createFloat();
     static std::shared_ptr<TypeDescription> createDouble();
+	static std::shared_ptr<TypeDescription> createDecimal(int precision, int scale);
     static std::shared_ptr<TypeDescription> createString();
     static std::shared_ptr<TypeDescription> createDate();
     static std::shared_ptr<TypeDescription> createTime();
@@ -75,6 +76,8 @@ public:
     std::vector<std::shared_ptr<TypeDescription>> getChildren();
     Category getCategory();
 	std::vector<std::string> getFieldNames();
+	int getPrecision();
+	int getScale();
     static std::map<Category, CategoryProperty> categoryMap;
 
     static int SHORT_DECIMAL_MAX_PRECISION;
