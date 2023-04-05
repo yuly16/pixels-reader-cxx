@@ -37,9 +37,9 @@ void DecimalColumnVector::close() {
     }
 }
 
-void DecimalColumnVector::print() {
+void DecimalColumnVector::print(int rowCount) {
 //    throw InvalidArgumentException("not support print Decimalcolumnvector.");
-    for(int i = 0; i < memoryUsage / sizeof(long); i++) {
+    for(int i = 0; i < rowCount; i++) {
         std::cout<<vector[i]<<std::endl;
     }
 }

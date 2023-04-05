@@ -34,16 +34,16 @@ void BinaryColumnVector::setRef(int elementNum, uint8_t * const &sourceBuf, int 
 
 }
 
-void BinaryColumnVector::print() {
-	throw InvalidArgumentException("not support print binarycolumnvector.");
-//    for(int i = 0; i < size; i++) {
-//        int s = start[i];
-//        int l = lens[i];
-//        for(int j = 0; j < l; j++) {
-//            std::cout<<(char)(*(vector[i] + s + j));
-//        }
-//        std::cout<<std::endl;
-//    }
+void BinaryColumnVector::print(int rowCount) {
+//	throw InvalidArgumentException("not support print binarycolumnvector.");
+    for(int i = 0; i < rowCount; i++) {
+        int s = start[i];
+        int l = lens[i];
+        for(int j = 0; j < l; j++) {
+            std::cout<<(char)(*(vector[i] + s + j));
+        }
+        std::cout<<std::endl;
+    }
 }
 BinaryColumnVector::~BinaryColumnVector() {
 	if(!closed) {

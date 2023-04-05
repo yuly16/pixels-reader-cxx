@@ -18,7 +18,7 @@ public:
     */
     LongColumnVector(int len = VectorizedRowBatch::DEFAULT_SIZE);
 	~LongColumnVector();
-    void print() override;
+    void print(int rowCount) override;
     void close() override;
 };
 #endif //PIXELS_LONGCOLUMNVECTOR_H

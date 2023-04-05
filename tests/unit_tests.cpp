@@ -81,7 +81,7 @@ TEST(ByteBuffer, read) {
 }
 
 TEST(reader, recordReaderSingleTable) {
-    std::string dataset = "/scratch/liyu/opt/pixels-reader-cxx/tests/data/nation_0_1.pxl";
+    std::string dataset = "/home/yuly/project/pixels-reader-cxx/tests/data/nation_0_1.pxl";
 	auto footerCache = std::make_shared<PixelsFooterCache>();
     auto * builder = new PixelsReaderBuilder;
     auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
@@ -106,22 +106,22 @@ TEST(reader, recordReaderSingleTable) {
 	EXPECT_FALSE(v->endOfFile);
 	EXPECT_FALSE(pixelsRecordReader->isEndOfFile());
 	EXPECT_EQ(v->rowCount, 13);
-//    for(const auto& col: v->cols) {
-//        std::cout<<"------"<<std::endl;
-//        col->print();
-//    }
+    for(const auto& col: v->cols) {
+        std::cout<<"------"<<std::endl;
+        col->print(v->rowCount);
+    }
     std::shared_ptr<VectorizedRowBatch> v1 = pixelsRecordReader->readBatch(120, false);
 	EXPECT_TRUE(v1->endOfFile);
 	EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
 	EXPECT_EQ(v1->rowCount, 12);
-//	std::cout<<"------"<<std::endl;
-//    std::cout<<"------"<<std::endl;
-//    std::cout<<"------"<<std::endl;
-//    std::cout<<"------"<<std::endl;
-//    for(const auto& col: v1->cols) {
-//        std::cout<<"------"<<std::endl;
-//        col->print();
-//    }
+	std::cout<<"------"<<std::endl;
+    std::cout<<"------"<<std::endl;
+    std::cout<<"------"<<std::endl;
+    std::cout<<"------"<<std::endl;
+    for(const auto& col: v1->cols) {
+        std::cout<<"------"<<std::endl;
+        col->print(v1->rowCount);
+    }
 	std::shared_ptr<VectorizedRowBatch> v2 = pixelsRecordReader->readBatch(120, false);
 	EXPECT_TRUE(v2->endOfFile);
 	EXPECT_TRUE(pixelsRecordReader->isEndOfFile());

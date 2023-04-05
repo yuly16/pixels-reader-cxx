@@ -52,6 +52,6 @@ public:
      */
     void setRef(int elementNum, uint8_t * const & sourceBuf, int start, int length);
     void close() override;
-    void print() override;
+    void print(int rowCount) override;
 };
 #endif //PIXELS_BINARYCOLUMNVECTOR_H

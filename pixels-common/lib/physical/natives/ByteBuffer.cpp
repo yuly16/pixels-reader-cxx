@@ -147,11 +147,11 @@ int ByteBuffer::getInt(uint32_t index) {
 
 long ByteBuffer::getLong() {
     //TODO: if other type should use this function?
-    return (long)__builtin_bswap64(read<uint64_t>());
+    return (long)read<uint64_t>();
 }
 
 long ByteBuffer::getLong(uint32_t index) {
-    return (long)__builtin_bswap64(read<uint64_t>(index));
+    return (long)read<uint64_t>(index);
 }
 
 short ByteBuffer::getShort() {

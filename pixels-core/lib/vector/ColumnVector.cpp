@@ -24,7 +24,7 @@ void ColumnVector::reset() {
     // TODO: reset other variables
 }
 
-void ColumnVector::print() {
+void ColumnVector::print(int rowCount) {
     throw InvalidArgumentException("This columnVector doesn't implement this function.");
 }
 

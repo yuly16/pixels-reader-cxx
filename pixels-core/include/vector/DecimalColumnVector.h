@@ -21,7 +21,7 @@ public:
     DecimalColumnVector(int precision, int scale);
     DecimalColumnVector(int len, int precision, int scale);
     ~DecimalColumnVector();
-    void print() override;
+    void print(int rowCount) override;
     void close() override;
 };
 

@@ -18,11 +18,11 @@ void LongColumnVector::close() {
 	}
 }
 
-void LongColumnVector::print() {
-	throw InvalidArgumentException("not support print longcolumnvector.");
-//    for(int i = 0; i < size; i++) {
-//        std::cout<<vector[i]<<std::endl;
-//    }
+void LongColumnVector::print(int rowCount) {
+//	throw InvalidArgumentException("not support print longcolumnvector.");
+    for(int i = 0; i < rowCount; i++) {
+        std::cout<<vector[i]<<std::endl;
+    }
 }
 LongColumnVector::~LongColumnVector() {
 	if(!closed) {

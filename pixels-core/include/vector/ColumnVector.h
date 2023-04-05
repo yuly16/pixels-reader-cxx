@@ -50,7 +50,7 @@ public:
 
     virtual void close();
     virtual void reset();
-    virtual void print();      // this is only used for debug
+    virtual void print(int rowCount);      // this is only used for debug
 };
 
 #endif //PIXELS_COLUMNVECTOR_H
