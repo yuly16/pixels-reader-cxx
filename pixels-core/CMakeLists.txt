@@ -16,7 +16,7 @@ set(pixels_core_cxx
         lib/vector/VectorizedRowBatch.cpp
         lib/vector/ColumnVector.cpp
         lib/vector/ByteColumnVector.cpp
-        lib/vector/BinaryColumnVector.cpp lib/reader/ColumnReader.cpp lib/reader/ColumnReaderBuilder.cpp lib/reader/IntegerColumnReader.cpp lib/reader/CharColumnReader.cpp lib/reader/VarcharColumnReader.cpp lib/reader/StringColumnReader.cpp lib/encoding/Decoder.cpp lib/encoding/RunLenIntDecoder.cpp lib/encoding/Encoder.cpp lib/encoding/RunLenIntEncoder.cpp lib/utils/EncodingUtils.cpp lib/utils/EncodingUtils.cpp)
+        lib/vector/BinaryColumnVector.cpp lib/reader/ColumnReader.cpp lib/reader/ColumnReaderBuilder.cpp lib/reader/IntegerColumnReader.cpp lib/reader/CharColumnReader.cpp lib/reader/VarcharColumnReader.cpp lib/reader/StringColumnReader.cpp lib/encoding/Decoder.cpp lib/encoding/RunLenIntDecoder.cpp lib/encoding/Encoder.cpp lib/encoding/RunLenIntEncoder.cpp lib/utils/EncodingUtils.cpp lib/utils/EncodingUtils.cpp include/vector/DecimalColumnVector.h lib/vector/DecimalColumnVector.cpp include/reader/DecimalColumnReader.h lib/reader/DecimalColumnReader.cpp)
 
 add_library(pixels-core ${pixels_core_cxx})
 

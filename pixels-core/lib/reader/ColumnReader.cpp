@@ -5,9 +5,9 @@
 #include "reader/ColumnReader.h"
 
 ColumnReader::ColumnReader(std::shared_ptr<TypeDescription> type) {
-    colType = type;
-    elementIndex = 0;
-    hasNull = true;
+    this->type = type;
+    this->elementIndex = 0;
+    this->hasNull = true;
 }
 
 std::shared_ptr<ColumnReader> ColumnReader::newColumnReader(std::shared_ptr<TypeDescription> type) {

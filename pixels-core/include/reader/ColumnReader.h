@@ -40,7 +40,7 @@ public:
                       int vectorIndex, std::shared_ptr<ColumnVector> vector,
                       pixels::proto::ColumnChunkIndex chunkIndex) = 0;
 private:
-    std::shared_ptr<TypeDescription> colType;
+    std::shared_ptr<TypeDescription> type;
     bool hasNull;
 protected:
     int elementIndex;

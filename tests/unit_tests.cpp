@@ -81,7 +81,7 @@ TEST(ByteBuffer, read) {
 }
 
 TEST(reader, recordReader) {
-    std::string dataset = "/scratch/liyu/opt/pixels-reader-cxx/tests/data/nation_0_1.pxl";
+    std::string dataset = "/home/yuly/project/pixels-reader-cxx/tests/data/supplier_0_1.pxl";
 	auto footerCache = std::make_shared<PixelsFooterCache>();
     auto * builder = new PixelsReaderBuilder;
     auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
@@ -97,7 +97,9 @@ TEST(reader, recordReader) {
 	option.setEnableEncodedColumnVector(true);
 
 	// includeCols comes from the caller of PixelsPageSource
-	std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
+//	std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
+    std::vector<std::string> includeCols;
+    includeCols.emplace_back("s_acctbal");
 	option.setIncludeCols(includeCols);
 	option.setRGRange(0, 1);
 	option.setQueryId(1);

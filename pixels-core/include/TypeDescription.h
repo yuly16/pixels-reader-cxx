@@ -21,6 +21,7 @@
 #include "vector/LongColumnVector.h"
 #include "vector/ByteColumnVector.h"
 #include "vector/BinaryColumnVector.h"
+#include "vector/DecimalColumnVector.h"
 
 struct CategoryProperty {
     bool isPrimitive;
