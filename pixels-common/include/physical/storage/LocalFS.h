@@ -22,7 +22,7 @@ public:
     ~LocalFS();
     Scheme getScheme() override;
     std::string ensureSchemePrefix(std::string path) override;
-    PixelsRandomAccessFile * openRaf(const std::string& path);
+	std::shared_ptr<PixelsRandomAccessFile> openRaf(const std::string& path);
     void close() override;
 private:
     // TODO: read the configuration from pixels.properties for the following to values.

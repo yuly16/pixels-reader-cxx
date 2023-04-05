@@ -27,12 +27,12 @@ std::string LocalFS::ensureSchemePrefix(std::string path) {
     return SchemePrefix + path;
 }
 
-PixelsRandomAccessFile * LocalFS::openRaf(const std::string& path) {
+std::shared_ptr<PixelsRandomAccessFile> LocalFS::openRaf(const std::string& path) {
     if(true) {
         // TODO: change this class to mmap class in the future.
-        return new DirectRandomAccessFile(path);
+        return std::make_shared<DirectRandomAccessFile>(path);
     } else {
-        return new DirectRandomAccessFile(path);
+        return std::make_shared<DirectRandomAccessFile>(path);
     }
 }
 

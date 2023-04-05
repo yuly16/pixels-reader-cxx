@@ -27,7 +27,7 @@ private:
     std::string path;
     long id;
     std::atomic<int> numRequests;
-    PixelsRandomAccessFile * raf;
+	std::shared_ptr<PixelsRandomAccessFile> raf;
 };
 
 #endif //PIXELS_READER_PHYSICALLOCALREADER_H
