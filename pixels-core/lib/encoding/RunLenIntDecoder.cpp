@@ -35,7 +35,7 @@ long RunLenIntDecoder::next() {
 }
 
 void RunLenIntDecoder::readValues() {
-    auto firstByte = (int8_t) inputStream->get();
+    auto firstByte = inputStream->get();
     if(firstByte < 0) {
         // TODO: logger.error
         used = 0;
