@@ -11,7 +11,8 @@
 class EncodingUtils {
 public:
     EncodingUtils();
-    int decodeBitWidth(int n);
+	~EncodingUtils();
+	int decodeBitWidth(int n);
     void readLongBE(const std::shared_ptr<ByteBuffer> &input, long * buffer,
                     int start, int numHops, int numBytes);
     void readRemainingLongs(const std::shared_ptr<ByteBuffer> &input, long * buffer,

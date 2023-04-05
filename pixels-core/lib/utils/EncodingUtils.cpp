@@ -313,6 +313,13 @@ long EncodingUtils::readLongBE8(int rbOffset) {
             + ((readBuffer[rbOffset + 7] & 255) << 0));
 }
 
-
-
-
+EncodingUtils::~EncodingUtils() {
+	if(readBuffer != nullptr) {
+        delete [] readBuffer;
+        readBuffer = nullptr;
+	}
+	if(writeBuffer != nullptr) {
+		delete [] writeBuffer;
+		writeBuffer = nullptr;
+	}
+}

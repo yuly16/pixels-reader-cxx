@@ -103,7 +103,9 @@ private:
     static long serialVersionUID;
     int id;
     int maxId;
-    std::shared_ptr<TypeDescription> parent;
+
+	// here we use weak_ptr to avoid cyclic reference
+    std::weak_ptr<TypeDescription> parent;
     Category category;
     std::vector<std::shared_ptr<TypeDescription>> children;
     std::vector<std::string> fieldNames;

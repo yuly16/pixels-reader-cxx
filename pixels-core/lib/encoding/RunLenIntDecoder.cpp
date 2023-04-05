@@ -17,8 +17,10 @@ void RunLenIntDecoder::close() {
 }
 
 RunLenIntDecoder::~RunLenIntDecoder() {
-    delete[] literals;
-    literals = nullptr;
+	if(literals != nullptr) {
+		delete[] literals;
+		literals = nullptr;
+	}
 }
 
 long RunLenIntDecoder::next() {
