@@ -36,9 +36,7 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
                 // read the first byte of the pixels (stride).
                 isLong = input->getLong() == 1;
             }
-            // TODO: the code is ugly
-            long a = input->getLong();
-            columnVector->vector[i + vectorIndex] = a;
+            columnVector->vector[i + vectorIndex] = input->getLong();
             elementIndex++;
         }
     } else {

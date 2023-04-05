@@ -23,6 +23,7 @@ public:
 	                 std::shared_ptr<PhysicalReader> reader,
 	                 const pixels::proto::FileTail& fileTail,
 	                 std::shared_ptr<PixelsFooterCache> footerCache);
+	~PixelsReaderImpl();
 	std::shared_ptr<TypeDescription> getFileSchema() override;
 	PixelsVersion::Version getFileVersion() override;
 	long getNumberOfRows() override;
@@ -38,8 +39,7 @@ public:
 	pixels::proto::RowGroupInformation getRowGroupInfo(int rowGroupId) override;
 	pixels::proto::RowGroupStatistic getRowGroupStat(int rowGroupId) override;
 	RowGroupStatList getRowGroupStats() override;
-	// TODO: close
-//	void close() override;
+	void close() override;
 private:
     std::vector<std::shared_ptr<PixelsRecordReader>> recordReaders;
 	std::shared_ptr<TypeDescription> fileSchema;
@@ -47,6 +47,7 @@ private:
 	std::shared_ptr<PixelsFooterCache> pixelsFooterCache;
     pixels::proto::PostScript postScript;
     pixels::proto::Footer footer;
+	bool closed;
 };
 
 #endif //PIXELS_PIXELSREADERIMPL_H

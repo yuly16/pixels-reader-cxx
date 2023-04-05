@@ -50,8 +50,8 @@ public:
 	virtual pixels::proto::RowGroupInformation getRowGroupInfo(int rowGroupId) = 0;
 	virtual pixels::proto::RowGroupStatistic getRowGroupStat(int rowGroupId) = 0;
 	virtual RowGroupStatList getRowGroupStats() = 0;
-	// TODO: close
-//	virtual void close() = 0;
+	virtual void close() = 0;
+
 };
 
 #endif //PIXELS_PIXELSREADER_H

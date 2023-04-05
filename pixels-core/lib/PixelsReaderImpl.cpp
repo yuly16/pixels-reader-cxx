@@ -13,6 +13,7 @@ PixelsReaderImpl::PixelsReaderImpl(std::shared_ptr<TypeDescription> fileSchema,
 	this->footer = fileTail.footer();
 	this->postScript = fileTail.postscript();
 	this->pixelsFooterCache = footerCache;
+	this->closed = false;
 }
 
 
@@ -102,4 +103,20 @@ pixels::proto::RowGroupStatistic PixelsReaderImpl::getRowGroupStat(int rowGroupI
 
 RowGroupStatList PixelsReaderImpl::getRowGroupStats() {
 	return footer.rowgroupstats();
+}
+
+PixelsReaderImpl::~PixelsReaderImpl() {
+	if(!closed) {
+		PixelsReaderImpl::close();
+	}
+}
+
+void PixelsReaderImpl::close() {
+	if(!closed) {
+		for(auto recordReader: recordReaders) {
+			recordReader->close();
+		}
+		recordReaders.clear();
+		physicalReader->close();
+	}
 }

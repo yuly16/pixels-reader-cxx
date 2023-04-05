@@ -46,7 +46,7 @@ public:
     virtual int readInt() = 0;
     virtual char readChar() = 0;
 //    virtual int readInt() = 0;
-//    virtual void close() = 0;
+    virtual void close() = 0;
 
 //    virtual std::string getPath() = 0;
 
