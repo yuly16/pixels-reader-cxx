@@ -285,6 +285,8 @@ std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::ve
         case INT:
         case LONG:
             return std::make_shared<LongColumnVector>(maxSize);
+	    case DATE:
+		    return std::make_shared<DateColumnVector>(maxSize);
 	    case DECIMAL: {
 		    if (precision <= SHORT_DECIMAL_MAX_PRECISION) {
 				return std::make_shared<DecimalColumnVector>(maxSize, precision, scale);
@@ -305,7 +307,7 @@ std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::ve
 		    }
 	    }
         default:
-            throw InvalidArgumentException("Unknown type when creating column");
+            throw InvalidArgumentException("TypeDescription: Unknown type when creating column");
     }
 }
 

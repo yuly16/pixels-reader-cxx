@@ -10,6 +10,8 @@
 #include "reader/CharColumnReader.h"
 #include "reader/VarcharColumnReader.h"
 #include "reader/DecimalColumnReader.h"
+#include "reader/DateColumnReader.h"
+
 class ColumnReaderBuilder {
 public:
     static std::shared_ptr<ColumnReader> newColumnReader(

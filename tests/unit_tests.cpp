@@ -216,6 +216,57 @@ TEST(reader, recordReaderMultipleTable) {
 
 }
 
+TEST(reader, testDateReader) {
+	std::string dataset = "/home/yuly/project/data/orders_0_1.pxl";
+	auto footerCache = std::make_shared<PixelsFooterCache>();
+	auto builder = std::make_shared<PixelsReaderBuilder>();
+	auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
+	auto pixelsReader = builder
+	                        ->setPath(dataset)
+	                        ->setStorage(storage)
+	                        ->setPixelsFooterCache(footerCache)
+	                        ->build();
+
+	PixelsReaderOption option;
+	option.setSkipCorruptRecords(true);
+	option.setTolerantSchemaEvolution(true);
+	option.setEnableEncodedColumnVector(true);
+
+	// includeCols comes from the caller of PixelsPageSource
+	std::vector<std::string> includeCols;
+	includeCols.emplace_back("o_orderdate");
+	//	std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
+	option.setIncludeCols(includeCols);
+	option.setRGRange(0, 1);
+	option.setQueryId(1);
+	auto pixelsRecordReader = pixelsReader->read(option);
+	std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(10000, false);
+	//	EXPECT_FALSE(v->endOfFile);
+	//	EXPECT_FALSE(pixelsRecordReader->isEndOfFile());
+	//	EXPECT_EQ(v->rowCount, 13);
+	for(const auto& col: v->cols) {
+		std::cout<<"------"<<std::endl;
+		col->print(v->rowCount);
+	}
+	//    std::shared_ptr<VectorizedRowBatch> v1 = pixelsRecordReader->readBatch(120, false);
+	//	EXPECT_TRUE(v1->endOfFile);
+	//	EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
+	//	EXPECT_EQ(v1->rowCount, 12);
+	//	std::cout<<"------"<<std::endl;
+	//    std::cout<<"------"<<std::endl;
+	//    std::cout<<"------"<<std::endl;
+	//    std::cout<<"------"<<std::endl;
+	//    for(const auto& col: v1->cols) {
+	//        std::cout<<"------"<<std::endl;
+	//        col->print(v1->rowCount);
+	//    }
+	//	std::shared_ptr<VectorizedRowBatch> v2 = pixelsRecordReader->readBatch(120, false);
+	//	EXPECT_TRUE(v2->endOfFile);
+	//	EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
+	//	EXPECT_EQ(v2->rowCount, 0);
+
+}
+
 
 TEST(reader, fileTail) {
     std::string path = "/home/liyu/pixels-reader-cxx/tests/data/20230224150144_3.pxl";

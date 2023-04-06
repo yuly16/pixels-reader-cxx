@@ -28,8 +28,8 @@ std::shared_ptr<ColumnReader> ColumnReaderBuilder::newColumnReader(std::shared_p
 	    }
 //        case TypeDescription::STRING:
 //            break;
-//        case TypeDescription::DATE:
-//            break;
+        case TypeDescription::DATE:
+		    return std::make_shared<DateColumnReader>(type);
 //        case TypeDescription::TIME:
 //            break;
 //        case TypeDescription::TIMESTAMP:
