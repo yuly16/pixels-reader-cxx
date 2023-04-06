@@ -49,8 +49,8 @@ void RunLenIntDecoder::readValues() {
     auto currentEncoding = (EncodingType) ((firstByte >> 6) & 0x03);
     switch (currentEncoding) {
         case RunLenIntEncoder::SHORT_REPEAT:
-            throw InvalidArgumentException("Currently "
-                                           "we don't support SHORT_REPEAT encoding.");
+	    	readShortRepeatValues(firstByte);
+	        break;
         case RunLenIntEncoder::DIRECT:
             readDirectValues(firstByte);
             break;
@@ -215,4 +215,56 @@ long RunLenIntDecoder::readVulong(const std::shared_ptr<ByteBuffer> &input) {
 long RunLenIntDecoder::readVslong(const std::shared_ptr<ByteBuffer> &input) {
 	long result = readVulong(input);
 	return (((uint64_t)result) >> 1) ^ -(result & 1);
+}
+
+void RunLenIntDecoder::readShortRepeatValues(int firstByte) {
+	// read the number of bytes occupied by the value
+	int size = (((uint32_t)firstByte) >> 3) & 0x07;
+	// number of bytes are one off
+	size += 1;
+
+	// read the run length
+	int len = firstByte & 0x07;
+	// run length values are stored only after MIN_REPEAT value is met
+	len += Constants::MIN_REPEAT;
+
+	// read the repeated value which is stored using fixed bytes
+	long val = bytesToLongBE(inputStream, size);
+
+	if (isSigned) {
+		val = zigzagDecode(val);
+	}
+
+	if (numLiterals != 0) {
+		// currently this always holds, which makes peekNextAvailLength simpler.
+		// if this changes, peekNextAvailLength should be adjusted accordingly.
+		throw InvalidArgumentException("numLiterals is not zero");
+	}
+
+	// repeat the value for length times
+	isRepeating = true;
+	// TODO: this is not so useful and V1 reader doesn't do that. Fix? Same if delta == 0
+	for (int i = 0; i < len; i++) {
+		literals[i] = val;
+	}
+	numLiterals = len;
+}
+
+/**
+     * Read n bytes from the input stream, and parse them into long value using big endian.
+     * @param input the input stream.
+     * @param n n bytes.
+     * @return the long value.
+     * @throws IOException if an I/O error occurs.
+ */
+long RunLenIntDecoder::bytesToLongBE(const std::shared_ptr<ByteBuffer> &input, int n) {
+	long out = 0;
+	long val = 0;
+	while (n > 0) {
+		n--;
+		// store it in a long and then shift else integer overflow will occur
+		val = input->get();
+		out |= (val << (n * 8));
+	}
+	return out;
 }

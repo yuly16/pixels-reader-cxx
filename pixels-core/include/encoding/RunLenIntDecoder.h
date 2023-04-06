@@ -21,10 +21,12 @@ public:
 private:
 
     void readValues();
+	void readShortRepeatValues(int firstByte);
     void readDirectValues(int firstByte);
 	void readDeltaValues(int firstByte);
 	long readVulong(const std::shared_ptr<ByteBuffer>& input);
 	long readVslong(const std::shared_ptr<ByteBuffer>& input);
+	long bytesToLongBE(const std::shared_ptr<ByteBuffer>& input, int n);
     long zigzagDecode(long val);
     void readInts(long * buffer, int offset, int len, int bitSize,
                   const std::shared_ptr<ByteBuffer>& input);
