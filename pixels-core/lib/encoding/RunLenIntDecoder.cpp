@@ -10,6 +10,7 @@ RunLenIntDecoder::RunLenIntDecoder(const std::shared_ptr <ByteBuffer>& bb, bool 
     this->isSigned = isSigned;
     numLiterals = 0;
     used = 0;
+	isRepeating = false;
 }
 
 void RunLenIntDecoder::close() {
@@ -35,7 +36,9 @@ long RunLenIntDecoder::next() {
 }
 
 void RunLenIntDecoder::readValues() {
-    auto firstByte = inputStream->get();
+	// read the first 2 bits and determine the encoding type
+	isRepeating = false;
+    int firstByte = (int) inputStream->get();
     if(firstByte < 0) {
         // TODO: logger.error
         used = 0;
@@ -43,7 +46,7 @@ void RunLenIntDecoder::readValues() {
         return;
     }
     // here we do unsigned shift
-    auto currentEncoding = (EncodingType) (((uint8_t)firstByte >> 6) & 0x03);
+    auto currentEncoding = (EncodingType) ((firstByte >> 6) & 0x03);
     switch (currentEncoding) {
         case RunLenIntEncoder::SHORT_REPEAT:
             throw InvalidArgumentException("Currently "
@@ -55,16 +58,16 @@ void RunLenIntDecoder::readValues() {
             throw InvalidArgumentException("Currently "
                                            "we don't support PATCHED_BASE encoding.");
         case RunLenIntEncoder::DELTA:
-            throw InvalidArgumentException("Currently "
-                                           "we don't support DELTA encoding.");
+		    readDeltaValues(firstByte);
+		    break;
         default:
             throw InvalidArgumentException("Not supported encoding type.");
     }
 }
 
-void RunLenIntDecoder::readDirectValues(int8_t firstByte) {
+void RunLenIntDecoder::readDirectValues(int firstByte) {
     // extract the number of fixed bits;
-    uint8_t fbo = ((uint8_t)firstByte >> 1) & 0x1f;
+    uint8_t fbo = (firstByte >> 1) & 0x1f;
     int fb = encodingUtils.decodeBitWidth(fbo);
 
     // extract run length
@@ -110,4 +113,106 @@ void RunLenIntDecoder::readInts(long *buffer, int offset, int len, int bitSize,
     // TODO: if notthe case, we should write the following code.
 }
 
+void RunLenIntDecoder::readDeltaValues(int firstByte) {
+	// extract the number of fixed bits;
+	uint8_t fb = (((uint32_t)firstByte) >> 1) & 0x1f;
+	if(fb != 0) {
+		fb = encodingUtils.decodeBitWidth(fb);
+	}
 
+
+	// extract the blob run length
+	int len = (firstByte & 0x01) << 8;
+	len |= inputStream->get();
+
+	// read the first value stored as vint
+	long firstVal = 0;
+	if (isSigned) {
+		firstVal = readVslong(inputStream);
+	}
+	else {
+		firstVal = readVulong(inputStream);
+	}
+
+	// store first value to result buffer
+	long prevVal = firstVal;
+	literals[numLiterals++] = firstVal;
+
+	// if fixed bits is 0 then all values have fixed delta
+	if (fb == 0) {
+		// read the fixed delta value stored as vint (deltas
+		// can be negative even if all number are positive)
+		long fd = readVslong(inputStream);
+		if (fd == 0) {
+			isRepeating = true;
+			assert(numLiterals == 1);
+			for(int i = 0; i < len; i++) {
+				literals[numLiterals + i] = literals[0];
+			}
+			numLiterals += len;
+		}
+		else {
+			// add fixed deltas to adjacent values
+			for (int i = 0; i < len; i++) {
+				literals[numLiterals] = literals[numLiterals - 1] + fd;
+				numLiterals++;
+			}
+		}
+	}
+	else {
+		long deltaBase = readVslong(inputStream);
+		// add delta base and first value
+		literals[numLiterals++] = firstVal + deltaBase;
+		prevVal = literals[numLiterals - 1];
+		len -= 1;
+
+		// write the unpacked values, add it to previous values and store final
+		// value to result buffer. if the delta base value is negative then it
+		// is a decreasing sequence else an increasing sequence
+		readInts(literals, numLiterals, len, fb, inputStream);
+		while (len > 0) {
+			if (deltaBase < 0) {
+				literals[numLiterals] = prevVal - literals[numLiterals];
+			}
+			else {
+				literals[numLiterals] = prevVal + literals[numLiterals];
+			}
+			prevVal = literals[numLiterals];
+			len--;
+			numLiterals++;
+		}
+	}
+
+}
+
+/**
+     * Read an unsigned long from the input stream, using little endian.
+     * @param in the input stream.
+     * @return the long value.
+     * @throws IOException if an I/O error occurs.
+ */
+long RunLenIntDecoder::readVulong(const std::shared_ptr<ByteBuffer> &input) {
+	long result = 0;
+	long b;
+	int offset = 0;
+	do {
+		b = input->get();
+		if(b == -1) {
+			throw InvalidArgumentException("Reading Vulong past EOF");
+		}
+		result |= (0x7f & b) << offset;
+		offset += 7;
+	} while(b >= 0x80);
+	return result;
+}
+
+/**
+     * Read a signed long from the input stream, using little endian.
+     * @param in the input stream.
+     * @return the long value.
+     * @throws IOException if an I/O error occurs.
+ */
+long RunLenIntDecoder::readVslong(const std::shared_ptr<ByteBuffer> &input) {
+	long result = readVulong(input);
+	return (((uint64_t)result) >> 1) ^ -(result & 1);
+}

@@ -21,7 +21,10 @@ public:
 private:
 
     void readValues();
-    void readDirectValues(int8_t firstByte);
+    void readDirectValues(int firstByte);
+	void readDeltaValues(int firstByte);
+	long readVulong(const std::shared_ptr<ByteBuffer>& input);
+	long readVslong(const std::shared_ptr<ByteBuffer>& input);
     long zigzagDecode(long val);
     void readInts(long * buffer, int offset, int len, int bitSize,
                   const std::shared_ptr<ByteBuffer>& input);
@@ -31,5 +34,6 @@ private:
     int used;
     std::shared_ptr<ByteBuffer> inputStream;
     EncodingUtils encodingUtils;
+	bool isRepeating;
 };
 #endif //PIXELS_RUNLENINTDECODER_H
