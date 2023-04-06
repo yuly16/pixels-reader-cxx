@@ -49,3 +49,12 @@ DecimalColumnVector::~DecimalColumnVector() {
     }
 }
 
+
+int DecimalColumnVector::getPrecision() {
+	return precision;
+}
+
+
+int DecimalColumnVector::getScale() {
+	return scale;
+}

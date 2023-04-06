@@ -23,7 +23,12 @@ void DecimalColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
     std::shared_ptr<DecimalColumnVector> columnVector =
             std::static_pointer_cast<DecimalColumnVector>(vector);
     // TODO: type precision and type scale should be the same as the column vector
-
+	if(type->getPrecision() != columnVector->getPrecision() || type->getScale() != columnVector->getScale()) {
+		throw InvalidArgumentException("reader of decimal(" + std::to_string(type->getPrecision())
+		                               + "," + std::to_string(type->getScale()) + ") doesn't match the column "
+									   "vector of decimal(" + std::to_string(columnVector->getPrecision()) + ","
+		                               + std::to_string(columnVector->getScale()) + ")");
+	}
     if(offset == 0) {
         // TODO: here we check null
         ColumnReader::elementIndex = 0;

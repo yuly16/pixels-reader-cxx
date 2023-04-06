@@ -40,9 +40,9 @@ public:
                       int vectorIndex, std::shared_ptr<ColumnVector> vector,
                       pixels::proto::ColumnChunkIndex chunkIndex) = 0;
 private:
-    std::shared_ptr<TypeDescription> type;
-    bool hasNull;
+	bool hasNull;
 protected:
     int elementIndex;
+	std::shared_ptr<TypeDescription> type;
 };
 #endif //PIXELS_COLUMNREADER_H

@@ -45,6 +45,6 @@ std::shared_ptr<ColumnReader> ColumnReaderBuilder::newColumnReader(std::shared_p
 //        case TypeDescription::STRUCT:
 //            break;
         default:
-            throw InvalidArgumentException("bad column type " + std::to_string(type->getCategory()));
+            throw InvalidArgumentException("bad column type in ColumnReaderBuilder: " + std::to_string(type->getCategory()));
     }
 }

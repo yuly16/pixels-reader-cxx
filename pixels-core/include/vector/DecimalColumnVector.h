@@ -23,6 +23,8 @@ public:
     ~DecimalColumnVector();
     void print(int rowCount) override;
     void close() override;
+	int getPrecision();
+	int getScale();
 };
 
 #endif //PIXELS_DECIMALCOLUMNVECTOR_H
