@@ -42,6 +42,31 @@ int EncodingUtils::decodeBitWidth(int n) {
     }
 }
 
+void EncodingUtils::unrolledUnPack2(long *buffer, int offset, int len,
+                                    const std::shared_ptr<ByteBuffer> &input) {
+	int numHops = 4;
+	int remainder = len % numHops;
+	int endOffset = offset + len;
+	int endUnroll = endOffset - remainder;
+	int val = 0;
+	for (int i = offset; i < endUnroll; i = i + numHops) {
+		val = input->get();
+		buffer[i] = (((uint32_t)val) >> 6) & 3;
+		buffer[i + 1] = (((uint32_t)val) >> 4) & 3;
+		buffer[i + 2] = (((uint32_t)val) >> 2) & 3;
+		buffer[i + 3] = val & 3;
+	}
+
+	if (remainder > 0) {
+		int startShift = 6;
+		val = input->get();
+		for (int i = endUnroll; i < endOffset; i++) {
+			buffer[i] = (((uint32_t)val) >> startShift) & 3;
+			startShift -= 2;
+		}
+	}
+}
+
 void EncodingUtils::unrolledUnPack4(long *buffer, int offset, int len,
                                     const std::shared_ptr<ByteBuffer> &input) {
     int numHops = 2;

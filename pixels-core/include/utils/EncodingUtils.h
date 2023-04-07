@@ -26,6 +26,8 @@ public:
     long readLongBE8(int rbOffset);
     void unrolledUnPackBytes(long *buffer, int offset, int len,
                              const std::shared_ptr<ByteBuffer> &input, int numBytes);
+	void unrolledUnPack2(long *buffer, int offset, int len,
+	                     const std::shared_ptr<ByteBuffer> &input);
     void unrolledUnPack4(long *buffer, int offset, int len,
                          const std::shared_ptr<ByteBuffer> &input);
     void unrolledUnPack8(long *buffer, int offset, int len,
