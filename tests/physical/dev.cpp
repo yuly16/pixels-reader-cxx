@@ -21,7 +21,7 @@
 #include <vector>
 // #include "liburing.h"
 #include "utils/String.h"
-#include "liburing/io_uring.h"
+//#include "liburing/io_uring.h"
 #include "vector/LongColumnVector.h"
 
 
@@ -66,7 +66,7 @@ TEST(physical, DirectRandomAccessFile) {
 }
 
 TEST(physical, PhysicalReader) {
-    auto * localfs = new LocalFS();
+    auto localfs = std::make_shared<LocalFS>();
     PhysicalLocalReader localReader(localfs, "/home/liyu/files/hello.txt");
     std::shared_ptr<ByteBuffer> bb1 = localReader.readFully(3);
     std::shared_ptr<ByteBuffer> bb2 = localReader.readFully(1);
@@ -80,7 +80,7 @@ TEST(physical, PhysicalReader) {
 }
 
 TEST(physical, RandomFile) {
-    auto * localfs = new LocalFS();
+    auto localfs = std::make_shared<LocalFS>();
     std::string path = "/home/liyu/files/file_64M";
     int fd = open(path.c_str(), O_RDONLY);
     long len = 64 * 1024 * 1024;
@@ -90,15 +90,15 @@ TEST(physical, RandomFile) {
     }
     ::close(fd);
 
-    PhysicalLocalReader localReader(localfs, path);
+    auto localReader = std::make_shared<PhysicalLocalReader>(localfs, path);
 
-    std::shared_ptr<ByteBuffer> bb1 = localReader.readFully(3);
-    std::shared_ptr<ByteBuffer> bb2 = localReader.readFully(1);
-    std::shared_ptr<ByteBuffer> bb3 = localReader.readFully(2);
-    std::shared_ptr<ByteBuffer> bb4 = localReader.readFully(4);
-    std::shared_ptr<ByteBuffer> bb5 = localReader.readFully(5);
-    localReader.seek(10);
-    localReader.close();
+    std::shared_ptr<ByteBuffer> bb1 = localReader->readFully(3);
+    std::shared_ptr<ByteBuffer> bb2 = localReader->readFully(1);
+    std::shared_ptr<ByteBuffer> bb3 = localReader->readFully(2);
+    std::shared_ptr<ByteBuffer> bb4 = localReader->readFully(4);
+    std::shared_ptr<ByteBuffer> bb5 = localReader->readFully(5);
+    localReader->seek(10);
+    localReader->close();
 }
 
 
@@ -114,28 +114,18 @@ TEST(physical, StorageFactory) {
     std::cout<<"finish"<<std::endl;
 }
 
-TEST(physical, PixelsReaderImpl) {
-    Storage * storage = StorageFactory::getInstance()->getStorage(Storage::file);
-    auto * builder = new PixelsReaderBuilder();
-    PixelsReader * pixelsReader = builder
-        ->setStorage(storage)
-        ->setPath("/home/liyu/files/file_64M")
-        ->build();
-
-
-}
 
 TEST(physical, NoopScheduler) {
     Scheduler * noop = SchedulerFactory::Instance()->getScheduler();
     long queryId = 0;
-    auto * localfs = new LocalFS();
+    auto localfs = std::make_shared<LocalFS>();
     RequestBatch batch;
     batch.add(queryId, 5, 9);
     batch.add(queryId, 1, 4);
     batch.add(queryId, 2, 5);
     batch.add(queryId, 3, 7);
-    PhysicalLocalReader localReader(localfs, "/home/liyu/files/hello.txt");
-    auto bbs = noop->executeBatch(&localReader, batch, queryId);
+    auto localReader = std::make_shared<PhysicalLocalReader>(localfs, "/home/liyu/files/hello.txt");
+    auto bbs = noop->executeBatch(localReader, batch, queryId);
     std::cout<<"fuck"<<std::endl;
 }
 
