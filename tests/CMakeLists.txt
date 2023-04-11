@@ -20,7 +20,7 @@ target_link_libraries(
         GTest::gtest_main
         pixels-common
         pixels-core
-        uring
+#        uring
 )
 
 add_executable(
