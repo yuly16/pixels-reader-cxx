@@ -100,6 +100,9 @@ void RunLenIntDecoder::readInts(long *buffer, int offset, int len, int bitSize,
     int bitsLeft = 0;
     int current = 0;
     switch (bitSize) {
+	    case 2:
+			encodingUtils.unrolledUnPack2(buffer, offset, len, input);
+		    return;
         case 4:
             encodingUtils.unrolledUnPack4(buffer, offset, len, input);
             return;
