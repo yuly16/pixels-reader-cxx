@@ -35,10 +35,10 @@ public:
      * @param chunkIndex the metadata of the column chunk to read.
      */
     virtual void read(std::shared_ptr<ByteBuffer> input,
-                      pixels::proto::ColumnEncoding encoding,
+                      pixels::proto::ColumnEncoding & encoding,
                       int offset, int size, int pixelStride,
                       int vectorIndex, std::shared_ptr<ColumnVector> vector,
-                      pixels::proto::ColumnChunkIndex chunkIndex) = 0;
+                      pixels::proto::ColumnChunkIndex & chunkIndex) = 0;
 private:
 	bool hasNull;
 protected:

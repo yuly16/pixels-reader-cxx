@@ -17,9 +17,9 @@ void DecimalColumnReader::close() {
 
 }
 
-void DecimalColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::ColumnEncoding encoding, int offset,
+void DecimalColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::ColumnEncoding & encoding, int offset,
                                int size, int pixelStride, int vectorIndex, std::shared_ptr<ColumnVector> vector,
-                               pixels::proto::ColumnChunkIndex chunkIndex) {
+                               pixels::proto::ColumnChunkIndex & chunkIndex) {
     std::shared_ptr<DecimalColumnVector> columnVector =
             std::static_pointer_cast<DecimalColumnVector>(vector);
 	if(type->getPrecision() != columnVector->getPrecision() || type->getScale() != columnVector->getScale()) {

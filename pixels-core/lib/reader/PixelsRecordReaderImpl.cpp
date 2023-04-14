@@ -22,6 +22,7 @@ PixelsRecordReaderImpl::PixelsRecordReaderImpl(std::shared_ptr<PhysicalReader> r
     targetRGNum = 0;
     curRGIdx = 0;
     curRowInRG = 0;
+	curRGRowCount = 0;
     fileName = physicalReader->getName();
     enableEncodedVector = option.isEnableEncodedColumnVector();
     includedColumnNum = 0;
@@ -99,81 +100,88 @@ void PixelsRecordReaderImpl::checkBeforeRead() {
 }
 
 
+void PixelsRecordReaderImpl::UpdateRowGroupInfo() {
+	// if not end of file, update row count
+	curRGRowCount = (int) footer.rowgroupinfos(targetRGs.at(curRGIdx)).numberofrows();
+	curRGFooter = rowGroupFooters.at(curRGIdx);
+	// refresh resultColumnsEncoded for reading the column vectors in the next row group.
+	pixels::proto::RowGroupEncoding rgEncoding = rowGroupFooters.at(curRGIdx).rowgroupencoding();
+	for(int i = 0; i < includedColumnNum; i++) {
+		resultColumnsEncoded.at(i) =
+		    rgEncoding.columnchunkencodings(targetColumns.at(i))
+		            .kind() != pixels::proto::ColumnEncoding_Kind_NONE
+		    && enableEncodedVector;
+	}
+	// update cur
+	for(int i = 0; i < resultColumns.size(); i++) {
+		curEncoding.at(i) = rgEncoding.columnchunkencodings(resultColumns.at(i));
+		curChunkBufferIndex.at(i) = curRGIdx * includedColumns.size() + resultColumns.at(i);
+		curChunkIndex.at(i) = curRGFooter.rowgroupindexentry()
+		                          .columnchunkindexentries(resultColumns.at(i));
+	}
+}
+
 
 std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchSize, bool reuse) {
-    if(endOfFile) {
+	if(endOfFile) {
 		endOfFile = true;
 		return createEmptyEOFRowBatch(0);
 	}
 	if(!everRead) {
-        if(!read()) {
-            throw std::runtime_error("failed to read file");
-        }
-    }
-    std::shared_ptr<VectorizedRowBatch> resultRowBatch;
-    resultRowBatch = resultSchema->createRowBatch(batchSize, resultColumnsEncoded);
-    // TODO: resultRowBatch.projectionSize
+		if(!read()) {
+			throw std::runtime_error("failed to read file");
+		}
+	}
+	std::shared_ptr<VectorizedRowBatch> resultRowBatch;
+	resultRowBatch = resultSchema->createRowBatch(batchSize, resultColumnsEncoded);
+	// TODO: resultRowBatch.projectionSize
 
-    int rgRowCount = 0;
-    int curBatchSize = 0;
-    auto columnVectors = resultRowBatch->cols;
-    if(curRGIdx < targetRGNum) {
-        rgRowCount = (int) footer.rowgroupinfos(
-                targetRGs.at(curRGIdx)).numberofrows();
-    }
 
-    while (resultRowBatch->rowCount < batchSize && curRowInRG < rgRowCount) {
-        // update current batch size
-        curBatchSize = rgRowCount - curRowInRG;
-        if (curBatchSize + resultRowBatch->rowCount >= batchSize)
-        {
-            curBatchSize = batchSize - resultRowBatch->rowCount;
-        }
+	int curBatchSize = 0;
+	auto columnVectors = resultRowBatch->cols;
 
-        // read vectors
-        for(int i = 0; i < resultColumns.size(); i++) {
-            // TODO: if !columnVectors[i].duplicate
-            pixels::proto::RowGroupFooter rowGroupFooter = rowGroupFooters.at(curRGIdx);
-            pixels::proto::ColumnEncoding encoding = rowGroupFooter.rowgroupencoding()
-                    .columnchunkencodings(resultColumns.at(i));
-            int index = curRGIdx * includedColumns.size() + resultColumns.at(i);
-            pixels::proto::ColumnChunkIndex chunkIndex = rowGroupFooter.rowgroupindexentry()
-                    .columnchunkindexentries(resultColumns.at(i));
-            readers.at(i)->read(chunkBuffers.at(index), encoding, curRowInRG, curBatchSize,
-                                postScript.pixelstride(), resultRowBatch->rowCount,
-                                columnVectors.at(i), chunkIndex);
-        }
 
-        // update current row index in the row group
-        curRowInRG += curBatchSize;
-        rowIndex += curBatchSize;
-        resultRowBatch->rowCount += curBatchSize;
-        // update row group index if current row index exceeds max row count in the row group
-        if(curRowInRG >= rgRowCount) {
-            curRGIdx++;
-            if(curRGIdx < targetRGNum) {
-                // if not end of file, update row count
-                rgRowCount = (int) footer.rowgroupinfos(targetRGs.at(curRGIdx)).numberofrows();
-                // refresh resultColumnsEncoded for reading the column vectors in the next row group.
-                pixels::proto::RowGroupEncoding rgEncoding = rowGroupFooters.at(curRGIdx).rowgroupencoding();
-                for(int i = 0; i < includedColumnNum; i++) {
-                    resultColumnsEncoded.at(i) =
-                            rgEncoding.columnchunkencodings(targetColumns.at(i))
-                            .kind() != pixels::proto::ColumnEncoding_Kind_NONE
-                            && enableEncodedVector;
-                }
-            } else {
-                // if end of file, set result vectorized row batch endOfFile
+	while (resultRowBatch->rowCount < batchSize && curRowInRG < curRGRowCount) {
+		// update current batch size
+		curBatchSize = curRGRowCount - curRowInRG;
+		if (curBatchSize + resultRowBatch->rowCount >= batchSize)
+		{
+			curBatchSize = batchSize - resultRowBatch->rowCount;
+		}
+
+		// read vectors
+		for(int i = 0; i < resultColumns.size(); i++) {
+			// TODO: if !columnVectors[i].duplicate
+			int index = curChunkBufferIndex.at(i);
+			auto encoding = curEncoding.at(i);
+			auto chunkIndex = curChunkIndex.at(i);
+			readers.at(i)->read(chunkBuffers.at(index), encoding, curRowInRG, curBatchSize,
+								postScript.pixelstride(), resultRowBatch->rowCount,
+								columnVectors.at(i), chunkIndex);
+		}
+
+		// update current row index in the row group
+		curRowInRG += curBatchSize;
+		rowIndex += curBatchSize;
+		resultRowBatch->rowCount += curBatchSize;
+		// update row group index if current row index exceeds max row count in the row group
+		if(curRowInRG >= curRGRowCount) {
+			curRGIdx++;
+			if(curRGIdx < targetRGNum) {
+				UpdateRowGroupInfo();
+			} else {
+				// if end of file, set result vectorized row batch endOfFile
 				// TODO: set checkValid to false!
 				resultRowBatch->endOfFile = true;
 				endOfFile = true;
-                break;
-            }
-            curRowInRG = 0;
-        }
-    }
-    return resultRowBatch;
+				break;
+			}
+			curRowInRG = 0;
+		}
+	}
+	return resultRowBatch;
 }
+
 
 void PixelsRecordReaderImpl::prepareRead() {
     // TODO: finish the remaining part of this function
@@ -245,12 +253,11 @@ void PixelsRecordReaderImpl::prepareRead() {
     resultColumnsEncoded.clear();
     resultColumnsEncoded.resize(includedColumnNum);
     pixels::proto::RowGroupEncoding firstRgEncoding = rowGroupFooters.at(0).rowgroupencoding();
-    for(int i = 0; i < includedColumnNum; i++) {
-        resultColumnsEncoded.at(i) = firstRgEncoding
-                .columnchunkencodings(targetColumns[i])
-                .kind() != pixels::proto::ColumnEncoding_Kind_NONE &&
-                enableEncodedVector;
-    }
+
+	curEncoding.resize(resultColumns.size());
+	curChunkBufferIndex.resize(resultColumns.size());
+	curChunkIndex.resize(resultColumns.size());
+	UpdateRowGroupInfo();
 }
 
 bool PixelsRecordReaderImpl::read() {

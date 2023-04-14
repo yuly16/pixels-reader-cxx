@@ -12,9 +12,9 @@ void StringColumnReader::close() {
 
 }
 
-void StringColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::ColumnEncoding encoding, int offset,
+void StringColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::ColumnEncoding & encoding, int offset,
                               int size, int pixelStride, int vectorIndex, std::shared_ptr<ColumnVector> vector,
-                              pixels::proto::ColumnChunkIndex chunkIndex) {
+                              pixels::proto::ColumnChunkIndex & chunkIndex) {
     if(offset == 0) {
         elementIndex = 0;
         bufferOffset = 0;
@@ -39,7 +39,7 @@ void StringColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::
 
 void StringColumnReader::readContent(std::shared_ptr<ByteBuffer> input,
                                      uint32_t inputLength,
-                                     pixels::proto::ColumnEncoding encoding) {
+                                     pixels::proto::ColumnEncoding & encoding) {
     // TODO: implement dictionary encoding
     input->markReaderIndex();
     input->setReadPos(inputLength - sizeof(int));

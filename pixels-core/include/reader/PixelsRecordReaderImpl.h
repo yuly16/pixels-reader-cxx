@@ -51,6 +51,7 @@ private:
     void prepareRead();
     void checkBeforeRead();
 	std::shared_ptr<VectorizedRowBatch> createEmptyEOFRowBatch(int size);
+	void UpdateRowGroupInfo();
     std::shared_ptr<PhysicalReader> physicalReader;
     pixels::proto::Footer footer;
     pixels::proto::PostScript postScript;
@@ -66,6 +67,11 @@ private:
     std::string fileName;
     long rowIndex;
 	bool endOfFile;
+	int curRGRowCount;
+	pixels::proto::RowGroupFooter curRGFooter;
+	std::vector<pixels::proto::ColumnEncoding> curEncoding;
+	std::vector<int> curChunkBufferIndex;
+	std::vector<pixels::proto::ColumnChunkIndex> curChunkIndex;
     /**
      * Columns included by reader option; if included, set true
      */
