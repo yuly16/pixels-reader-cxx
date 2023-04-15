@@ -81,7 +81,7 @@ TEST(ByteBuffer, read) {
 }
 
 TEST(reader, recordReaderSingleTable) {
-    std::string dataset = "/home/yuly/project/pixels-reader-cxx/tests/data/supplier_0_1.pxl";
+    std::string dataset = "/scratch/liyu/opt/pixels_file/pixels-tpch-0_1/lineitem/v-0-order/20230413101104_1.pxl";
 	auto footerCache = std::make_shared<PixelsFooterCache>();
     auto builder = std::make_shared<PixelsReaderBuilder>();
     auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
@@ -97,21 +97,24 @@ TEST(reader, recordReaderSingleTable) {
 	option.setEnableEncodedColumnVector(true);
 
 	// includeCols comes from the caller of PixelsPageSource
-	std::vector<std::string> includeCols;
-	includeCols.emplace_back("s_name");
-//	std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
+	std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
 	option.setIncludeCols(includeCols);
 	option.setRGRange(0, 1);
 	option.setQueryId(1);
     auto pixelsRecordReader = pixelsReader->read(option);
-    std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(10000, false);
+	while(true) {
+		std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(2048, false);
+		if(v->endOfFile) {
+			break;
+		}
+	}
 //	EXPECT_FALSE(v->endOfFile);
 //	EXPECT_FALSE(pixelsRecordReader->isEndOfFile());
 //	EXPECT_EQ(v->rowCount, 13);
-    for(const auto& col: v->cols) {
-        std::cout<<"------"<<std::endl;
-        col->print(v->rowCount);
-    }
+//    for(const auto& col: v->cols) {
+//        std::cout<<"------"<<std::endl;
+//        col->print(v->rowCount);
+//    }
 //    std::shared_ptr<VectorizedRowBatch> v1 = pixelsRecordReader->readBatch(120, false);
 //	EXPECT_TRUE(v1->endOfFile);
 //	EXPECT_TRUE(pixelsRecordReader->isEndOfFile());

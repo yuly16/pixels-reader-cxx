@@ -144,8 +144,7 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchS
 	while (resultRowBatch->rowCount < batchSize && curRowInRG < curRGRowCount) {
 		// update current batch size
 		curBatchSize = curRGRowCount - curRowInRG;
-		if (curBatchSize + resultRowBatch->rowCount >= batchSize)
-		{
+		if (curBatchSize + resultRowBatch->rowCount >= batchSize) {
 			curBatchSize = batchSize - resultRowBatch->rowCount;
 		}
 
@@ -153,8 +152,8 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchS
 		for(int i = 0; i < resultColumns.size(); i++) {
 			// TODO: if !columnVectors[i].duplicate
 			int index = curChunkBufferIndex.at(i);
-			auto encoding = curEncoding.at(i);
-			auto chunkIndex = curChunkIndex.at(i);
+			auto & encoding = curEncoding.at(i);
+			auto & chunkIndex = curChunkIndex.at(i);
 			readers.at(i)->read(chunkBuffers.at(index), encoding, curRowInRG, curBatchSize,
 								postScript.pixelstride(), resultRowBatch->rowCount,
 								columnVectors.at(i), chunkIndex);
