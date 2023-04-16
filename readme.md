@@ -50,14 +50,25 @@ benchmark/tpch/pixels/pixels_scan_lineitem.benchmark    5       0.582442
 
 TPCH 10:
 
-parquet(11 work threads):
+parquet(48 work threads):
 ```
-benchmark/tpch/parquet/parquet_scan_lineitem_10.benchmark       1       4.029747
-benchmark/tpch/parquet/parquet_scan_lineitem_10.benchmark       2       3.988435
-benchmark/tpch/parquet/parquet_scan_lineitem_10.benchmark       3       4.048495
-benchmark/tpch/parquet/parquet_scan_lineitem_10.benchmark       4       3.775438
-benchmark/tpch/parquet/parquet_scan_lineitem_10.benchmark       5       3.931187
+name    run     timing
+benchmark/tpch/parquet/parquet_scan_lineitem_10.benchmark       1       2.424045
+benchmark/tpch/parquet/parquet_scan_lineitem_10.benchmark       2       2.028496
+benchmark/tpch/parquet/parquet_scan_lineitem_10.benchmark       3       1.556045
+benchmark/tpch/parquet/parquet_scan_lineitem_10.benchmark       4       1.666840
+benchmark/tpch/parquet/parquet_scan_lineitem_10.benchmark       5       1.755701
 ```
+
+pixels(48 work threads):
+```
+benchmark/tpch/pixels/pixels_scan_lineitem_10.benchmark 1       3.972828
+benchmark/tpch/pixels/pixels_scan_lineitem_10.benchmark 2       2.552930
+benchmark/tpch/pixels/pixels_scan_lineitem_10.benchmark 3       2.403390
+benchmark/tpch/pixels/pixels_scan_lineitem_10.benchmark 4       2.625690
+benchmark/tpch/pixels/pixels_scan_lineitem_10.benchmark 5       2.660494
+```
+
 The reason why parquet is faster than pixels:
 
 * parquet uses filter prune and filter push
