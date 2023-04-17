@@ -77,7 +77,10 @@ The reason why parquet is faster than pixels:
 ## 5. encoding 
 Now the encoding is disabled. 
 
-## 6. common issue
+## 6. read flag
+Should change it to O_DIRECT.
+
+## 7. common issue
 
 * Clion crashes when compiling duckdb + pixels: 
 Clion runs a jvm program. The heap size is 2 GB by default. If out of memory
