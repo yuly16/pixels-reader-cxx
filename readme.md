@@ -79,8 +79,12 @@ Now the encoding is disabled.
 
 ## 6. read flag
 Should change it to O_DIRECT.
+Take care of page cache: https://medium.com/marionete/linux-disk-cache-was-always-there-741bef097e7f
 
-## 7. common issue
+## 7. c++ file open limitation
+The limitation of opening file might be 1024 or 512. Should take care of it.
+
+## 8. common issue
 
 * Clion crashes when compiling duckdb + pixels: 
 Clion runs a jvm program. The heap size is 2 GB by default. If out of memory

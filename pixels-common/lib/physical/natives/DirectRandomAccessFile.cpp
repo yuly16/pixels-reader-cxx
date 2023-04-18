@@ -8,7 +8,7 @@ DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
     FILE * fp = fopen(file.c_str(), "r");
     // checking if the file exist or not
     if (fp == nullptr) {
-        throw std::runtime_error("File not found");
+        throw std::runtime_error("DirectRandomAccessFile: File not found or fd exceeds the limitation. ");
     }
     fseek(fp, 0L, SEEK_END);
     // calculating the size of the file
@@ -34,6 +34,7 @@ void DirectRandomAccessFile::close() {
         smallBuffer = nullptr;
     }
     largeBuffers.clear();
+
     if(fd != -1 && ::close(fd) != 0) {
         throw std::runtime_error("File is not closed properly");
     }
