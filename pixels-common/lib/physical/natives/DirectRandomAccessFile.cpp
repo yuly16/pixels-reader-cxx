@@ -2,6 +2,10 @@
 // Created by yuliangyong on 2023-03-02.
 //
 #include "physical/natives/DirectRandomAccessFile.h"
+
+#include "physical/natives/DirectIoLib.h"
+#include "utils/ConfigFactory.h"
+
 #include <cstdio>
 #include <malloc.h>
 DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
@@ -15,24 +19,19 @@ DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
     len = ftell(fp);
     // closing the file
     fclose(fp);
-    // TODO: when the code runs on server, oflag should be changed to O_DIRECT
-    fd = open(file.c_str(), O_RDONLY);
+    fd = open(file.c_str(), O_RDONLY|O_DIRECT);
     offset = 0;
-    // TODO: blockSize should read from pixels.properties.
-    blockSize = 4096;
+	fsBlockSize = std::stoi(ConfigFactory::Instance().getProperty("localfs.block.size"));
     bufferValid = false;
+	directIoLib = std::make_shared<DirectIoLib>(fsBlockSize);
     try {
-        smallBuffer = new ByteBuffer(blockSize);
+		smallDirectBuffer = directIoLib->allocateDirectBuffer(fsBlockSize);
     } catch (...){
         throw std::runtime_error("failed to allocate buffer");
     }
 }
 
 void DirectRandomAccessFile::close() {
-    if(smallBuffer != nullptr) {
-        delete smallBuffer;
-        smallBuffer = nullptr;
-    }
     largeBuffers.clear();
 
     if(fd != -1 && ::close(fd) != 0) {
@@ -43,15 +42,12 @@ void DirectRandomAccessFile::close() {
     len = 0;
 }
 
-std::shared_ptr<ByteBuffer> DirectRandomAccessFile::readFully(int len_) {
-    auto * buffer = new uint8_t[len_];
-    if(pread(fd, buffer, len_, offset) == -1) {
-        throw std::runtime_error("pread fail");
-    }
-    auto bb = std::make_shared<ByteBuffer>(buffer, static_cast<uint32_t>(len_));
-    seek(offset + len_);
-    largeBuffers.emplace_back(bb);
-    return bb;
+std::shared_ptr<ByteBuffer> DirectRandomAccessFile::readFully(int len) {
+	auto directBuffer = directIoLib->allocateDirectBuffer(len);
+	auto buffer = directIoLib->read(fd, offset, directBuffer, len);
+    seek(offset + len);
+    largeBuffers.emplace_back(directBuffer);
+    return buffer;
 }
 
 long DirectRandomAccessFile::length() {
@@ -93,12 +89,7 @@ char DirectRandomAccessFile::readChar() {
 }
 
 void DirectRandomAccessFile::populatedBuffer() {
-    // TODO: direct IO enabled?
-    if(pread(fd, smallBuffer->getPointer(), blockSize, offset) == -1) {
-        throw std::runtime_error("pread fail");
-    }
-    smallBuffer->resetPosition();
-
+    smallBuffer = directIoLib->read(fd, offset, smallDirectBuffer, fsBlockSize);
     bufferValid = true;
 }
 

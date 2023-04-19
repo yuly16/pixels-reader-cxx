@@ -37,7 +37,7 @@
 class ByteBuffer {
 public:
     ByteBuffer(uint32_t size = BB_DEFAULT_SIZE);
-    ByteBuffer(uint8_t* arr, uint32_t size);
+    ByteBuffer(uint8_t* arr, uint32_t size, bool allocated_by_new = true);
     ByteBuffer(ByteBuffer & bb, uint32_t startId, uint32_t length);
     ~ByteBuffer();
     uint32_t bytesRemaining(); // Number of uint8_ts from the current read position till the end of the buffer
@@ -120,6 +120,9 @@ protected:
     std::string name;
     uint32_t rmark;
     bool fromOtherBB;
+	// Sometimes the buffer is allocated by malloc/poxis_memalign, in this case, we
+	// should use free() to deallocate the buf
+	bool allocated_by_new;
 private:
     template<typename T> T read() {
         T data = read<T>(rpos);

@@ -7,6 +7,7 @@
 
 #include "physical/natives/PixelsRandomAccessFile.h"
 #include "physical/natives/ByteBuffer.h"
+#include "physical/natives/DirectIoLib.h"
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -24,12 +25,15 @@ public:
 private:
     void populatedBuffer();
     std::vector<std::shared_ptr<ByteBuffer>> largeBuffers;
-    ByteBuffer * smallBuffer;
+	/* smallDirectBuffer align to blockSize. smallBuffer adds the offset to smallDirectBuffer. */
+    std::shared_ptr<ByteBuffer> smallBuffer;
+	std::shared_ptr<ByteBuffer> smallDirectBuffer;
+	std::shared_ptr<DirectIoLib> directIoLib;
     bool bufferValid;
-    int blockSize;
     long offset;
     long len;
     int fd;
+	int fsBlockSize;
 
 
 };

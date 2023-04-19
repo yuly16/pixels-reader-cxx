@@ -20,6 +20,9 @@
 #include "reader/PixelsReaderOption.h"
 #include <malloc.h>
 #include "utils/ConfigFactory.h"
+#include "physical/natives/DirectIoLib.h"
+
+
 
 TEST(reader, ByteBufferPopulateChar) {
     // randomly generate a file
@@ -84,7 +87,7 @@ TEST(ByteBuffer, read) {
 }
 
 TEST(reader, recordReaderSingleTable) {
-    std::string dataset = "/scratch/liyu/opt/pixels_file/pixels-tpch-0_1/lineitem/v-0-order/20230413101104_1.pxl";
+    std::string dataset = "/home/yuly/project/duckdb/extension/pixels/pixels-reader-cxx/tests/data/nation_0_1.pxl";
 	auto footerCache = std::make_shared<PixelsFooterCache>();
     auto builder = std::make_shared<PixelsReaderBuilder>();
     auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
@@ -140,7 +143,7 @@ TEST(reader, recordReaderSingleTable) {
 
 TEST(reader, recordReaderMultipleTable) {
 	{
-		std::string dataset = "/scratch/liyu/opt/pixels-reader-cxx/tests/data/nation_0_1.pxl";
+		std::string dataset = "/home/yuly/project/duckdb/extension/pixels/pixels-reader-cxx/tests/data/nation_0_1.pxl";
 		auto footerCache = std::make_shared<PixelsFooterCache>();
 		auto * builder = new PixelsReaderBuilder;
 		auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
@@ -187,7 +190,7 @@ TEST(reader, recordReaderMultipleTable) {
 		EXPECT_EQ(v2->rowCount, 0);
 	}
 	{
-		std::string dataset = "/scratch/liyu/opt/pixels-reader-cxx/tests/data/region_0_1.pxl";
+		std::string dataset = "/home/yuly/project/duckdb/extension/pixels/pixels-reader-cxx/tests/data/region_0_1.pxl";
 		auto footerCache = std::make_shared<PixelsFooterCache>();
 		auto * builder = new PixelsReaderBuilder;
 		auto storage = StorageFactory::getInstance()->getStorage(Storage::file);

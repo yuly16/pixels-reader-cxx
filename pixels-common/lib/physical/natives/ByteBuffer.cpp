@@ -32,6 +32,7 @@ ByteBuffer::ByteBuffer(uint32_t size) {
     resetPosition();
     name = "";
     fromOtherBB = false;
+	allocated_by_new = true;
 }
 
 
@@ -42,12 +43,13 @@ ByteBuffer::ByteBuffer(uint32_t size) {
  * @param arr uint8_t array of data (should be of length len)
  * @param size Size of space to allocate
  */
-ByteBuffer::ByteBuffer(uint8_t * arr, uint32_t size) {
+ByteBuffer::ByteBuffer(uint8_t * arr, uint32_t size, bool allocated_by_new) {
     buf = arr;
     bufSize = size;
     resetPosition();
     name = "";
     fromOtherBB = false;
+	this->allocated_by_new = allocated_by_new;
 }
 
 ByteBuffer::ByteBuffer(ByteBuffer & bb, uint32_t startId, uint32_t length) {
@@ -57,6 +59,7 @@ ByteBuffer::ByteBuffer(ByteBuffer & bb, uint32_t startId, uint32_t length) {
     resetPosition();
     name = "";
     fromOtherBB = true;
+	allocated_by_new = true;
 }
 /**
  * Bytes Remaining
@@ -71,8 +74,16 @@ uint32_t ByteBuffer::bytesRemaining() {
 
 void ByteBuffer::clear() {
     resetPosition();
-    delete[] buf;
-    buf = nullptr;
+	if(!fromOtherBB) {
+		if(buf != nullptr) {
+			if(allocated_by_new) {
+				delete[] buf;
+			} else {
+				free(buf);
+			}
+		}
+	}
+	buf = nullptr;
     bufSize = 0;
 }
 
@@ -309,7 +320,13 @@ void ByteBuffer::printPosition() {
 
 ByteBuffer::~ByteBuffer() {
     if(!fromOtherBB) {
-        delete[] buf;
+		if(buf != nullptr) {
+			if(allocated_by_new) {
+				delete[] buf;
+			} else {
+				free(buf);
+			}
+		}
     }
     buf = nullptr;
 }

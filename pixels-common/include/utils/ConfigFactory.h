@@ -18,6 +18,7 @@ class ConfigFactory {
 public:
 	static ConfigFactory & Instance();
 	void Print();
+	std::string getProperty(std::string key);
 private:
 	ConfigFactory();
 	std::map<std::string, std::string> prop;

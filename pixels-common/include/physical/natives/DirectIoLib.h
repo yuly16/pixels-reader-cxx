@@ -14,9 +14,26 @@
  * Author: Liangyong Yu
  */
 
+#include "utils/ConfigFactory.h"
+#include "physical/natives/ByteBuffer.h"
+#include <iostream>
+#include <string>
+#include <fcntl.h>
+#include <unistd.h>
+
 class DirectIoLib {
 public:
-	static int read(int fd, long fileOffset, char * buffer, int length);
+	/**
+     * the start address/size of direct buffer is the multiple of block Size
+	 */
+	DirectIoLib(int fsBlockSize);
+	std::shared_ptr<ByteBuffer> allocateDirectBuffer(long size);
+	std::shared_ptr<ByteBuffer> read(int fd, long fileOffset, std::shared_ptr<ByteBuffer> directBuffer, long length);
+	long blockStart(long value);
+	long blockEnd(long value);
+private:
+	int fsBlockSize;
+	long fsBlockNotMask;
 };
 
 #endif // DUCKDB_DIRECTIOLIB_H

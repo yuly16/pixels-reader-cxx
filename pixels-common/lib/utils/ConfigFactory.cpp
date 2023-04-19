@@ -28,8 +28,16 @@ ConfigFactory::ConfigFactory() {
 		}
 	}
 }
+
 void ConfigFactory::Print() {
 	for(auto kv : prop) {
 		std::cout<<kv.first<<" "<<kv.second<<std::endl;
 	}
+}
+
+std::string ConfigFactory::getProperty(std::string key) {
+	if(prop.find(key) == prop.end()) {
+		throw InvalidArgumentException("ConfigFactory::getProperty: no key found. ");
+	}
+	return prop[key];
 }
