@@ -14,7 +14,7 @@ set(pixels_common_cxx
         lib/physical/SchedulerFactory.cpp
         lib/exception/InvalidArgumentException.cpp
         lib/utils/Constants.cpp
-        lib/utils/String.cpp)
+        lib/utils/String.cpp include/physical/natives/DirectIoLib.h lib/physical/natives/DirectIoLib.cpp include/utils/ConfigFactory.h lib/utils/ConfigFactory.cpp)
 
 include_directories(include)
 
