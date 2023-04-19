@@ -69,6 +69,23 @@ benchmark/tpch/pixels/pixels_scan_lineitem_10.benchmark 4       2.625690
 benchmark/tpch/pixels/pixels_scan_lineitem_10.benchmark 5       2.660494
 ```
 
+TPCH 300:
+pixels (without O_DIRECT, HDD)
+```
+liyu@diascld31:/scratch/liyu/opt/duckdb$ build/release/benchmark/benchmark_runner "benchmark/tpch/pixels/tpch_300/.*"
+name    run     timing
+benchmark/tpch/pixels/tpch_300/pixels_q10_tpch_300.benchmark    0       187.559770
+benchmark/tpch/pixels/tpch_300/pixels_q11_tpch_300.benchmark    0       13.188931
+benchmark/tpch/pixels/tpch_300/pixels_q12_tpch_300.benchmark    0       154.773876
+benchmark/tpch/pixels/tpch_300/pixels_q13_tpch_300.benchmark    0       386.475201
+benchmark/tpch/pixels/tpch_300/pixels_q14_tpch_300.benchmark    0       322.538338
+benchmark/tpch/pixels/tpch_300/pixels_q15_tpch_300.benchmark    0       83.861078
+benchmark/tpch/pixels/tpch_300/pixels_q16_tpch_300.benchmark    0       14.351079
+benchmark/tpch/pixels/tpch_300/pixels_q17_tpch_300.benchmark    0       271.531464
+benchmark/tpch/pixels/tpch_300/pixels_q18_tpch_300.benchmark    0       338.800284
+benchmark/tpch/pixels/tpch_300/pixels_q19_tpch_300.benchmark    0       1473.391338
+benchmark/tpch/pixels/tpch_300/pixels_q1_tpch_300.benchmark     0       395.799622
+```
 The reason why parquet is faster than pixels:
 
 * parquet uses filter prune and filter push
