@@ -109,3 +109,158 @@ issue occurs, Clion would be killed.
 
     https://intellij-support.jetbrains.com/hc/en-us/community/posts/207277465-CLion-killed-when-building-symbols
     https://www.jetbrains.com/help/clion/increasing-memory-heap.html
+
+## 9. test case
+
+TPCH 300 pixels hdd:
+
+Q1:
+```sql
+SELECT
+    l_returnflag,
+    l_linestatus,
+    sum(l_quantity) AS sum_qty,
+    sum(l_extendedprice) AS sum_base_price,
+    sum(l_extendedprice * (1 - l_discount)) AS sum_disc_price,
+    sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) AS sum_charge,
+    avg(l_quantity) AS avg_qty,
+    avg(l_extendedprice) AS avg_price,
+    avg(l_discount) AS avg_disc,
+    count(*) AS count_order
+FROM
+    '/scratch/liyu/opt/pixels_file/pixels-tpch-300/lineitem/v-0-order/*.pxl'
+WHERE
+    l_shipdate <= CAST('1998-09-02' AS date)
+GROUP BY
+    l_returnflag,
+    l_linestatus
+ORDER BY
+    l_returnflag,
+    l_linestatus;
+```
+
+Q2:
+
+```sql
+SELECT
+  s_acctbal,
+  s_name,
+  n_name,
+  p_partkey,
+  p_mfgr,
+  s_address,
+  s_phone,
+  s_comment
+FROM
+  '/scratch/liyu/opt/pixels_file/pixels-tpch-300/part/v-0-order/*.pxl',
+  '/scratch/liyu/opt/pixels_file/pixels-tpch-300/supplier/v-0-order/*.pxl',
+  '/scratch/liyu/opt/pixels_file/pixels-tpch-300/partsupp/v-0-order/*.pxl',
+  '/scratch/liyu/opt/pixels_file/pixels-tpch-300/nation/v-0-order/*.pxl',
+  '/scratch/liyu/opt/pixels_file/pixels-tpch-300/region/v-0-order/*.pxl'
+WHERE
+  p_partkey = ps_partkey
+  AND s_suppkey = ps_suppkey
+  AND p_size = 15
+  AND p_type LIKE '%BRASS'
+  AND s_nationkey = n_nationkey
+  AND n_regionkey = r_regionkey
+  AND r_name = 'EUROPE'
+  AND ps_supplycost = (
+  SELECT
+  min(ps_supplycost)
+  FROM
+  '/scratch/liyu/opt/pixels_file/pixels-tpch-300/supplier/v-0-order/*.pxl',
+  '/scratch/liyu/opt/pixels_file/pixels-tpch-300/partsupp/v-0-order/*.pxl',
+  '/scratch/liyu/opt/pixels_file/pixels-tpch-300/nation/v-0-order/*.pxl',
+  '/scratch/liyu/opt/pixels_file/pixels-tpch-300/region/v-0-order/*.pxl'
+  WHERE
+  p_partkey = ps_partkey
+  AND s_suppkey = ps_suppkey
+  AND s_nationkey = n_nationkey
+  AND n_regionkey = r_regionkey
+  AND r_name = 'EUROPE')
+ORDER BY
+  s_acctbal DESC,
+  n_name,
+  s_name,
+  p_partkey
+  LIMIT 100;
+```
+
+TPCH 300 parquet hdd:
+
+
+Q1:
+
+```sql
+SELECT
+    l_returnflag,
+    l_linestatus,
+    sum(l_quantity) AS sum_qty,
+    sum(l_extendedprice) AS sum_base_price,
+    sum(l_extendedprice * (1 - l_discount)) AS sum_disc_price,
+    sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) AS sum_charge,
+    avg(l_quantity) AS avg_qty,
+    avg(l_extendedprice) AS avg_price,
+    avg(l_discount) AS avg_disc,
+    count(*) AS count_order
+FROM
+    '/scratch/liyu/opt/parquet_file/tpch_300/lineitem.parquet'
+WHERE
+    l_shipdate <= CAST('1998-09-02' AS date)
+GROUP BY
+    l_returnflag,
+    l_linestatus
+ORDER BY
+    l_returnflag,
+    l_linestatus;
+```
+
+Q2:
+
+```sql
+SELECT
+    s_acctbal,
+    s_name,
+    n_name,
+    p_partkey,
+    p_mfgr,
+    s_address,
+    s_phone,
+    s_comment
+FROM
+    '/scratch/liyu/opt/parquet_file/tpch_300/part.parquet',
+    '/scratch/liyu/opt/parquet_file/tpch_300/supplier.parquet',
+    '/scratch/liyu/opt/parquet_file/tpch_300/partsupp.parquet',
+    '/scratch/liyu/opt/parquet_file/tpch_300/nation.parquet',
+    '/scratch/liyu/opt/parquet_file/tpch_300/region.parquet'
+WHERE
+    p_partkey = ps_partkey
+    AND s_suppkey = ps_suppkey
+    AND p_size = 15
+    AND p_type LIKE '%BRASS'
+    AND s_nationkey = n_nationkey
+    AND n_regionkey = r_regionkey
+    AND r_name = 'EUROPE'
+    AND ps_supplycost = (
+        SELECT
+            min(ps_supplycost)
+        FROM
+    '/scratch/liyu/opt/parquet_file/tpch_300/supplier.parquet',
+    '/scratch/liyu/opt/parquet_file/tpch_300/partsupp.parquet',
+    '/scratch/liyu/opt/parquet_file/tpch_300/nation.parquet',
+    '/scratch/liyu/opt/parquet_file/tpch_300/region.parquet'
+        WHERE
+            p_partkey = ps_partkey
+            AND s_suppkey = ps_suppkey
+            AND s_nationkey = n_nationkey
+            AND n_regionkey = r_regionkey
+            AND r_name = 'EUROPE')
+ORDER BY
+    s_acctbal DESC,
+    n_name,
+    s_name,
+    p_partkey
+LIMIT 100;
+
+```
