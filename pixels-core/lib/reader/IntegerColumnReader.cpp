@@ -23,7 +23,7 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
         decoder = std::make_shared<RunLenIntDecoder>(input, true);
         ColumnReader::elementIndex = 0;
         if(encoding.kind() == pixels::proto::ColumnEncoding_Kind_NONE) {
-            isLong = __builtin_bswap64(input->getLong(0)) == 1;
+            isLong = input->getLong(0) == 1;
         }
     }
     if(encoding.kind() == pixels::proto::ColumnEncoding_Kind_RUNLENGTH) {
@@ -39,9 +39,9 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
                     int pixelsId = elementIndex / pixelStride;
                     // TODO: what is hasnull?
                     // read the first byte of the pixels (stride).
-                    isLong = __builtin_bswap64(input->getLong()) == 1;
+					isLong = input->getLong() == 1;
                 }
-                columnVector->vector[i + vectorIndex] = (long)__builtin_bswap64(input->getLong());
+                columnVector->vector[i + vectorIndex] = input->getLong();
                 elementIndex++;
             }
         } else {
@@ -51,7 +51,7 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
                     int pixelsId = elementIndex / pixelStride;
                     // TODO: what is hasnull?
                     // read the first byte of the pixels (stride).
-                    isLong = __builtin_bswap64(input->getLong()) == 1;
+					isLong = input->getLong() == 1;
                 }
                 columnVector->vector[i + vectorIndex] = input->getInt();
                 elementIndex++;
