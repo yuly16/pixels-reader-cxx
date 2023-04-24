@@ -149,11 +149,11 @@ float ByteBuffer::getFloat(uint32_t index) {
 }
 
 int ByteBuffer::getInt() {
-    return (int) __builtin_bswap32(read<int>());
+    return (int) read<int>();
 }
 
 int ByteBuffer::getInt(uint32_t index) {
-    return (int) __builtin_bswap32(read<int>(index));
+    return (int) read<int>(index);
 }
 
 long ByteBuffer::getLong() {

@@ -21,8 +21,11 @@
 #include <malloc.h>
 #include "utils/ConfigFactory.h"
 #include "physical/natives/DirectIoLib.h"
-
-
+#include <filesystem>
+#include <string>
+#include <iostream>
+#include <dirent.h>
+using namespace std;
 
 TEST(reader, ByteBufferPopulateChar) {
     // randomly generate a file
@@ -365,4 +368,112 @@ TEST(reader, fileTail) {
 TEST(reader, ConfigFactory) {
 	auto a = ConfigFactory::Instance();
 	a.Print();
+}
+
+/* Returns a list of files in a directory (except the ones that begin with a dot) */
+
+void GetFilesInDirectory(std::vector<string> &out, const string &directory)
+{
+	DIR *dir;
+	class dirent *ent;
+	class stat st;
+
+	dir = opendir(directory.c_str());
+	while ((ent = readdir(dir)) != NULL) {
+		const string file_name = ent->d_name;
+		const string full_file_name = directory + "/" + file_name;
+
+		if (file_name[0] == '.')
+			continue;
+
+		if (stat(full_file_name.c_str(), &st) == -1)
+			continue;
+
+		const bool is_directory = (st.st_mode & S_IFDIR) != 0;
+
+		if (is_directory)
+			continue;
+
+		out.push_back(full_file_name);
+	}
+	closedir(dir);
+} // GetFilesInDirectory
+
+TEST(reader, LargeDatasetThroughputTest) {
+	string path = "/data/s1725-1/liyu/pixels_data/pixels-tpch-300/orders/v-0-order/";
+	std::vector<string> databases;
+	GetFilesInDirectory(databases, path);
+	std::vector<std::shared_ptr<VectorizedRowBatch>> results;
+	for(int i = 0; i < databases.size(); i++) {
+		auto dataset = databases[i];
+		auto footerCache = std::make_shared<PixelsFooterCache>();
+		auto builder = std::make_shared<PixelsReaderBuilder>();
+		auto storage = StorageFactory::getInstance()->getStorage(Storage::file);
+		auto pixelsReader = builder->setPath(dataset)->setStorage(storage)->setPixelsFooterCache(footerCache)->build();
+		PixelsReaderOption option;
+		option.setSkipCorruptRecords(true);
+		option.setTolerantSchemaEvolution(true);
+		option.setEnableEncodedColumnVector(true);
+
+		// includeCols comes from the caller of PixelsPageSource
+		std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
+		option.setIncludeCols(includeCols);
+		option.setRGRange(0, 1);
+		option.setQueryId(1);
+		auto pixelsRecordReader = pixelsReader->read(option);
+		while (true) {
+			std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(2048, false);
+			if (v->endOfFile) {
+				results.emplace_back(v);
+				break;
+			}
+		}
+//		EXPECT_FALSE(v->endOfFile);
+//		EXPECT_FALSE(pixelsRecordReader->isEndOfFile());
+//		EXPECT_EQ(v->rowCount, 13);
+//		for (const auto &col : v->cols) {
+//			std::cout << "------" << std::endl;
+//			col->print(v->rowCount);
+//		}
+//		std::shared_ptr<VectorizedRowBatch> v1 = pixelsRecordReader->readBatch(120, false);
+//		EXPECT_TRUE(v1->endOfFile);
+//		EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
+//		EXPECT_EQ(v1->rowCount, 12);
+//		std::cout << "------" << std::endl;
+//		std::cout << "------" << std::endl;
+//		std::cout << "------" << std::endl;
+//		std::cout << "------" << std::endl;
+//		for (const auto &col : v1->cols) {
+//			std::cout << "------" << std::endl;
+//			col->print(v1->rowCount);
+//		}
+//		std::shared_ptr<VectorizedRowBatch> v2 = pixelsRecordReader->readBatch(120, false);
+//		EXPECT_TRUE(v2->endOfFile);
+//		EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
+//		EXPECT_EQ(v2->rowCount, 0);
+	}
+	for(auto result: results) {
+		int a = rand() % 1 + 1;
+		for (const auto &col : result->cols) {
+			std::cout<<col->memoryUsage<<std::endl;
+		}
+	}
+}
+
+TEST(reader, LargeIOThroughputTest) {
+	string path = "/scratch/liyu/opt/pixels_file/pixels-tpch-300/orders/v-0-order/";
+	std::vector<string> databases;
+	GetFilesInDirectory(databases, path);
+	std::vector<std::shared_ptr<ByteBuffer>> results;
+	for(int i = 0; i < databases.size(); i++) {
+		auto dataset = databases[i];
+		auto localfs = std::make_shared<LocalFS>();
+		auto localReader = std::make_shared<PhysicalLocalReader>(localfs, dataset);
+		std::shared_ptr<ByteBuffer> bb = localReader->readFully(60*1024*1024);
+		results.emplace_back(bb);
+	}
+	for(auto result: results) {
+		int a = rand() % 1 + 1;
+		std::cout<<result->size()<<std::endl;
+	}
 }

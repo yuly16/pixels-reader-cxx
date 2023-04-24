@@ -44,13 +44,13 @@ std::shared_ptr<PixelsReader> PixelsReaderBuilder::build() {
         // get FileTail
         long fileLen = fsReader->getFileLength();
         fsReader->seek(fileLen - (long)sizeof(long));
-        long fileTailOffset = (long)__builtin_bswap64(fsReader->readLong());
+		long fileTailOffset = (long)__builtin_bswap64(fsReader->readLong());
         int fileTailLength = (int) (fileLen - fileTailOffset - sizeof(long));
         fsReader->seek(fileTailOffset);
         std::shared_ptr<ByteBuffer> fileTailBuffer = fsReader->readFully(fileTailLength);
         if(!fileTail.ParseFromArray(fileTailBuffer->getPointer(),
                                     fileTailLength)) {
-            throw InvalidArgumentException("paring FileTail error!");
+            throw InvalidArgumentException("PixelsReaderBuilder::build: paring FileTail error!");
         }
         builderPixelsFooterCache->putFileTail(fileName, fileTail);
     }

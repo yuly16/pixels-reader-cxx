@@ -264,3 +264,11 @@ ORDER BY
 LIMIT 100;
 
 ```
+
+10. flamegraph command
+
+```
+perf record -a -g -e cpu-cycles -F 400 build/release/benchmark/benchmark_runner benchmark/tpch/parquet/parquet_scan_orders_HDD.benchmark
+perf script | inferno-collapse-perf > stacks.folded
+cat stacks.folded | inferno-flamegraph > flamegraph.svg
+```
