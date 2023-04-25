@@ -22,7 +22,7 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
     if(offset == 0) {
         ColumnReader::elementIndex = 0;
         if(encoding.kind() == pixels::proto::ColumnEncoding_Kind_NONE) {
-            isLong = input->getLong(0) == 1;
+            isLong = type->getCategory() == TypeDescription::Category::LONG;
         }
     }
     // TODO: we didn't implement the run length encoded method
@@ -33,8 +33,6 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
             if(elementIndex % pixelStride == 0) {
                 int pixelsId = elementIndex / pixelStride;
                 // TODO: what is hasnull?
-                // read the first byte of the pixels (stride).
-                isLong = input->getLong() == 1;
             }
             columnVector->vector[i + vectorIndex] = (long)input->getLong();
             elementIndex++;
@@ -45,8 +43,6 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
             if(elementIndex % pixelStride == 0) {
                 int pixelsId = elementIndex / pixelStride;
                 // TODO: what is hasnull?
-                // read the first byte of the pixels (stride).
-                isLong = input->getLong() == 1;
             }
             columnVector->vector[i + vectorIndex] = input->getInt();
             elementIndex++;
