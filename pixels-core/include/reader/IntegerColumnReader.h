@@ -6,6 +6,7 @@
 #define PIXELS_INTEGERCOLUMNREADER_H
 
 #include "reader/ColumnReader.h"
+
 class IntegerColumnReader: public ColumnReader {
 public:
     explicit IntegerColumnReader(std::shared_ptr<TypeDescription> type);

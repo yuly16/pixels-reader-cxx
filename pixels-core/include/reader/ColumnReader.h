@@ -8,7 +8,7 @@
 #include "TypeDescription.h"
 #include "physical/natives/ByteBuffer.h"
 #include "pixels-common/pixels.pb.h"
-
+#include "math.h"
 
 class ColumnReader {
 public:

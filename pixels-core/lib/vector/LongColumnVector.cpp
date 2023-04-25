@@ -5,7 +5,7 @@
 #include "vector/LongColumnVector.h"
 
 LongColumnVector::LongColumnVector(int len): ColumnVector(len) {
-    vector = new long[len];
+    vector = nullptr;
     memoryUsage += (long) sizeof(long) * len;
 
 }
@@ -13,7 +13,6 @@ LongColumnVector::LongColumnVector(int len): ColumnVector(len) {
 void LongColumnVector::close() {
 	if(!closed) {
 		ColumnVector::close();
-		delete[] vector;
 		vector = nullptr;
 	}
 }
