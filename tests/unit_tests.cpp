@@ -21,19 +21,19 @@
 #include <malloc.h>
 #include "utils/ConfigFactory.h"
 #include "physical/natives/DirectIoLib.h"
-<<<<<<< HEAD
+
 #include "physical/MergedRequest.h"
 #include "physical/scheduler/SortMergeScheduler.h"
 #include "profiler/TimeProfiler.h"
 #include "profiler/CountProfiler.h"
 #include <thread>
-=======
+
 #include <filesystem>
 #include <string>
 #include <iostream>
 #include <dirent.h>
 using namespace std;
->>>>>>> 64e0fd5 (change big endian to small endial)
+
 
 TEST(reader, ByteBufferPopulateChar) {
     // randomly generate a file

@@ -31,12 +31,7 @@ void DateColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::Co
             elementIndex++;
         }
 	} else {
-		for (int i = 0; i < size; i++) {
-			if (elementIndex % pixelStride == 0) {
-				int pixelId = elementIndex / pixelStride;
-			}
-			columnVector->set(i + vectorIndex, input->getInt());
-			elementIndex++;
-		}
+		columnVector->dates = (int *)(input->getPointer() + input->getReadPos());
+		input->setReadPos(input->getReadPos() + size * sizeof(int));
 	}
 }

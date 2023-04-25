@@ -5,7 +5,7 @@
 #include "vector/DateColumnVector.h"
 
 DateColumnVector::DateColumnVector(int len): ColumnVector(len) {
-	dates = new int[len];
+	dates = nullptr;
 	memoryUsage += (long) sizeof(int) * len;
 
 }
@@ -13,8 +13,6 @@ DateColumnVector::DateColumnVector(int len): ColumnVector(len) {
 void DateColumnVector::close() {
 	if(!closed) {
 		ColumnVector::close();
-		delete[] dates;
-		dates = nullptr;
 	}
 }
 

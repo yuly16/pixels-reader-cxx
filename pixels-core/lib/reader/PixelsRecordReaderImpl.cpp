@@ -135,6 +135,8 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readRowGroup(bool re
 	return readBatch(curRGRowCount, reuse);
 }
 
+
+// If cross multiple row group, we only process one row group
 std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchSize, bool reuse) {
     if(endOfFile) {
 		endOfFile = true;
@@ -187,9 +189,10 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchS
 				// TODO: set checkValid to false!
 				resultRowBatch->endOfFile = true;
 				endOfFile = true;
-				break;
 			}
 			curRowInRG = 0;
+			// Here we make sure only process one row group
+			break;
 		}
 	}
 	return resultRowBatch;

@@ -66,6 +66,7 @@ private:
     int targetRGNum;
     int curRGIdx;
     int curRowInRG;
+	int curRowInStride;
     std::string fileName;
     long rowIndex;
 	bool endOfFile;

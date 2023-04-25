@@ -34,24 +34,12 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
     } else {
         if(isLong) {
             // if long
-            for(int i = 0; i < size; i++) {
-                if(elementIndex % pixelStride == 0) {
-                    int pixelsId = elementIndex / pixelStride;
-                    // TODO: what is hasnull?
-                }
-                columnVector->vector[i + vectorIndex] = input->getLong();
-                elementIndex++;
-            }
+			columnVector->vector = (long *)(input->getPointer() + input->getReadPos());
+			input->setReadPos(input->getReadPos() + size * sizeof(long));
         } else {
             // if int
-            for(int i = 0; i < size; i++) {
-                if(elementIndex % pixelStride == 0) {
-                    int pixelsId = elementIndex / pixelStride;
-                    // TODO: what is hasnull?
-                }
-                columnVector->vector[i + vectorIndex] = input->getInt();
-                elementIndex++;
-            }
+			columnVector->vector = (long *)(input->getPointer() + input->getReadPos());
+			input->setReadPos(input->getReadPos() + size * sizeof(int));
         }
     }
 }

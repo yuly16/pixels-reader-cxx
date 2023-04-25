@@ -23,7 +23,7 @@ DecimalColumnVector::DecimalColumnVector(int precision, int scale) {
 }
 
 DecimalColumnVector::DecimalColumnVector(int len, int precision, int scale): ColumnVector(len) {
-    this->vector = new long[len];
+    this->vector = nullptr;
     this->precision = precision;
     this->scale = scale;
     memoryUsage += (long) sizeof(long) * len;
@@ -32,7 +32,6 @@ DecimalColumnVector::DecimalColumnVector(int len, int precision, int scale): Col
 void DecimalColumnVector::close() {
     if(!closed) {
         ColumnVector::close();
-        delete[] vector;
         vector = nullptr;
     }
 }

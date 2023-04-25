@@ -34,13 +34,9 @@ void DecimalColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
     }
     // TODO: we didn't implement the run length encoded method
 
-    for(int i = 0; i < size; i++) {
-        if(elementIndex % pixelStride == 0) {
-            int pixelsId = elementIndex / pixelStride;
-            // TODO: deal with null
-        }
-        columnVector->vector[i + vectorIndex] = input->getLong();
-        elementIndex++;
-    }
+
+    columnVector->vector = (long *)(input->getPointer() + input->getReadPos());
+    input->setReadPos(input->getReadPos() + size * sizeof(long));
+
 
 }
