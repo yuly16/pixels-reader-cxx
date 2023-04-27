@@ -11,10 +11,13 @@
 #include <iostream>
 #include <atomic>
 
+
 class PhysicalLocalReader: public PhysicalReader {
 public:
     PhysicalLocalReader(std::shared_ptr<Storage> storage, std::string path);
     std::shared_ptr<ByteBuffer> readFully(int length) override;
+	void readAsync(int length, int asyncRequestId = 0) override;
+	std::pair<int, std::shared_ptr<ByteBuffer>> completeAsync() override;
     void close() override;
     long getFileLength() override;
     void seek(long desired) override;
@@ -27,7 +30,9 @@ private:
     std::string path;
     long id;
     std::atomic<int> numRequests;
+	std::atomic<int> asyncNumRequests;
 	std::shared_ptr<PixelsRandomAccessFile> raf;
+
 };
 
 #endif //PIXELS_READER_PHYSICALLOCALREADER_H

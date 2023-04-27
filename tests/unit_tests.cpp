@@ -108,38 +108,35 @@ TEST(reader, recordReaderSingleTable) {
 	option.setRGRange(0, 1);
 	option.setQueryId(1);
     auto pixelsRecordReader = pixelsReader->read(option);
-	while(true) {
-		std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(2048, false);
-		if(v->endOfFile) {
-			break;
-		}
-	}
-//	EXPECT_FALSE(v->endOfFile);
-//	EXPECT_FALSE(pixelsRecordReader->isEndOfFile());
-//	EXPECT_EQ(v->rowCount, 13);
-//    for(const auto& col: v->cols) {
-//        std::cout<<"------"<<std::endl;
-//        col->print(v->rowCount);
-//    }
-//    std::shared_ptr<VectorizedRowBatch> v1 = pixelsRecordReader->readBatch(120, false);
-//	EXPECT_TRUE(v1->endOfFile);
-//	EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
-//	EXPECT_EQ(v1->rowCount, 12);
-//	std::cout<<"------"<<std::endl;
-//    std::cout<<"------"<<std::endl;
-//    std::cout<<"------"<<std::endl;
-//    std::cout<<"------"<<std::endl;
-//    for(const auto& col: v1->cols) {
-//        std::cout<<"------"<<std::endl;
-//        col->print(v1->rowCount);
-//    }
-//	std::shared_ptr<VectorizedRowBatch> v2 = pixelsRecordReader->readBatch(120, false);
-//	EXPECT_TRUE(v2->endOfFile);
-//	EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
-//	EXPECT_EQ(v2->rowCount, 0);
+
+	std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(13, false);
+
+
+	EXPECT_FALSE(v->endOfFile);
+	EXPECT_FALSE(pixelsRecordReader->isEndOfFile());
+	EXPECT_EQ(v->rowCount, 13);
+    for(const auto& col: v->cols) {
+        std::cout<<"------"<<std::endl;
+        col->print(v->rowCount);
+    }
+    std::shared_ptr<VectorizedRowBatch> v1 = pixelsRecordReader->readBatch(120, false);
+	EXPECT_TRUE(v1->endOfFile);
+	EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
+	EXPECT_EQ(v1->rowCount, 12);
+	std::cout<<"------"<<std::endl;
+    std::cout<<"------"<<std::endl;
+    std::cout<<"------"<<std::endl;
+    std::cout<<"------"<<std::endl;
+    for(const auto& col: v1->cols) {
+        std::cout<<"------"<<std::endl;
+        col->print(v1->rowCount);
+    }
+	std::shared_ptr<VectorizedRowBatch> v2 = pixelsRecordReader->readBatch(120, false);
+	EXPECT_TRUE(v2->endOfFile);
+	EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
+	EXPECT_EQ(v2->rowCount, 0);
 
 }
-
 
 TEST(reader, recordReaderMultipleTable) {
 	{
@@ -215,10 +212,10 @@ TEST(reader, recordReaderMultipleTable) {
 		EXPECT_TRUE(v->endOfFile);
 		EXPECT_TRUE(pixelsRecordReader->isEndOfFile());
 		EXPECT_EQ(v->rowCount, 5);
-		//    for(const auto& col: v->cols) {
-		//        std::cout<<"------"<<std::endl;
-		//        col->print();
-		//    }
+//		    for(const auto& col: v->cols) {
+//		        std::cout<<"------"<<std::endl;
+//		        col->print();
+//		    }
 
 	}
 
@@ -244,12 +241,12 @@ TEST(reader, testDateReader) {
 	// includeCols comes from the caller of PixelsPageSource
 	std::vector<std::string> includeCols;
 	includeCols.emplace_back("o_orderdate");
-	//	std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
+    // std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
 	option.setIncludeCols(includeCols);
 	option.setRGRange(0, 1);
 	option.setQueryId(1);
 	auto pixelsRecordReader = pixelsReader->read(option);
-	std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(10000, false);
+	std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(10, false);
 	//	EXPECT_FALSE(v->endOfFile);
 	//	EXPECT_FALSE(pixelsRecordReader->isEndOfFile());
 	//	EXPECT_EQ(v->rowCount, 13);

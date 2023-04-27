@@ -10,12 +10,17 @@
 #include "physical/natives/DirectIoLib.h"
 #include <fcntl.h>
 #include <unistd.h>
+#include "liburing.h"
+#include "liburing/io_uring.h"
 
 class DirectRandomAccessFile: public PixelsRandomAccessFile {
 public:
     explicit DirectRandomAccessFile(const std::string& file);
     void close() override;
     std::shared_ptr<ByteBuffer> readFully(int len) override;
+	void readAsync(int len, int uringRequestId = 0);
+	// must be called after readAsync
+	std::pair<int, std::shared_ptr<ByteBuffer>>  completeAsync();
     long length() override;
     void seek(long off) override;
     long readLong() override;
@@ -29,6 +34,8 @@ private:
     std::shared_ptr<ByteBuffer> smallBuffer;
 	std::shared_ptr<ByteBuffer> smallDirectBuffer;
 	std::shared_ptr<DirectIoLib> directIoLib;
+	// this is for async io
+	struct io_uring ring;
     bool bufferValid;
     long offset;
     long len;

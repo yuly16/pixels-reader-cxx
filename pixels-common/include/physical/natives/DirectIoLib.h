@@ -20,6 +20,14 @@
 #include <string>
 #include <fcntl.h>
 #include <unistd.h>
+#include "liburing.h"
+#include "liburing/io_uring.h"
+
+struct uringData {
+	int idx;
+	ByteBuffer * bb;
+};
+
 
 class DirectIoLib {
 public:
@@ -29,6 +37,10 @@ public:
 	DirectIoLib(int fsBlockSize);
 	std::shared_ptr<ByteBuffer> allocateDirectBuffer(long size);
 	std::shared_ptr<ByteBuffer> read(int fd, long fileOffset, std::shared_ptr<ByteBuffer> directBuffer, long length);
+	void uringSubmitReadRequest(struct io_uring & ring, int fd, int idx, long fileOffset,
+	                                      std::shared_ptr<ByteBuffer> directBuffer, long length);
+	std::pair<int, std::shared_ptr<ByteBuffer>> uringGetCompletion(struct io_uring & ring);
+
 	long blockStart(long value);
 	long blockEnd(long value);
 private:

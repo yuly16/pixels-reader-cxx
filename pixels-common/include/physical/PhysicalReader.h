@@ -13,6 +13,8 @@ public:
     virtual long getFileLength() = 0;
     virtual void seek(long desired) = 0;
     virtual std::shared_ptr<ByteBuffer> readFully(int length) = 0;
+	virtual void readAsync(int length, int asyncRequestId = 0) = 0;
+	virtual std::pair<int, std::shared_ptr<ByteBuffer>> completeAsync() = 0;
 //    virtual void readFully(char * buffer) = 0;
 //    virtual void readFully(char * buffer, int offset, int length) = 0;
     virtual std::string getName() = 0;

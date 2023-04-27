@@ -21,6 +21,7 @@ PhysicalLocalReader::PhysicalLocalReader(std::shared_ptr<Storage> storage, std::
     raf = local->openRaf(path);
     // TODO: get fileid.
     numRequests = 1;
+	asyncNumRequests = 0;
 }
 
 std::shared_ptr<ByteBuffer> PhysicalLocalReader::readFully(int length) {
@@ -60,4 +61,16 @@ std::string PhysicalLocalReader::getName() {
         return "";
     }
     return path.substr(path.find_last_of('/') + 1);
+}
+
+void PhysicalLocalReader::readAsync(int length, int asyncRequestId) {
+	numRequests++;
+	auto directRaf = std::static_pointer_cast<DirectRandomAccessFile>(raf);
+	directRaf->readAsync(length, asyncRequestId);
+}
+
+std::pair<int, std::shared_ptr<ByteBuffer>> PhysicalLocalReader::completeAsync() {
+	auto directRaf = std::static_pointer_cast<DirectRandomAccessFile>(raf);
+	auto result = directRaf->completeAsync();
+	return result;
 }

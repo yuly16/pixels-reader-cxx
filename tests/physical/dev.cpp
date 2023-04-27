@@ -19,7 +19,7 @@
 #include "utils/Constants.h"
 #include "exception/PixelsFileMagicInvalidException.h"
 #include <vector>
- #include "liburing.h"
+#include "liburing.h"
 #include "utils/String.h"
 #include "liburing/io_uring.h"
 #include "vector/LongColumnVector.h"
@@ -172,7 +172,7 @@ TEST(physical, uring) {
 		assert(fd >= 0);
         fds.emplace_back(fd);
     }
-    int size = 3;
+    int size = 6;
     std::vector<char *> bufs;
     for(int i = 0; i < paths.size(); i++) {
         char * buffer = new char[size];
@@ -188,7 +188,7 @@ TEST(physical, uring) {
     for(int i = 0; i < paths.size(); i++) {
 		struct io_uring_sqe * sqe = io_uring_get_sqe(&ring);
         io_uring_prep_read(sqe, fds[i], bufs[i], size, 0);
-        io_uring_sqe_set_data(sqe, &i);
+        io_uring_sqe_set_data(sqe, &bufs[i]);
 		io_uring_submit(&ring);
     }
 
@@ -201,14 +201,15 @@ TEST(physical, uring) {
 		if (cqe->res < 0) {
 			fprintf(stderr, "Async readv failed.\n");
 		}
-
+		char ** buffer = (char **)io_uring_cqe_get_data(cqe);
+		std::cout<<*buffer<<std::endl;
 		io_uring_cqe_seen(&ring, cqe);
     }
 
     io_uring_queue_exit(&ring);
-	for(int i = 0; i < paths.size(); i++) {
-		std::cout<<bufs[i]<<std::endl;
-	}
+//	for(int i = 0; i < paths.size(); i++) {
+//		std::cout<<bufs[i]<<std::endl;
+//	}
 }
 
 

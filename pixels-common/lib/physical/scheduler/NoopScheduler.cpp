@@ -17,16 +17,22 @@ std::vector<std::shared_ptr<ByteBuffer>> NoopScheduler::executeBatch(std::shared
     if(batch.getSize() < 0) {
         return std::vector<std::shared_ptr<ByteBuffer>>{};
     }
-//    auto futures = batch.getFutures();
     auto requests = batch.getRequests();
-    std::vector<std::shared_ptr<ByteBuffer>> bb;
-    // TODO: support async read
+    std::vector<std::shared_ptr<ByteBuffer>> bbs;
+	bbs.resize(batch.getSize());
     for(int i = 0; i < batch.getSize(); i++) {
         Request request = requests[i];
         reader->seek(request.start);
-        // TODO: here we didn't find a alternative for futures.complete
-        bb.emplace_back(reader->readFully(request.length));
+		reader->readAsync(request.length, i);
+//        bbs.emplace_back(reader->readFully(request.length));
     }
-    return bb;
+	for(int i = 0; i < batch.getSize(); i++) {
+		auto result = reader->completeAsync();
+		int idx = result.first;
+		auto bb = result.second;
+		bbs.at(idx) = bb;
+	}
+
+    return bbs;
 }
 
