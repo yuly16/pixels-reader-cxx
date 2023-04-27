@@ -19,9 +19,9 @@
 #include "utils/Constants.h"
 #include "exception/PixelsFileMagicInvalidException.h"
 #include <vector>
-// #include "liburing.h"
+ #include "liburing.h"
 #include "utils/String.h"
-//#include "liburing/io_uring.h"
+#include "liburing/io_uring.h"
 #include "vector/LongColumnVector.h"
 
 
@@ -160,41 +160,56 @@ TEST(physical, vector) {
 
 }
 
-//TEST(physical, uring) {
-//    std::vector<std::string> paths;
-//    paths.emplace_back("/home/liyu/demo/uringDemo/a");
-//    paths.emplace_back("/home/liyu/demo/uringDemo/b");
-//    paths.emplace_back("/home/liyu/demo/uringDemo/c");
-//    paths.emplace_back("/home/liyu/demo/uringDemo/d");
-//    std::vector<int> fds;
-//    for(auto path: paths) {
-//        int fd = open(path.c_str(), O_RDONLY);
-//        fds.emplace_back(fd);
-//    }
-//    int size = 6;
-//    std::vector<char *> bufs;
-//    for(int i = 0; i < paths.size(); i++) {
-//        char * buffer = new char[size];
-//        bufs.emplace_back(buffer);
-//    }
-//
-//    struct io_uring ring{};
-//    if(io_uring_queue_init(4, &ring, 0) < 0) {
-//        throw std::runtime_error("initialize io_uring fails.");
-//    }
-//
-//    for(int i = 0; i < paths.size(); i++) {
-//        struct io_uring_sqe * sqe = io_uring_get_sqe(&ring);
-//        io_uring_prep_read(sqe, fds[i], bufs[i], size, 0);
-//        io_uring_sqe_set_data64(sqe, i);
-//    }
-//    for(int i = 0; i < paths.size(); i++) {
-//        io_uring_submit_and_wait(&ring, 1);
-//    }
-//
-//    io_uring_queue_exit(&ring);
-//
-//}
+TEST(physical, uring) {
+    std::vector<std::string> paths;
+    paths.emplace_back("/home/yuly/demo/uringDemo/a");
+    paths.emplace_back("/home/yuly/demo/uringDemo/b");
+    paths.emplace_back("/home/yuly/demo/uringDemo/c");
+    paths.emplace_back("/home/yuly/demo/uringDemo/d");
+    std::vector<int> fds;
+    for(auto path: paths) {
+        int fd = open(path.c_str(), O_RDONLY);
+		assert(fd >= 0);
+        fds.emplace_back(fd);
+    }
+    int size = 3;
+    std::vector<char *> bufs;
+    for(int i = 0; i < paths.size(); i++) {
+        char * buffer = new char[size];
+        bufs.emplace_back(buffer);
+    }
+
+    struct io_uring ring{};
+    if(io_uring_queue_init(4, &ring, 0) < 0) {
+        throw std::runtime_error("initialize io_uring fails.");
+    }
+
+
+    for(int i = 0; i < paths.size(); i++) {
+		struct io_uring_sqe * sqe = io_uring_get_sqe(&ring);
+        io_uring_prep_read(sqe, fds[i], bufs[i], size, 0);
+        io_uring_sqe_set_data(sqe, &i);
+		io_uring_submit(&ring);
+    }
+
+    for(int i = 0; i < paths.size(); i++) {
+		struct io_uring_cqe *cqe;
+		int ret = io_uring_wait_cqe(&ring, &cqe);
+		if (ret < 0) {
+			perror("io_uring_wait_cqe");
+		}
+		if (cqe->res < 0) {
+			fprintf(stderr, "Async readv failed.\n");
+		}
+
+		io_uring_cqe_seen(&ring, cqe);
+    }
+
+    io_uring_queue_exit(&ring);
+	for(int i = 0; i < paths.size(); i++) {
+		std::cout<<bufs[i]<<std::endl;
+	}
+}
 
 
 TEST(physical, columnVector) {

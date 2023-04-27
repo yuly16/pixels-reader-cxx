@@ -25,4 +25,5 @@ add_library(pixels-common ${pixels_common_cxx} ${PROTO_SRCS} ${PROTO_HDRS})
 target_link_libraries(pixels-common
         ${Protobuf_LIBRARIES}
         tbb
+        uring
         )
