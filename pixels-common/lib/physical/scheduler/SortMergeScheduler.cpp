@@ -3,6 +3,8 @@
 //
 
 #include "physical/scheduler/SortMergeScheduler.h"
+#include "utils/ConfigFactory.h"
+#include "exception/InvalidArgumentException.h"
 
 Scheduler * SortMergeScheduler::instance = nullptr;
 
@@ -17,22 +19,42 @@ std::vector<std::shared_ptr<ByteBuffer>> SortMergeScheduler::executeBatch(std::s
     if(batch.getSize() < 0) {
         return std::vector<std::shared_ptr<ByteBuffer>>{};
     }
-    auto requests = batch.getRequests();
+    auto mergeRequests = sortMerge(batch, queryId);
     std::vector<std::shared_ptr<ByteBuffer>> bbs;
-    bbs.resize(batch.getSize());
-    for(int i = 0; i < batch.getSize(); i++) {
-        Request request = requests[i];
-        reader->seek(request.start);
-        reader->readAsync(request.length, i);
-//        bbs.emplace_back(reader->readFully(request.length));
-    }
-    for(int i = 0; i < batch.getSize(); i++) {
-        auto result = reader->completeAsync();
-        int idx = result.first;
-        auto bb = result.second;
-        bbs.at(idx) = bb;
+    for(auto merged : mergeRequests) {
+        reader->seek(merged->getStart());
+        auto buffer = reader->readFully(merged->getLength());
+        auto separateBuffers = merged->complete(buffer);
+        bbs.insert(bbs.end(), separateBuffers.begin(), separateBuffers.end());
     }
 
     return bbs;
 }
+
+SortMergeScheduler::SortMergeScheduler() {
+
+}
+
+std::vector<std::shared_ptr<MergedRequest>> SortMergeScheduler::sortMerge(RequestBatch batch, long queryId) {
+    auto requests = batch.getRequests();
+    std::sort(requests.begin(), requests.end(), [](const Request& lhs, const Request& rhs) {
+        return lhs.start < rhs.start;
+    });
+
+    std::vector<std::shared_ptr<MergedRequest>> mergedRequests;
+    auto mr1 = std::make_shared<MergedRequest>(requests.at(0));
+    auto mr2 = mr1;
+    for(int i = 1; i < batch.getSize(); i++) {
+        mr2 = mr1->merge(requests.at(i));
+        if(mr1 == mr2) {
+            continue;
+        }
+        mergedRequests.emplace_back(mr1);
+        mr1 = mr2;
+    }
+    mergedRequests.emplace_back(mr2);
+    return mergedRequests;
+}
+
+
 

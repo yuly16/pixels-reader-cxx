@@ -6,14 +6,21 @@
 #define DUCKDB_SORTMERGESCHEDULER_H
 
 #include "physical/Scheduler.h"
+#include "physical/MergedRequest.h"
+#include<algorithm>
 
 class SortMergeScheduler : public Scheduler {
     // TODO: logger
 public:
     static Scheduler * Instance();
     std::vector<std::shared_ptr<ByteBuffer>> executeBatch(std::shared_ptr<PhysicalReader> reader, RequestBatch batch, long queryId) override;
+    std::vector<std::shared_ptr<MergedRequest>> sortMerge(RequestBatch batch, long queryId);
+
 private:
+    SortMergeScheduler();
     static Scheduler * instance;
+
+
 };
 
 #endif //DUCKDB_SORTMERGESCHEDULER_H

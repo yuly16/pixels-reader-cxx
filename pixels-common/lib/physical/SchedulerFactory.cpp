@@ -19,9 +19,13 @@ Scheduler *SchedulerFactory::getScheduler() {
 
 SchedulerFactory::SchedulerFactory() {
     // TODO: here we read name from pixels.properties
-    std::string name("noop");
+    std::string name = ConfigFactory::Instance().getProperty("read.request.scheduler");
+    std::transform(name.begin(), name.end(), name.begin(),
+                   [](unsigned char c){ return std::tolower(c); });
     if(name == "noop") {
         scheduler = NoopScheduler::Instance();
+    } else if(name == "sortmerge") {
+        scheduler =  SortMergeScheduler::Instance();
     } else {
         throw std::runtime_error("the read request scheduler is not support. ");
     }

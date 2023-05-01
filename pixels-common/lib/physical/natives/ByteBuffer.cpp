@@ -57,7 +57,7 @@ ByteBuffer::ByteBuffer(uint8_t * arr, uint32_t size, bool allocated_by_new) {
 }
 
 ByteBuffer::ByteBuffer(ByteBuffer & bb, uint32_t startId, uint32_t length) {
-    assert(startId >= 0 && startId + length < bb.size() && length > 0);
+    assert(startId >= 0 && startId + length <= bb.size() && length > 0);
     buf = bb.getPointer() + startId;
     bufSize = length;
     resetPosition();

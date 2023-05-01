@@ -7,6 +7,11 @@
 
 #include "physical/Scheduler.h"
 #include "physical/scheduler/NoopScheduler.h"
+#include "physical/scheduler/SortMergeScheduler.h"
+#include "utils/ConfigFactory.h"
+#include <algorithm>
+#include <cctype>
+#include <string>
 
 class SchedulerFactory {
 public:

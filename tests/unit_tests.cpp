@@ -21,7 +21,8 @@
 #include <malloc.h>
 #include "utils/ConfigFactory.h"
 #include "physical/natives/DirectIoLib.h"
-
+#include "physical/MergedRequest.h"
+#include "physical/scheduler/SortMergeScheduler.h"
 
 
 TEST(reader, ByteBufferPopulateChar) {
@@ -239,9 +240,9 @@ TEST(reader, testDateReader) {
 	option.setEnableEncodedColumnVector(true);
 
 	// includeCols comes from the caller of PixelsPageSource
-	std::vector<std::string> includeCols;
-	includeCols.emplace_back("o_orderdate");
-    // std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
+//	std::vector<std::string> includeCols;
+//	includeCols.emplace_back("o_orderdate");
+     std::vector<std::string> includeCols = pixelsReader->getFileSchema()->getFieldNames();
 	option.setIncludeCols(includeCols);
 	option.setRGRange(0, 1);
 	option.setQueryId(1);
@@ -362,4 +363,51 @@ TEST(reader, fileTail) {
 TEST(reader, ConfigFactory) {
 	auto a = ConfigFactory::Instance();
 	a.Print();
+}
+
+TEST(reader, sortMergeRandomTest) {
+    srand(66);
+    int requestSize = 10000;
+    long maxLimit = 2000000000;
+    RequestBatch requests;
+    auto * scheduler = SortMergeScheduler::Instance();
+    auto * sortMergeScheduler = (SortMergeScheduler *)(scheduler);
+    long currOffset = 0;
+    std::vector<int> targetStart;
+    std::vector<int> targetLength;
+    int currStart = -1;
+    int currLength = -1;
+    int maxGap = std::stoi(ConfigFactory::Instance().getProperty("read.request.merge.gap"));
+    for(int i = 0; i < requestSize; i++) {
+        if (maxLimit - currOffset <= 1) {
+            break;
+        }
+        int start = currOffset + rand() % (maxLimit - currOffset);
+        int length = 1 + rand() % (maxLimit - start);
+        if(currStart == -1) {
+            currStart = start;
+            currLength = length;
+        }
+        currOffset = start + length;
+        Request request(0, start, length);
+        requests.add(request);
+
+        int currEnd = currStart + currLength;
+        if(start - currEnd <= maxGap) {
+            currLength += start - currEnd + length;
+        } else {
+            targetStart.emplace_back(currStart);
+            targetLength.emplace_back(currLength);
+            currStart = start;
+            currLength = length;
+        }
+    }
+    targetStart.emplace_back(currStart);
+    targetLength.emplace_back(currLength);
+    auto merged = sortMergeScheduler->sortMerge(requests, 0);
+    EXPECT_EQ(merged.size(), targetStart.size());
+    for(int i = 0; i < targetStart.size(); i++) {
+        EXPECT_EQ(targetStart.at(i), merged.at(i)->getStart());
+        EXPECT_EQ(targetLength.at(i), merged.at(i)->getLength());
+    }
 }
