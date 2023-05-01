@@ -210,6 +210,8 @@ void PixelsRecordReaderImpl::prepareRead() {
     // read row group footers
     rowGroupFooters.clear();
     rowGroupFooters.resize(targetRGNum);
+    std::vector<bool> rowGroupFooterCacheHit;
+    rowGroupFooterCacheHit.resize(targetRGNum);
 
     /**
      * Issue #114:
@@ -229,6 +231,7 @@ void PixelsRecordReaderImpl::prepareRead() {
             // cache hit
             pixels::proto::RowGroupFooter rowGroupFooter = footerCache->getRGFooter(rgCacheId);
             rowGroupFooters.at(i) = rowGroupFooter;
+            rowGroupFooterCacheHit.at(i) = true;
         } else {
             // cache miss, read from disk and put it into cache
             pixels::proto::RowGroupInformation rowGroupInformation = footer.rowgroupinfos(rgId);
@@ -236,16 +239,20 @@ void PixelsRecordReaderImpl::prepareRead() {
             uint64_t footerLength = rowGroupInformation.footerlength();
             fis.push_back(i);
             requestBatch.add(queryId, (int) footerOffset, (int) footerLength);
+            rowGroupFooterCacheHit.at(i) = false;
         }
     }
     Scheduler * scheduler = SchedulerFactory::Instance()->getScheduler();
     auto bbs = scheduler->executeBatch(physicalReader, requestBatch, queryId);
     // TODO: the return value should be unique_ptr?
+
     for(int i = 0; i < bbs.size(); i++) {
-        pixels::proto::RowGroupFooter parsed;
-        parsed.ParseFromArray(bbs[i]->getPointer(), (int)bbs[i]->size());
-        rowGroupFooters.at(fis[i]) = parsed;
-        footerCache->putRGFooter(rgCacheIds[fis[i]], parsed);
+        if(!rowGroupFooterCacheHit.at(i)) {
+            pixels::proto::RowGroupFooter parsed;
+            parsed.ParseFromArray(bbs[i]->getPointer(), (int)bbs[i]->size());
+            rowGroupFooters.at(fis[i]) = parsed;
+            footerCache->putRGFooter(rgCacheIds[fis[i]], parsed);
+        }
     }
 
     bbs.clear();

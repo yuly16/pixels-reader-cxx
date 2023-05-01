@@ -33,6 +33,9 @@ ByteBuffer::ByteBuffer(uint32_t size) {
     name = "";
     fromOtherBB = false;
 	allocated_by_new = true;
+    rmark = 0;
+    wpos = 0;
+    rpos = 0;
 }
 
 
@@ -50,6 +53,7 @@ ByteBuffer::ByteBuffer(uint8_t * arr, uint32_t size, bool allocated_by_new) {
     name = "";
     fromOtherBB = false;
 	this->allocated_by_new = allocated_by_new;
+
 }
 
 ByteBuffer::ByteBuffer(ByteBuffer & bb, uint32_t startId, uint32_t length) {
@@ -90,6 +94,7 @@ void ByteBuffer::clear() {
 void ByteBuffer::resetPosition() {
     rpos = 0;
     wpos = 0;
+    rmark = 0;
 }
 /**
  * Size

@@ -246,7 +246,7 @@ TEST(reader, testDateReader) {
 	option.setRGRange(0, 1);
 	option.setQueryId(1);
 	auto pixelsRecordReader = pixelsReader->read(option);
-	std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(10, false);
+	std::shared_ptr<VectorizedRowBatch> v = pixelsRecordReader->readBatch(1000, false);
 	//	EXPECT_FALSE(v->endOfFile);
 	//	EXPECT_FALSE(pixelsRecordReader->isEndOfFile());
 	//	EXPECT_EQ(v->rowCount, 13);
