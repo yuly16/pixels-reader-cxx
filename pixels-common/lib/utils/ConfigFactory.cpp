@@ -14,7 +14,8 @@ ConfigFactory::ConfigFactory() {
 		throw InvalidArgumentException("The environment variable 'PIXELS_HOME' is not set. ");
 	}
 	std::string pixelsHome = std::string(std::getenv("PIXELS_HOME"));
-	if(pixelsHome.back() != '/') {
+	std::cout<<"PIXELS_HOME is "<<pixelsHome<<std::endl;
+    if(pixelsHome.back() != '/') {
 		pixelsHome += "/";
 	}
 	pixelsHome += "pixels.properties";
