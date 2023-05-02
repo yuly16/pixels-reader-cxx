@@ -26,7 +26,7 @@ target_link_libraries(
 add_executable(
         unit_tests
         unit_tests.cpp
-)
+        performance_test.cpp)
 target_link_libraries(
         unit_tests
         GTest::gtest_main
