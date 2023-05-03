@@ -1,7 +1,7 @@
 //
 // Created by yuly on 03.05.23.
 //
-#include "utils/TimeProfiler.h"
+#include "profiler/TimeProfiler.h"
 
 
 
@@ -56,7 +56,7 @@ void TimeProfiler::End(const std::string& label) {
 void TimeProfiler::Print() {
     if constexpr(enableProfile) {
         for(auto iter: result) {
-            std::cout<<iter.first<<" "<<1.0 * iter.second / 1000000000 <<"ms(thread time)"<<std::endl;
+            std::cout<<iter.first<<" "<<1.0 * iter.second / 1000000000 <<"s(thread time)"<<std::endl;
         }
     }
 }

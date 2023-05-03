@@ -9,20 +9,21 @@
 #include <memory>
 #include <string>
 #include "exception/InvalidArgumentException.h"
+#include "profiler/AbstractProfiler.h"
 #include <chrono>
 #include <map>
 #include <mutex>
 
-constexpr bool enableProfile = true;
 
-class TimeProfiler {
+
+class TimeProfiler: public AbstractProfiler {
 public:
     static TimeProfiler & Instance();
     void Start(const std::string& label);
     void End(const std::string& label);
     long Get(const std::string &label);
-    void Reset();
-    void Print();
+    void Reset() override;
+    void Print() override;
     int GetResultSize();
 private:
     TimeProfiler();

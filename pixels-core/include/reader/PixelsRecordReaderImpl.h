@@ -17,7 +17,7 @@
 #include "TypeDescription.h"
 #include "reader/ColumnReader.h"
 #include "reader/ColumnReaderBuilder.h"
-#include "utils/TimeProfiler.h"
+#include "profiler/TimeProfiler.h"
 
 class ChunkId {
 public:

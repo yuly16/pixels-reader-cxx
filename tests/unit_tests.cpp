@@ -23,7 +23,8 @@
 #include "physical/natives/DirectIoLib.h"
 #include "physical/MergedRequest.h"
 #include "physical/scheduler/SortMergeScheduler.h"
-#include "utils/TimeProfiler.h"
+#include "profiler/TimeProfiler.h"
+#include "profiler/CountProfiler.h"
 #include <thread>
 
 TEST(reader, ByteBufferPopulateChar) {
@@ -413,7 +414,7 @@ TEST(reader, sortMergeRandomTest) {
     }
 }
 
-TEST(reader, ProfilerTest) {
+TEST(reader, TimeProfilerTest) {
     // single thread test
     TimeProfiler & profiler = TimeProfiler::Instance();
     profiler.Start("test");
@@ -452,4 +453,40 @@ TEST(reader, ProfilerTest) {
     EXPECT_LE(profiler.Get("test 2"), 1000 * nthreads + 50);
     profiler.Reset();
     EXPECT_EQ(profiler.GetResultSize(), 0);
+}
+
+
+TEST(reader, CountProfilerTest) {
+    // single thread test
+    CountProfiler & profiler = CountProfiler::Instance();
+    for(int i = 0; i < 5; i++) {
+        profiler.Count("test");
+    }
+    EXPECT_EQ(profiler.Get("test"), 5);
+    profiler.Reset();
+    // multi thread test
+    unsigned int nthreads = std::thread::hardware_concurrency();
+    std::vector<std::thread> worker;
+    for(int i = 0; i < nthreads; i++) {
+        worker.emplace_back([]{
+            CountProfiler & profiler = CountProfiler::Instance();
+            for(int i = 0; i < 10000; i++) {
+                profiler.Count("test");
+                profiler.Count("test 1");
+                profiler.Count("test 2");
+                profiler.Count("test 3");
+                profiler.Count("test 4");
+            }
+        });
+    }
+    for(int i = 0; i < nthreads; i++) {
+        worker.at(i).join();
+    }
+    EXPECT_EQ(profiler.Get("test"), 10000 * nthreads);
+    EXPECT_EQ(profiler.Get("test 1"), 10000 * nthreads);
+    EXPECT_EQ(profiler.Get("test 2"), 10000 * nthreads);
+    EXPECT_EQ(profiler.Get("test 3"), 10000 * nthreads);
+    EXPECT_EQ(profiler.Get("test 4"), 10000 * nthreads);
+    profiler.Print();
+    profiler.Reset();
 }

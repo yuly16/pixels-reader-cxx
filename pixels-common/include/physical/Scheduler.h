@@ -6,7 +6,7 @@
 #define PIXELS_SCHEDULER_H
 #include "physical/PhysicalReader.h"
 #include "physical/RequestBatch.h"
-#include "utils/TimeProfiler.h"
+#include "profiler/TimeProfiler.h"
 
 class Scheduler {
 public:
