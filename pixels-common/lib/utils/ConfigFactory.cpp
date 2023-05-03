@@ -42,3 +42,13 @@ std::string ConfigFactory::getProperty(std::string key) {
 	}
 	return prop[key];
 }
+
+bool ConfigFactory::boolCheckProperty(std::string key) {
+    if(getProperty(key) == "true") {
+        return true;
+    } else if (getProperty(key) == "false") {
+        return false;
+    } else {
+        throw InvalidArgumentException("ConfigFactory: The key is not boolean type.");
+    }
+}

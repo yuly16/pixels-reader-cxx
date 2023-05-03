@@ -19,6 +19,7 @@ public:
 	static ConfigFactory & Instance();
 	void Print();
 	std::string getProperty(std::string key);
+    bool boolCheckProperty(std::string key);
 private:
 	ConfigFactory();
 	std::map<std::string, std::string> prop;
