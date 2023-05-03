@@ -17,6 +17,8 @@ std::vector<std::shared_ptr<ByteBuffer>> NoopScheduler::executeBatch(std::shared
     if(batch.getSize() < 0) {
         return std::vector<std::shared_ptr<ByteBuffer>>{};
     }
+    TimeProfiler::Instance().Start("pixels read");
+
     auto requests = batch.getRequests();
     std::vector<std::shared_ptr<ByteBuffer>> bbs;
 	bbs.resize(batch.getSize());
@@ -32,7 +34,7 @@ std::vector<std::shared_ptr<ByteBuffer>> NoopScheduler::executeBatch(std::shared
 		auto bb = result.second;
 		bbs.at(idx) = bb;
 	}
-
+    TimeProfiler::Instance().End("pixels read");
     return bbs;
 }
 

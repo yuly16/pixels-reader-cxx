@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include "liburing.h"
 #include "liburing/io_uring.h"
+#include "utils/TimeProfiler.h"
 
 class DirectRandomAccessFile: public PixelsRandomAccessFile {
 public:

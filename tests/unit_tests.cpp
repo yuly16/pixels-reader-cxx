@@ -23,7 +23,7 @@
 #include "physical/natives/DirectIoLib.h"
 #include "physical/MergedRequest.h"
 #include "physical/scheduler/SortMergeScheduler.h"
-#include "utils/Profiler.h"
+#include "utils/TimeProfiler.h"
 #include <thread>
 
 TEST(reader, ByteBufferPopulateChar) {
@@ -415,7 +415,7 @@ TEST(reader, sortMergeRandomTest) {
 
 TEST(reader, ProfilerTest) {
     // single thread test
-    Profiler & profiler = Profiler::Instance();
+    TimeProfiler & profiler = TimeProfiler::Instance();
     profiler.Start("test");
     sleep(2);
     profiler.End("test");
@@ -429,7 +429,7 @@ TEST(reader, ProfilerTest) {
     std::vector<std::thread> worker;
     for(int i = 0; i < nthreads; i++) {
         worker.emplace_back([]{
-            Profiler & profiler = Profiler::Instance();
+            TimeProfiler & profiler = TimeProfiler::Instance();
             profiler.Start("test 0");
             profiler.Start("test 1");
             sleep(2);

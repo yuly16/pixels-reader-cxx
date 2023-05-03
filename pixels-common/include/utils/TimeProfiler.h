@@ -2,8 +2,8 @@
 // Created by yuly on 03.05.23.
 //
 
-#ifndef DUCKDB_PROFILER_H
-#define DUCKDB_PROFILER_H
+#ifndef DUCKDB_TIMEPROFILER_H
+#define DUCKDB_TIMEPROFILER_H
 
 #include <iostream>
 #include <memory>
@@ -13,20 +13,22 @@
 #include <map>
 #include <mutex>
 
-class Profiler {
+constexpr bool enableProfile = true;
+
+class TimeProfiler {
 public:
-    static Profiler & Instance();
+    static TimeProfiler & Instance();
     void Start(const std::string& label);
     void End(const std::string& label);
-    int Get(const std::string &label);
+    long Get(const std::string &label);
     void Reset();
     void Print();
     int GetResultSize();
 private:
-    Profiler();
+    TimeProfiler();
     static thread_local std::map<std::string,std::chrono::steady_clock::time_point> profiling;
     std::mutex lock;
-    std::map<std::string, int> result;
+    std::map<std::string, long> result;
 };
 
-#endif //DUCKDB_PROFILER_H
+#endif //DUCKDB_TIMEPROFILER_H

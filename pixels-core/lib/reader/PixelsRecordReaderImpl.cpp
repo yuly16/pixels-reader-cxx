@@ -123,10 +123,11 @@ void PixelsRecordReaderImpl::UpdateRowGroupInfo() {
 
 
 std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchSize, bool reuse) {
-	if(endOfFile) {
+    if(endOfFile) {
 		endOfFile = true;
 		return createEmptyEOFRowBatch(0);
 	}
+
 	if(!everRead) {
 		if(!read()) {
 			throw std::runtime_error("failed to read file");

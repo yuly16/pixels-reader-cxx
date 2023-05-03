@@ -51,6 +51,7 @@ std::shared_ptr<ByteBuffer> DirectRandomAccessFile::readFully(int len) {
 	auto buffer = directIoLib->read(fd, offset, directBuffer, len);
     seek(offset + len);
     largeBuffers.emplace_back(directBuffer);
+
     return buffer;
 }
 
