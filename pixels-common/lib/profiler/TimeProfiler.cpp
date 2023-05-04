@@ -38,10 +38,10 @@ void TimeProfiler::End(const std::string& label) {
             throw InvalidArgumentException(
                     "TimeProfiler::End: Label cannot be the empty string. ");
         }
-
+		auto startTime = profiling[label];
+		auto endTime = std::chrono::steady_clock::now();
+		profiling.erase(label);
         std::unique_lock<std::mutex> parallel_lock(lock);
-        auto startTime = profiling[label];
-        auto endTime = std::chrono::steady_clock::now();
         if (result.find(label) == result.end()) {
             result[label] = std::chrono::duration_cast<std::chrono::nanoseconds>
                     (endTime - startTime).count();
@@ -49,7 +49,7 @@ void TimeProfiler::End(const std::string& label) {
             result[label] = result[label] + std::chrono::duration_cast<std::chrono::nanoseconds>
                     (endTime - startTime).count();
         }
-        profiling.erase(label);
+
     }
 }
 
