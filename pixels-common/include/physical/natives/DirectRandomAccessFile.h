@@ -38,6 +38,7 @@ private:
 	// this is for async io
 	struct io_uring ring;
     bool bufferValid;
+	bool enableDirect;
     long offset;
     long len;
     int fd;

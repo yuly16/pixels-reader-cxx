@@ -127,12 +127,15 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchS
 		endOfFile = true;
 		return createEmptyEOFRowBatch(0);
 	}
-
+	::TimeProfiler::Instance().Start("pixels readBatch");
 	if(!everRead) {
+		::TimeProfiler::Instance().Start("pixels read");
 		if(!read()) {
 			throw std::runtime_error("failed to read file");
 		}
+		::TimeProfiler::Instance().End("pixels read");
 	}
+
 	std::shared_ptr<VectorizedRowBatch> resultRowBatch;
 	resultRowBatch = resultSchema->createRowBatch(batchSize, resultColumnsEncoded);
 	// TODO: resultRowBatch.projectionSize
@@ -179,6 +182,7 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchS
 			curRowInRG = 0;
 		}
 	}
+	::TimeProfiler::Instance().End("pixels readBatch");
 	return resultRowBatch;
 }
 

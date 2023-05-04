@@ -8,6 +8,7 @@
 
 #include <cstdio>
 #include <malloc.h>
+#include "profiler/CountProfiler.h"
 DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
     FILE * fp = fopen(file.c_str(), "r");
     // checking if the file exist or not
@@ -19,10 +20,17 @@ DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
     len = ftell(fp);
     // closing the file
     fclose(fp);
-    fd = open(file.c_str(), O_RDONLY|O_DIRECT);
-    offset = 0;
 	fsBlockSize = std::stoi(ConfigFactory::Instance().getProperty("localfs.block.size"));
-    bufferValid = false;
+	enableDirect = ConfigFactory::Instance().boolCheckProperty("localfs.enable.direct.io");
+	if(enableDirect) {
+		fd = open(file.c_str(), O_RDONLY|O_DIRECT);
+	} else {
+		fd = open(file.c_str(), O_RDONLY);
+		smallBuffer = std::make_shared<ByteBuffer>(fsBlockSize);
+	}
+    offset = 0;
+
+	bufferValid = false;
 	directIoLib = std::make_shared<DirectIoLib>(fsBlockSize);
     try {
 		smallDirectBuffer = directIoLib->allocateDirectBuffer(fsBlockSize);
@@ -30,9 +38,9 @@ DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
         throw std::runtime_error("failed to allocate buffer");
     }
 	// initialize io_uring ring
-	if(io_uring_queue_init(4096, &ring, 0) < 0) {
-		throw InvalidArgumentException("DirectRandomAccessFile: initialize io_uring fails.");
-	}
+//	if(io_uring_queue_init(4096, &ring, 0) < 0) {
+//		throw InvalidArgumentException("DirectRandomAccessFile: initialize io_uring fails.");
+//	}
 }
 
 void DirectRandomAccessFile::close() {
@@ -47,12 +55,23 @@ void DirectRandomAccessFile::close() {
 }
 
 std::shared_ptr<ByteBuffer> DirectRandomAccessFile::readFully(int len) {
-	auto directBuffer = directIoLib->allocateDirectBuffer(len);
-	auto buffer = directIoLib->read(fd, offset, directBuffer, len);
-    seek(offset + len);
-    largeBuffers.emplace_back(directBuffer);
+	if(enableDirect) {
+		auto directBuffer = directIoLib->allocateDirectBuffer(len);
+		auto buffer = directIoLib->read(fd, offset, directBuffer, len);
+		seek(offset + len);
+		largeBuffers.emplace_back(directBuffer);
+		return buffer;
+	} else {
+		auto * buffer = new uint8_t[len];
+		if(pread(fd, buffer, len, offset) == -1) {
+			throw std::runtime_error("pread fail");
+		}
+		auto bb = std::make_shared<ByteBuffer>(buffer, static_cast<uint32_t>(len));
+		seek(offset + len);
+		largeBuffers.emplace_back(bb);
+		return bb;
+	}
 
-    return buffer;
 }
 
 long DirectRandomAccessFile::length() {
@@ -94,8 +113,17 @@ char DirectRandomAccessFile::readChar() {
 }
 
 void DirectRandomAccessFile::populatedBuffer() {
-    smallBuffer = directIoLib->read(fd, offset, smallDirectBuffer, fsBlockSize);
-    bufferValid = true;
+	if(enableDirect) {
+		smallBuffer = directIoLib->read(fd, offset, smallDirectBuffer, fsBlockSize);
+		bufferValid = true;
+	} else {
+		if(pread(fd, smallBuffer->getPointer(), fsBlockSize, offset) == -1) {
+			throw std::runtime_error("pread fail");
+		}
+		smallBuffer->resetPosition();
+		bufferValid = true;
+	}
+
 }
 
 void DirectRandomAccessFile::readAsync(int len, int uringRequestId) {
@@ -111,5 +139,5 @@ std::pair<int, std::shared_ptr<ByteBuffer>> DirectRandomAccessFile::completeAsyn
 }
 
 DirectRandomAccessFile::~DirectRandomAccessFile() {
-	io_uring_queue_exit(&ring);
+//	io_uring_queue_exit(&ring);
 }
