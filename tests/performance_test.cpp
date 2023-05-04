@@ -79,7 +79,7 @@ bool UpdateLocalState(PixelsReadLocalState & local) {
 	}
 }
 
-long ScanImplementation() {
+void ScanImplementation() {
 	PixelsReadLocalState local;
 	local.rowCount = 0;
 	while(true) {
