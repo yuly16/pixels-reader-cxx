@@ -23,6 +23,20 @@ void CountProfiler::Count(const std::string &label) {
     }
 }
 
+void CountProfiler::Count(const std::string &label, int num) {
+	if constexpr(enableProfile) {
+		std::unique_lock<std::mutex> parallel_lock(lock);
+		if (result.find(label) != result.end()) {
+			result[label] += num;
+		} else if (label.size() == 0) {
+			throw InvalidArgumentException(
+			    "TimeProfiler::Start: Label cannot be the empty string. ");
+		} else {
+			result[label] = num;
+		}
+	}
+}
+
 void CountProfiler::Print() {
     if constexpr(enableProfile) {
         for(auto iter: result) {

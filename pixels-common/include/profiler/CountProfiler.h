@@ -20,6 +20,7 @@ class CountProfiler: public AbstractProfiler {
 public:
     static CountProfiler & Instance();
     void Count(const std::string& label);
+	void Count(const std::string& label, int num);
     void Print() override;
     void Reset() override;
     long Get(const std::string& label);

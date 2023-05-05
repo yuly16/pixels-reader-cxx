@@ -6,6 +6,7 @@
 
 
 thread_local std::map<std::string,std::chrono::steady_clock::time_point> TimeProfiler::profiling;
+thread_local std::map<std::string, long> TimeProfiler::localResult;
 
 TimeProfiler &TimeProfiler::Instance() {
     static TimeProfiler instance;
@@ -38,15 +39,13 @@ void TimeProfiler::End(const std::string& label) {
             throw InvalidArgumentException(
                     "TimeProfiler::End: Label cannot be the empty string. ");
         }
-		auto startTime = profiling[label];
-		auto endTime = std::chrono::steady_clock::now();
+        auto startTime = profiling[label];
+        auto endTime = std::chrono::steady_clock::now();
 		profiling.erase(label);
-        std::unique_lock<std::mutex> parallel_lock(lock);
-        if (result.find(label) == result.end()) {
-            result[label] = std::chrono::duration_cast<std::chrono::nanoseconds>
-                    (endTime - startTime).count();
+        if (localResult.find(label) == localResult.end()) {
+            localResult[label] = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
         } else {
-            result[label] = result[label] + std::chrono::duration_cast<std::chrono::nanoseconds>
+            localResult[label] = localResult[label] + std::chrono::duration_cast<std::chrono::nanoseconds>
                     (endTime - startTime).count();
         }
 
@@ -55,7 +54,7 @@ void TimeProfiler::End(const std::string& label) {
 
 void TimeProfiler::Print() {
     if constexpr(enableProfile) {
-        for(auto iter: result) {
+        for(auto iter: globalResult) {
             std::cout<<iter.first<<" "<<1.0 * iter.second / 1000000000 <<"s(thread time)"<<std::endl;
         }
     }
@@ -63,13 +62,14 @@ void TimeProfiler::Print() {
 
 void TimeProfiler::Reset() {
     profiling.clear();
-    result.clear();
+    localResult.clear();
+    globalResult.clear();
 }
 
 long TimeProfiler::Get(const std::string &label) {
     std::unique_lock<std::mutex> parallel_lock(lock);
-    if(result.find(label) != result.end()) {
-        return result[label];
+    if(globalResult.find(label) != globalResult.end()) {
+        return globalResult[label];
     } else {
         throw InvalidArgumentException(
                 "TimeProfiler::Get: The label is not contained in Timeprofiler. ");
@@ -77,6 +77,20 @@ long TimeProfiler::Get(const std::string &label) {
 }
 
 int TimeProfiler::GetResultSize() {
-    return result.size();
+    return globalResult.size();
+}
+
+void TimeProfiler::Collect() {
+    std::unique_lock<std::mutex> parallel_lock(lock);
+    for(auto iter: localResult) {
+        auto label = iter.first;
+        auto value = iter.second;
+        if (globalResult.find(label) == globalResult.end()) {
+            globalResult[label] = value;
+        } else {
+            globalResult[label] = globalResult[label] + value;
+        }
+    }
+    localResult.clear();
 }
 
