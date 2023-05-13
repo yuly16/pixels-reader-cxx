@@ -299,12 +299,13 @@ std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::ve
         case VARBINARY:
         case CHAR:
         case VARCHAR: {
-		    if (!useEncodedVector.at(0)) {
-			    return std::make_shared<BinaryColumnVector>(maxSize);
-		    } else {
-			    // TODO: dict should be supported here
-			    assert(false);
-		    }
+		    return std::make_shared<BinaryColumnVector>(maxSize);
+//		    if (!useEncodedVector.at(0)) {
+//			    return std::make_shared<BinaryColumnVector>(maxSize);
+//		    } else {
+//			    // TODO: dict should be supported here
+//			    assert(false);
+//		    }
 	    }
         default:
             throw InvalidArgumentException("TypeDescription: Unknown type when creating column");

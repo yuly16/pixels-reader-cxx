@@ -20,36 +20,42 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
             std::static_pointer_cast<LongColumnVector>(vector);
     // if read from start, init the stream and decoder
     if(offset == 0) {
+        decoder = std::make_shared<RunLenIntDecoder>(input, true);
         ColumnReader::elementIndex = 0;
         if(encoding.kind() == pixels::proto::ColumnEncoding_Kind_NONE) {
             isLong = __builtin_bswap64(input->getLong(0)) == 1;
         }
     }
-    // TODO: we didn't implement the run length encoded method
-
-    if(isLong) {
-        // if long
+    if(encoding.kind() == pixels::proto::ColumnEncoding_Kind_RUNLENGTH) {
         for(int i = 0; i < size; i++) {
-            if(elementIndex % pixelStride == 0) {
-                int pixelsId = elementIndex / pixelStride;
-                // TODO: what is hasnull?
-                // read the first byte of the pixels (stride).
-                isLong = __builtin_bswap64(input->getLong()) == 1;
-            }
-            columnVector->vector[i + vectorIndex] = (long)__builtin_bswap64(input->getLong());
+            columnVector->vector[i + vectorIndex] = decoder->next();
             elementIndex++;
         }
     } else {
-        // if int
-        for(int i = 0; i < size; i++) {
-            if(elementIndex % pixelStride == 0) {
-                int pixelsId = elementIndex / pixelStride;
-                // TODO: what is hasnull?
-                // read the first byte of the pixels (stride).
-                isLong = __builtin_bswap64(input->getLong()) == 1;
+        if(isLong) {
+            // if long
+            for(int i = 0; i < size; i++) {
+                if(elementIndex % pixelStride == 0) {
+                    int pixelsId = elementIndex / pixelStride;
+                    // TODO: what is hasnull?
+                    // read the first byte of the pixels (stride).
+                    isLong = __builtin_bswap64(input->getLong()) == 1;
+                }
+                columnVector->vector[i + vectorIndex] = (long)__builtin_bswap64(input->getLong());
+                elementIndex++;
             }
-            columnVector->vector[i + vectorIndex] = input->getInt();
-            elementIndex++;
+        } else {
+            // if int
+            for(int i = 0; i < size; i++) {
+                if(elementIndex % pixelStride == 0) {
+                    int pixelsId = elementIndex / pixelStride;
+                    // TODO: what is hasnull?
+                    // read the first byte of the pixels (stride).
+                    isLong = __builtin_bswap64(input->getLong()) == 1;
+                }
+                columnVector->vector[i + vectorIndex] = input->getInt();
+                elementIndex++;
+            }
         }
     }
 

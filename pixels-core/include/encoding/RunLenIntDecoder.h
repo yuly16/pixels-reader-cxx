@@ -17,6 +17,7 @@ public:
     RunLenIntDecoder(const std::shared_ptr<ByteBuffer>& bb, bool isSigned);
     void close() override;
     long next() override;
+	bool hasNext() override;
     ~RunLenIntDecoder();
 private:
 

@@ -100,6 +100,9 @@ void RunLenIntDecoder::readInts(long *buffer, int offset, int len, int bitSize,
     int bitsLeft = 0;
     int current = 0;
     switch (bitSize) {
+	    case 1:
+            encodingUtils.unrolledUnPack1(buffer, offset, len, input);
+            return;
 	    case 2:
 			encodingUtils.unrolledUnPack2(buffer, offset, len, input);
 		    return;
@@ -109,6 +112,27 @@ void RunLenIntDecoder::readInts(long *buffer, int offset, int len, int bitSize,
         case 8:
             encodingUtils.unrolledUnPack8(buffer, offset, len, input);
             return;
+	    case 16:
+		    encodingUtils.unrolledUnPack16(buffer, offset, len, input);
+		    return;
+	    case 24:
+		    encodingUtils.unrolledUnPack24(buffer, offset, len, input);
+		    return;
+	    case 32:
+		    encodingUtils.unrolledUnPack32(buffer, offset, len, input);
+		    return;
+	    case 40:
+		    encodingUtils.unrolledUnPack40(buffer, offset, len, input);
+		    return;
+	    case 48:
+		    encodingUtils.unrolledUnPack48(buffer, offset, len, input);
+		    return;
+	    case 56:
+		    encodingUtils.unrolledUnPack56(buffer, offset, len, input);
+		    return;
+	    case 64:
+		    encodingUtils.unrolledUnPack64(buffer, offset, len, input);
+		    return;
         default:
             throw InvalidArgumentException("RunLenIntDecoder::readInts: "
                                            "not supported bitSize.");
@@ -270,4 +294,7 @@ long RunLenIntDecoder::bytesToLongBE(const std::shared_ptr<ByteBuffer> &input, i
 		out |= (val << (n * 8));
 	}
 	return out;
+}
+bool RunLenIntDecoder::hasNext() {
+	return used != numLiterals || (inputStream->size() - inputStream->getReadPos()) > 0;
 }

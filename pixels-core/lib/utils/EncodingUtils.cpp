@@ -42,6 +42,35 @@ int EncodingUtils::decodeBitWidth(int n) {
     }
 }
 
+void EncodingUtils::unrolledUnPack1(long *buffer, int offset, int len,
+                                    const std::shared_ptr<ByteBuffer> &input) {
+	int numHops = 8;
+	int remainder = len % numHops;
+	int endOffset = offset + len;
+	int endUnroll = endOffset - remainder;
+	int val = 0;
+	for (int i = offset; i < endUnroll; i = i + numHops) {
+		val = input->get();
+		buffer[i] = (((uint32_t)val) >> 7) & 1;
+		buffer[i + 1] = (((uint32_t)val) >> 6) & 1;
+		buffer[i + 2] = (((uint32_t)val) >> 5) & 1;
+		buffer[i + 3] = (((uint32_t)val) >> 4) & 1;
+		buffer[i + 4] = (((uint32_t)val) >> 3) & 1;
+		buffer[i + 5] = (((uint32_t)val) >> 2) & 1;
+		buffer[i + 6] = (((uint32_t)val) >> 1) & 1;
+		buffer[i + 7] = val & 1;
+	}
+
+	if (remainder > 0) {
+		int startShift = 7;
+		val = input->get();
+		for (int i = endUnroll; i < endOffset; i++) {
+			buffer[i] = (((uint32_t)val) >> startShift) & 1;
+			startShift -= 1;
+		}
+	}
+}
+
 void EncodingUtils::unrolledUnPack2(long *buffer, int offset, int len,
                                     const std::shared_ptr<ByteBuffer> &input) {
 	int numHops = 4;
@@ -96,6 +125,41 @@ void EncodingUtils::unrolledUnPack4(long *buffer, int offset, int len,
 void EncodingUtils::unrolledUnPack8(long *buffer, int offset, int len,
                                     const std::shared_ptr<ByteBuffer> &input) {
     unrolledUnPackBytes(buffer, offset, len, input, 1);
+}
+
+void EncodingUtils::unrolledUnPack16(long *buffer, int offset, int len,
+                                    const std::shared_ptr<ByteBuffer> &input) {
+	unrolledUnPackBytes(buffer, offset, len, input, 2);
+}
+
+void EncodingUtils::unrolledUnPack24(long *buffer, int offset, int len,
+                                    const std::shared_ptr<ByteBuffer> &input) {
+	unrolledUnPackBytes(buffer, offset, len, input, 3);
+}
+
+void EncodingUtils::unrolledUnPack32(long *buffer, int offset, int len,
+                                     const std::shared_ptr<ByteBuffer> &input) {
+	unrolledUnPackBytes(buffer, offset, len, input, 4);
+}
+
+void EncodingUtils::unrolledUnPack40(long *buffer, int offset, int len,
+                                     const std::shared_ptr<ByteBuffer> &input) {
+	unrolledUnPackBytes(buffer, offset, len, input, 5);
+}
+
+void EncodingUtils::unrolledUnPack48(long *buffer, int offset, int len,
+                                     const std::shared_ptr<ByteBuffer> &input) {
+	unrolledUnPackBytes(buffer, offset, len, input, 6);
+}
+
+void EncodingUtils::unrolledUnPack56(long *buffer, int offset, int len,
+                                     const std::shared_ptr<ByteBuffer> &input) {
+	unrolledUnPackBytes(buffer, offset, len, input, 7);
+}
+
+void EncodingUtils::unrolledUnPack64(long *buffer, int offset, int len,
+                                     const std::shared_ptr<ByteBuffer> &input) {
+	unrolledUnPackBytes(buffer, offset, len, input, 8);
 }
 
 void EncodingUtils::unrolledUnPackBytes(long *buffer, int offset, int len,

@@ -89,6 +89,10 @@ public:
         rpos = r;
     }
 
+    void skipBytes(uint32_t r) {
+        rpos += r;
+    }
+
     uint32_t getReadPos() {
         return rpos;
     }

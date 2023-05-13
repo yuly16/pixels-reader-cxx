@@ -26,12 +26,28 @@ public:
     long readLongBE8(int rbOffset);
     void unrolledUnPackBytes(long *buffer, int offset, int len,
                              const std::shared_ptr<ByteBuffer> &input, int numBytes);
+	void unrolledUnPack1(long *buffer, int offset, int len,
+	                     const std::shared_ptr<ByteBuffer> &input);
 	void unrolledUnPack2(long *buffer, int offset, int len,
 	                     const std::shared_ptr<ByteBuffer> &input);
     void unrolledUnPack4(long *buffer, int offset, int len,
                          const std::shared_ptr<ByteBuffer> &input);
     void unrolledUnPack8(long *buffer, int offset, int len,
                          const std::shared_ptr<ByteBuffer> &input);
+	void unrolledUnPack16(long *buffer, int offset, int len,
+	                      const std::shared_ptr<ByteBuffer> &input);
+	void unrolledUnPack24(long *buffer, int offset, int len,
+	                      const std::shared_ptr<ByteBuffer> &input);
+	void unrolledUnPack32(long *buffer, int offset, int len,
+	                      const std::shared_ptr<ByteBuffer> &input);
+	void unrolledUnPack40(long *buffer, int offset, int len,
+	                      const std::shared_ptr<ByteBuffer> &input);
+	void unrolledUnPack48(long *buffer, int offset, int len,
+	                      const std::shared_ptr<ByteBuffer> &input);
+	void unrolledUnPack56(long *buffer, int offset, int len,
+	                      const std::shared_ptr<ByteBuffer> &input);
+	void unrolledUnPack64(long *buffer, int offset, int len,
+	                      const std::shared_ptr<ByteBuffer> &input);
 private:
 enum FixedBitSizes{
         ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, ELEVEN, TWELVE,
