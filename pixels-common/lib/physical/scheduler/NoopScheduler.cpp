@@ -37,4 +37,7 @@ std::vector<std::shared_ptr<ByteBuffer>> NoopScheduler::executeBatch(std::shared
 
     return bbs;
 }
-
+NoopScheduler::~NoopScheduler() {
+	delete instance;
+	instance = nullptr;
+}

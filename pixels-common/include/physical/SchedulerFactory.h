@@ -17,6 +17,7 @@ class SchedulerFactory {
 public:
     static SchedulerFactory * Instance();
     Scheduler * getScheduler();
+	~SchedulerFactory();
 private:
     static SchedulerFactory * instance;
     Scheduler * scheduler;

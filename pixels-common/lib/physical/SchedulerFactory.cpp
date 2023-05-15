@@ -31,6 +31,7 @@ SchedulerFactory::SchedulerFactory() {
     }
 }
 
-
-
-
+SchedulerFactory::~SchedulerFactory() {
+	delete instance;
+	instance = nullptr;
+}
