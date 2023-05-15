@@ -232,7 +232,7 @@ void PixelsRecordReaderImpl::prepareRead() {
         int rgId = targetRGs[i];
         std::string rgCacheId = fileName + "-" + std::to_string(rgId);
         rgCacheIds.emplace_back(rgCacheId);
-        if(footerCache->containsRGFooter(rgCacheId)) {
+        if(footerCache != nullptr && footerCache->containsRGFooter(rgCacheId)) {
             // cache hit
             pixels::proto::RowGroupFooter rowGroupFooter = footerCache->getRGFooter(rgCacheId);
             rowGroupFooters.at(i) = rowGroupFooter;
@@ -256,7 +256,10 @@ void PixelsRecordReaderImpl::prepareRead() {
             pixels::proto::RowGroupFooter parsed;
             parsed.ParseFromArray(bbs[i]->getPointer(), (int)bbs[i]->size());
             rowGroupFooters.at(fis[i]) = parsed;
-            footerCache->putRGFooter(rgCacheIds[fis[i]], parsed);
+			if(footerCache != nullptr) {
+				footerCache->putRGFooter(rgCacheIds[fis[i]], parsed);
+			}
+
         }
     }
 
