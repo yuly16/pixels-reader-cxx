@@ -12,6 +12,7 @@
 class PixelsRecordReader {
 public:
 //    virtual int prepareBatch(int batchSize) = 0;
+	virtual std::shared_ptr<VectorizedRowBatch> readRowGroup(bool reuse) = 0;
     virtual std::shared_ptr<VectorizedRowBatch> readBatch(int batchSize, bool reuse) = 0;
 
 

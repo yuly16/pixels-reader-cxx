@@ -42,6 +42,7 @@ public:
                                     const PixelsReaderOption& opt,
                                     std::shared_ptr<PixelsFooterCache> pixelsFooterCache
                                     );
+	std::shared_ptr<VectorizedRowBatch> readRowGroup(bool reuse) override;
     std::shared_ptr<VectorizedRowBatch> readBatch(int batchSize, bool reuse) override;
 	std::shared_ptr<TypeDescription> getResultSchema() override;
 	bool isEndOfFile() override;

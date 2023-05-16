@@ -38,6 +38,7 @@ public:
     bool isEmpty();
     bool isFull();
     int freeSlots();
+
 private:
 	bool closed;
 };

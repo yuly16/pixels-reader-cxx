@@ -24,7 +24,6 @@ VectorizedRowBatch::VectorizedRowBatch(int nCols, int size) {
     maxSize = size;
     cols.clear();
     cols.resize(numCols);
-	endOfFile = false;
 	closed = false;
 }
 
@@ -73,6 +72,7 @@ bool VectorizedRowBatch::isFull() {
 int VectorizedRowBatch::freeSlots() {
     return maxSize - rowCount;
 }
+
 void VectorizedRowBatch::close() {
 	if(!closed) {
 		maxSize = 0;

@@ -47,4 +47,5 @@ std::shared_ptr<ColumnReader> ColumnReader::newColumnReader(std::shared_ptr<Type
         case TypeDescription::STRUCT:
             break;
     }
+	throw InvalidArgumentException("This function is not supported yet. ");
 }
