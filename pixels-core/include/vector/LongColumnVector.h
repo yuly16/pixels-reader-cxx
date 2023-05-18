@@ -10,8 +10,8 @@
 
 class LongColumnVector: public ColumnVector {
 public:
-    long * vector;
-
+    long * longVector;
+	int * intVector;
     /**
     * Use this constructor by default. All column vectors
     * should normally be the default size.

@@ -5,7 +5,8 @@
 #include "vector/LongColumnVector.h"
 
 LongColumnVector::LongColumnVector(int len): ColumnVector(len) {
-    vector = nullptr;
+    longVector = nullptr;
+	intVector = nullptr;
     memoryUsage += (long) sizeof(long) * len;
 
 }
@@ -13,14 +14,16 @@ LongColumnVector::LongColumnVector(int len): ColumnVector(len) {
 void LongColumnVector::close() {
 	if(!closed) {
 		ColumnVector::close();
-		vector = nullptr;
+		longVector = nullptr;
+		intVector = nullptr;
 	}
 }
 
 void LongColumnVector::print(int rowCount) {
 //	throw InvalidArgumentException("not support print longcolumnvector.");
     for(int i = 0; i < rowCount; i++) {
-        std::cout<<vector[i]<<std::endl;
+        std::cout<<longVector[i]<<std::endl;
+		std::cout<<intVector[i]<<std::endl;
     }
 }
 LongColumnVector::~LongColumnVector() {

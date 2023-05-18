@@ -28,17 +28,19 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
     }
     if(encoding.kind() == pixels::proto::ColumnEncoding_Kind_RUNLENGTH) {
         for(int i = 0; i < size; i++) {
-            columnVector->vector[i + vectorIndex] = decoder->next();
+			// now we don't support encoding
+			assert(false);
+            columnVector->longVector[i + vectorIndex] = decoder->next();
             elementIndex++;
         }
     } else {
         if(isLong) {
             // if long
-			columnVector->vector = (long *)(input->getPointer() + input->getReadPos());
+			columnVector->longVector = (long *)(input->getPointer() + input->getReadPos());
 			input->setReadPos(input->getReadPos() + size * sizeof(long));
         } else {
             // if int
-			columnVector->vector = (long *)(input->getPointer() + input->getReadPos());
+			columnVector->intVector = (int *)(input->getPointer() + input->getReadPos());
 			input->setReadPos(input->getReadPos() + size * sizeof(int));
         }
     }
