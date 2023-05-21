@@ -14,7 +14,7 @@ set(pixels_common_cxx
         lib/physical/SchedulerFactory.cpp
         lib/exception/InvalidArgumentException.cpp
         lib/utils/Constants.cpp
-        lib/utils/String.cpp include/physical/natives/DirectIoLib.h lib/physical/natives/DirectIoLib.cpp include/utils/ConfigFactory.h lib/utils/ConfigFactory.cpp include/physical/MergedRequest.h include/physical/scheduler/SortMergeScheduler.h lib/physical/scheduler/SortMergeScheduler.cpp lib/MergedRequest.cpp include/profiler/TimeProfiler.h lib/profiler/TimeProfiler.cpp include/profiler/CountProfiler.h lib/profiler/CountProfiler.cpp include/profiler/AbstractProfiler.h)
+        lib/utils/String.cpp include/physical/natives/DirectIoLib.h lib/physical/natives/DirectIoLib.cpp include/utils/ConfigFactory.h lib/utils/ConfigFactory.cpp include/physical/MergedRequest.h include/physical/scheduler/SortMergeScheduler.h lib/physical/scheduler/SortMergeScheduler.cpp lib/MergedRequest.cpp include/profiler/TimeProfiler.h lib/profiler/TimeProfiler.cpp include/profiler/CountProfiler.h lib/profiler/CountProfiler.cpp include/profiler/AbstractProfiler.h include/physical/allocator/Allocator.h include/physical/allocator/OrdinaryAllocator.h lib/physical/allocator/OrdinaryAllocator.cpp include/physical/allocator/BufferPoolAllocator.h lib/physical/allocator/BufferPoolAllocator.cpp)
 
 include_directories(include)
 

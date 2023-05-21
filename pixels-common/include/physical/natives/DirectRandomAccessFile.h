@@ -13,6 +13,7 @@
 #include "liburing.h"
 #include "liburing/io_uring.h"
 #include "profiler/TimeProfiler.h"
+#include "physical/allocator/OrdinaryAllocator.h"
 
 class DirectRandomAccessFile: public PixelsRandomAccessFile {
 public:
@@ -30,6 +31,7 @@ public:
     ~DirectRandomAccessFile();
 private:
     void populatedBuffer();
+	std::shared_ptr<Allocator> allocator;
     std::vector<std::shared_ptr<ByteBuffer>> largeBuffers;
 	/* smallDirectBuffer align to blockSize. smallBuffer adds the offset to smallDirectBuffer. */
     std::shared_ptr<ByteBuffer> smallBuffer;

@@ -9,6 +9,9 @@
 #include <cstdio>
 #include <malloc.h>
 #include "profiler/CountProfiler.h"
+#include "profiler/TimeProfiler.h"
+#include "physical/allocator/OrdinaryAllocator.h"
+#include "physical/allocator/BufferPoolAllocator.h"
 DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
     FILE * fp = fopen(file.c_str(), "r");
     // checking if the file exist or not
@@ -37,6 +40,7 @@ DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
     } catch (...){
         throw std::runtime_error("failed to allocate buffer");
     }
+	allocator = std::make_shared<BufferPoolAllocator>();
 	// initialize io_uring ring
 //	if(io_uring_queue_init(4096, &ring, 0) < 0) {
 //		throw InvalidArgumentException("DirectRandomAccessFile: initialize io_uring fails.");
@@ -62,14 +66,15 @@ std::shared_ptr<ByteBuffer> DirectRandomAccessFile::readFully(int len) {
 		largeBuffers.emplace_back(directBuffer);
 		return buffer;
 	} else {
-		auto * buffer = new uint8_t[len];
-		if(pread(fd, buffer, len, offset) == -1) {
+		auto buffer = allocator->allocate(len);
+		::TimeProfiler::Instance().Start("read");
+		if(pread(fd, buffer->getPointer(), len, offset) == -1) {
 			throw std::runtime_error("pread fail");
 		}
-		auto bb = std::make_shared<ByteBuffer>(buffer, static_cast<uint32_t>(len));
+		::TimeProfiler::Instance().End("read");
 		seek(offset + len);
-		largeBuffers.emplace_back(bb);
-		return bb;
+		largeBuffers.emplace_back(buffer);
+		return buffer;
 	}
 
 }
