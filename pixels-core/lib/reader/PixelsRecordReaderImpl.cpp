@@ -26,7 +26,6 @@ PixelsRecordReaderImpl::PixelsRecordReaderImpl(std::shared_ptr<PhysicalReader> r
     fileName = physicalReader->getName();
     enableEncodedVector = option.isEnableEncodedColumnVector();
     includedColumnNum = 0;
-    rowIndex = 0L;
 	endOfFile = false;
     checkBeforeRead();
 }
@@ -121,26 +120,13 @@ void PixelsRecordReaderImpl::UpdateRowGroupInfo() {
 	}
 }
 
-std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readRowGroup(bool reuse) {
-	if(endOfFile) {
-		endOfFile = true;
-		return createEmptyEOFRowBatch(0);
-	}
-	// if the function "read" is invoked by readRowGroup, readBatch will ignore this function.
-	if(!everRead) {
-		if(!read()) {
-			throw std::runtime_error("failed to read file");
-		}
-	}
-	return readBatch(curRGRowCount, reuse);
-}
 
 
 // If cross multiple row group, we only process one row group
-std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchSize, bool reuse) {
+void PixelsRecordReaderImpl::readBatch(duckdb::DataChunk &output, duckdb::vector<duckdb::column_t> column_ids) {
     if(endOfFile) {
 		endOfFile = true;
-		return createEmptyEOFRowBatch(0);
+		return;
 	}
 	if(!everRead) {
 		if(!read()) {
@@ -148,54 +134,44 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchS
 		}
 	}
 
-	std::shared_ptr<VectorizedRowBatch> resultRowBatch;
-	resultRowBatch = resultSchema->createRowBatch(batchSize, resultColumnsEncoded);
-	// TODO: resultRowBatch.projectionSize
 
+	auto curBatchSize = duckdb::MinValue<idx_t>(STANDARD_VECTOR_SIZE, curRGRowCount - curRowInRG);
 
-	int curBatchSize = 0;
-	auto columnVectors = resultRowBatch->cols;
+	output.SetCardinality(curBatchSize);
 
-
-	while (resultRowBatch->rowCount < batchSize && curRowInRG < curRGRowCount) {
-		// update current batch size
-		curBatchSize = curRGRowCount - curRowInRG;
-		if (curBatchSize + resultRowBatch->rowCount >= batchSize) {
-			curBatchSize = batchSize - resultRowBatch->rowCount;
+	// read vectors
+	int input_col_id = 0;
+	for(auto output_col_id = 0; output_col_id < column_ids.size(); output_col_id++) {
+		if (duckdb::IsRowIdColumnId(column_ids.at(output_col_id))) {
+			duckdb::Value constant_42 = duckdb::Value::BIGINT(42);
+			output.data.at(output_col_id).Reference(constant_42);
+			continue;
 		}
-
-		// read vectors
-		for(int i = 0; i < resultColumns.size(); i++) {
-			// TODO: if !columnVectors[i].duplicate
-			int index = curChunkBufferIndex.at(i);
-			auto & encoding = curEncoding.at(i);
-			auto & chunkIndex = curChunkIndex.at(i);
-			readers.at(i)->read(chunkBuffers.at(index), encoding, curRowInRG, curBatchSize,
-								postScript.pixelstride(), resultRowBatch->rowCount,
-								columnVectors.at(i), chunkIndex);
-		}
-
-		// update current row index in the row group
-		curRowInRG += curBatchSize;
-		rowIndex += curBatchSize;
-		resultRowBatch->rowCount += curBatchSize;
-		// update row group index if current row index exceeds max row count in the row group
-		if(curRowInRG >= curRGRowCount) {
-			curRGIdx++;
-			if(curRGIdx < targetRGNum) {
-				UpdateRowGroupInfo();
-			} else {
-				// if end of file, set result vectorized row batch endOfFile
-				// TODO: set checkValid to false!
-				resultRowBatch->endOfFile = true;
-				endOfFile = true;
-			}
-			curRowInRG = 0;
-			// Here we make sure only process one row group
-			break;
-		}
+		int index = curChunkBufferIndex.at(input_col_id);
+		auto & encoding = curEncoding.at(input_col_id);
+		auto & chunkIndex = curChunkIndex.at(input_col_id);
+		readers.at(input_col_id)->read(chunkBuffers.at(index), encoding, curRowInRG, curBatchSize,
+		                    postScript.pixelstride(),
+		                    output.data.at(output_col_id), chunkIndex);
+		input_col_id += 1;
 	}
-	return resultRowBatch;
+
+	// update current row index in the row group
+	curRowInRG += curBatchSize;
+
+	// update row group index if current row index exceeds max row count in the row group
+	if(curRowInRG >= curRGRowCount) {
+		curRGIdx++;
+		if(curRGIdx < targetRGNum) {
+			UpdateRowGroupInfo();
+		} else {
+			// if end of file, set result vectorized row batch endOfFile
+			endOfFile = true;
+		}
+		curRowInRG = 0;
+		// Here we make sure only process one row group
+	}
+	return;
 }
 
 
@@ -338,9 +314,6 @@ PixelsRecordReaderImpl::~PixelsRecordReaderImpl() {
     // TODO: chunkBuffers, physicalReader should be deleted?
 }
 
-std::shared_ptr<TypeDescription> PixelsRecordReaderImpl::getResultSchema() {
-	return resultSchema;
-}
 
 /**
      * Create a row batch without any data, only sets the number of rows (size) and OEF.
@@ -348,14 +321,7 @@ std::shared_ptr<TypeDescription> PixelsRecordReaderImpl::getResultSchema() {
      * @param size the number of rows in the row batch.
      * @return the empty row batch.
  */
-std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::createEmptyEOFRowBatch(int size) {
-	auto emptySchema = TypeDescription::createSchema(
-	    std::vector<pixels::proto::Type>());
-	auto emptyRowBatch = emptySchema->createRowBatch(0);
-	emptyRowBatch->rowCount = size;
-	emptyRowBatch->endOfFile = true;
-	return emptyRowBatch;
-}
+
 bool PixelsRecordReaderImpl::isEndOfFile() {
 	return endOfFile;
 }

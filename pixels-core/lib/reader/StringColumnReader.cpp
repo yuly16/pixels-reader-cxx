@@ -15,7 +15,7 @@ void StringColumnReader::close() {
 }
 
 void StringColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::ColumnEncoding & encoding, int offset,
-                              int size, int pixelStride, int vectorIndex, std::shared_ptr<ColumnVector> vector,
+                              int size, int pixelStride, duckdb::Vector vector,
                               pixels::proto::ColumnChunkIndex & chunkIndex) {
     if(offset == 0) {
         elementIndex = 0;
@@ -23,31 +23,22 @@ void StringColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::
         readContent(input, input->bytesRemaining(), encoding);
     }
     // TODO: support dictionary
-    std::shared_ptr<BinaryColumnVector> columnVector =
-            std::static_pointer_cast<BinaryColumnVector>(vector);
+	auto result_ptr = duckdb::FlatVector::GetData<duckdb::string_t>(vector);
+
     // TODO: if dictionary encoded
 	if (encoding.kind() == pixels::proto::ColumnEncoding_Kind_DICTIONARY) {
 		for(int i = 0; i < size; i++) {
-			if(elementIndex % pixelStride == 0) {
-				int pixelId = elementIndex / pixelStride;
-				// TODO: should write the remaining code
-			}
 			int originId = orders[(int) contentDecoder->next()];
 			int tmpLen = starts[originId + 1] - starts[originId];
 			// use setRef instead of setVal to reduce memory copy.
-			columnVector->setRef(i + vectorIndex, originsBuf->getPointer(), starts[originId], tmpLen);
+			result_ptr[i] = duckdb::string_t((char *)(originsBuf->getPointer() + starts[originId]), tmpLen);
 			elementIndex++;
 		}
 	} else {
 		for(int i = 0; i < size; i++) {
-			if(elementIndex % pixelStride == 0) {
-				int pixelId = elementIndex / pixelStride;
-				// TODO: should write the remaining code
-			}
 			int len = (int) lensDecoder->next();
 			// use setRef instead of setVal to reduce memory copy
-			columnVector->setRef(
-			    i + vectorIndex, contentBuf->getPointer(), bufferOffset, len);
+			result_ptr[i] = duckdb::string_t((char *)(contentBuf->getPointer() + bufferOffset), len);
 			bufferOffset += len;
 			elementIndex++;
 		}

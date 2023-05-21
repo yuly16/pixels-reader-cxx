@@ -14,7 +14,7 @@ public:
     void read(std::shared_ptr<ByteBuffer> input,
               pixels::proto::ColumnEncoding & encoding,
               int offset, int size, int pixelStride,
-              int vectorIndex, std::shared_ptr<ColumnVector> vector,
+	          duckdb::Vector vector,
               pixels::proto::ColumnChunkIndex & chunkIndex) override;
 private:
     /**

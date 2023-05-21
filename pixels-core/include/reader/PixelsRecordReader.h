@@ -8,12 +8,13 @@
 #include "vector/VectorizedRowBatch.h"
 #include "physical/RequestBatch.h"
 #include "TypeDescription.h"
+#include "duckdb/common/types/chunk_collection.hpp"
+#include "duckdb.h"
 
 class PixelsRecordReader {
 public:
-//    virtual int prepareBatch(int batchSize) = 0;
-	virtual std::shared_ptr<VectorizedRowBatch> readRowGroup(bool reuse) = 0;
-    virtual std::shared_ptr<VectorizedRowBatch> readBatch(int batchSize, bool reuse) = 0;
+	//    virtual int prepareBatch(int batchSize) = 0;
+    virtual void readBatch(duckdb::DataChunk &output, duckdb::vector<duckdb::column_t> column_ids) = 0;
 
 
 	/**
@@ -21,7 +22,6 @@ public:
      *
      * @return result schema, null if PixelsRecordReader is not initialized successfully.
 	 */
-	virtual std::shared_ptr<TypeDescription> getResultSchema() = 0;
 
 	virtual bool isEndOfFile() = 0;
 

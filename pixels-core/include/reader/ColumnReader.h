@@ -9,7 +9,8 @@
 #include "physical/natives/ByteBuffer.h"
 #include "pixels-common/pixels.pb.h"
 #include "math.h"
-
+#include "duckdb.h"
+#include "duckdb/common/types/vector.hpp"
 class ColumnReader {
 public:
     ColumnReader(std::shared_ptr<TypeDescription> type);
@@ -37,7 +38,7 @@ public:
     virtual void read(std::shared_ptr<ByteBuffer> input,
                       pixels::proto::ColumnEncoding & encoding,
                       int offset, int size, int pixelStride,
-                      int vectorIndex, std::shared_ptr<ColumnVector> vector,
+                      duckdb::Vector vector,
                       pixels::proto::ColumnChunkIndex & chunkIndex) = 0;
 private:
 	bool hasNull;

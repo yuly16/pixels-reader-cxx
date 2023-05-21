@@ -42,9 +42,7 @@ public:
                                     const PixelsReaderOption& opt,
                                     std::shared_ptr<PixelsFooterCache> pixelsFooterCache
                                     );
-	std::shared_ptr<VectorizedRowBatch> readRowGroup(bool reuse) override;
-    std::shared_ptr<VectorizedRowBatch> readBatch(int batchSize, bool reuse) override;
-	std::shared_ptr<TypeDescription> getResultSchema() override;
+    void readBatch(duckdb::DataChunk &output, duckdb::vector<duckdb::column_t> column_ids) override;
 	bool isEndOfFile() override;
     ~PixelsRecordReaderImpl();
 	void close() override;
@@ -52,7 +50,6 @@ private:
     bool read();
     void prepareRead();
     void checkBeforeRead();
-	std::shared_ptr<VectorizedRowBatch> createEmptyEOFRowBatch(int size);
 	void UpdateRowGroupInfo();
     std::shared_ptr<PhysicalReader> physicalReader;
     pixels::proto::Footer footer;
@@ -68,7 +65,6 @@ private:
     int curRowInRG;
 	int curRowInStride;
     std::string fileName;
-    long rowIndex;
 	bool endOfFile;
 	int curRGRowCount;
 	pixels::proto::RowGroupFooter curRGFooter;

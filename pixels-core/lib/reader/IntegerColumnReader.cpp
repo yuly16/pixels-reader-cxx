@@ -14,33 +14,36 @@ void IntegerColumnReader::close() {
 }
 
 void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::ColumnEncoding & encoding, int offset,
-                               int size, int pixelStride, int vectorIndex, std::shared_ptr<ColumnVector> vector,
+                               int size, int pixelStride, duckdb::Vector vector,
                                pixels::proto::ColumnChunkIndex & chunkIndex) {
-    std::shared_ptr<LongColumnVector> columnVector =
-            std::static_pointer_cast<LongColumnVector>(vector);
+
     // if read from start, init the stream and decoder
     if(offset == 0) {
         decoder = std::make_shared<RunLenIntDecoder>(input, true);
-        ColumnReader::elementIndex = 0;
-        if(encoding.kind() == pixels::proto::ColumnEncoding_Kind_NONE) {
-            isLong = type->getCategory() == TypeDescription::Category::LONG;
-        }
+		isLong = type->getCategory() == TypeDescription::Category::LONG;
     }
     if(encoding.kind() == pixels::proto::ColumnEncoding_Kind_RUNLENGTH) {
-        for(int i = 0; i < size; i++) {
-			// now we don't support encoding
-			assert(false);
-            columnVector->longVector[i + vectorIndex] = decoder->next();
-            elementIndex++;
-        }
+		if(isLong) {
+			auto result_ptr = duckdb::FlatVector::GetData<long>(vector);
+			for (int i = 0; i < size; i++) {
+				result_ptr[i] = decoder->next();
+			}
+		} else {
+			auto result_ptr = duckdb::FlatVector::GetData<int>(vector);
+			for (int i = 0; i < size; i++) {
+				result_ptr[i] = decoder->next();
+			}
+		}
     } else {
         if(isLong) {
             // if long
-			columnVector->longVector = (long *)(input->getPointer() + input->getReadPos());
+			auto result_ptr = duckdb::FlatVector::GetData<long>(vector);
+			memcpy(result_ptr, input->getPointer() + input->getReadPos(), size * sizeof(long));
 			input->setReadPos(input->getReadPos() + size * sizeof(long));
         } else {
             // if int
-			columnVector->intVector = (int *)(input->getPointer() + input->getReadPos());
+			auto result_ptr = duckdb::FlatVector::GetData<int>(vector);
+			memcpy(result_ptr, input->getPointer() + input->getReadPos(), size * sizeof(int));
 			input->setReadPos(input->getReadPos() + size * sizeof(int));
         }
     }

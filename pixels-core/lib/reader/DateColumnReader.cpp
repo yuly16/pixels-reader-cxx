@@ -14,24 +14,18 @@ void DateColumnReader::close() {
 }
 
 void DateColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto::ColumnEncoding & encoding, int offset,
-                               int size, int pixelStride, int vectorIndex, std::shared_ptr<ColumnVector> vector,
+                               int size, int pixelStride, duckdb::Vector vector,
                                pixels::proto::ColumnChunkIndex & chunkIndex) {
-	std::shared_ptr<DateColumnVector> columnVector =
-	    std::static_pointer_cast<DateColumnVector>(vector);
+	auto result_ptr = duckdb::FlatVector::GetData<int>(vector);
 	if(offset == 0) {
 		decoder = std::make_shared<RunLenIntDecoder>(input, true);
-		elementIndex = 0;
 	}
 	if(encoding.kind() == pixels::proto::ColumnEncoding_Kind_RUNLENGTH) {
         for (int i = 0; i < size; i++) {
-            if (elementIndex % pixelStride == 0) {
-                int pixelId = elementIndex / pixelStride;
-            }
-            columnVector->set(i + vectorIndex, (int) decoder->next());
-            elementIndex++;
+            result_ptr[i] = (int) decoder->next();
         }
 	} else {
-		columnVector->dates = (int *)(input->getPointer() + input->getReadPos());
+		memcpy(result_ptr, input->getPointer() + input->getReadPos(), size * sizeof(int));
 		input->setReadPos(input->getReadPos() + size * sizeof(int));
 	}
 }
