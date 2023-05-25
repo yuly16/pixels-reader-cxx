@@ -108,7 +108,7 @@ void PixelsRecordReaderImpl::UpdateRowGroupInfo() {
 	pixels::proto::RowGroupEncoding rgEncoding = rowGroupFooters.at(curRGIdx).rowgroupencoding();
 	for(int i = 0; i < includedColumnNum; i++) {
 		resultColumnsEncoded.at(i) =
-		    rgEncoding.columnchunkencodings(targetColumns.at(i))
+		    rgEncoding.columnchunkencodings(resultColumns.at(i))
 		            .kind() != pixels::proto::ColumnEncoding_Kind_NONE
 		    && enableEncodedVector;
 	}

@@ -18,8 +18,8 @@ public:
     * Use this constructor by default. All column vectors
     * should normally be the default size.
     */
-    DecimalColumnVector(int precision, int scale);
-    DecimalColumnVector(int len, int precision, int scale);
+    DecimalColumnVector(int precision, int scale, bool encoding = false);
+    DecimalColumnVector(int len, int precision, int scale, bool encoding = false);
     ~DecimalColumnVector();
     void print(int rowCount) override;
     void close() override;

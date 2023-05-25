@@ -4,9 +4,10 @@
 
 #include "vector/ColumnVector.h"
 
-ColumnVector::ColumnVector(int len) {
+ColumnVector::ColumnVector(int len, bool encoding) {
     writeIndex = 0;
     length = len;
+	this->encoding = encoding;
     memoryUsage = len + sizeof(int) * 3 + 4;
 	closed = false;
 }

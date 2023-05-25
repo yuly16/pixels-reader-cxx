@@ -283,13 +283,14 @@ std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::ve
     switch (category) {
         case SHORT:
         case INT:
+			return std::make_shared<LongColumnVector>(maxSize, useEncodedVector.at(0), false);
         case LONG:
-            return std::make_shared<LongColumnVector>(maxSize);
+            return std::make_shared<LongColumnVector>(maxSize, useEncodedVector.at(0), true);
 	    case DATE:
-		    return std::make_shared<DateColumnVector>(maxSize);
+		    return std::make_shared<DateColumnVector>(maxSize, useEncodedVector.at(0));
 	    case DECIMAL: {
 		    if (precision <= SHORT_DECIMAL_MAX_PRECISION) {
-				return std::make_shared<DecimalColumnVector>(maxSize, precision, scale);
+				return std::make_shared<DecimalColumnVector>(maxSize, precision, scale, useEncodedVector.at(0));
 		    } else {
 				throw InvalidArgumentException("Currently we didn't implement LongDecimalColumnVector.");
 		    }
@@ -299,7 +300,7 @@ std::shared_ptr<ColumnVector> TypeDescription::createColumn(int maxSize, std::ve
         case VARBINARY:
         case CHAR:
         case VARCHAR: {
-		    return std::make_shared<BinaryColumnVector>(maxSize);
+		    return std::make_shared<BinaryColumnVector>(maxSize, useEncodedVector.at(0));
 //		    if (!useEncodedVector.at(0)) {
 //			    return std::make_shared<BinaryColumnVector>(maxSize);
 //		    } else {

@@ -4,7 +4,7 @@
 
 #include "vector/BinaryColumnVector.h"
 
-BinaryColumnVector::BinaryColumnVector(int len): ColumnVector(len) {
+BinaryColumnVector::BinaryColumnVector(int len, bool encoding): ColumnVector(len, encoding) {
     vector = new uint8_t *[len];
     start = new int[len];
     lens = new int[len];

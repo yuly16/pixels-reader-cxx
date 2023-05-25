@@ -21,7 +21,7 @@ public:
     * Use this constructor by default. All column vectors
     * should normally be the default size.
 	 */
-	DateColumnVector(int len = VectorizedRowBatch::DEFAULT_SIZE);
+	DateColumnVector(int len = VectorizedRowBatch::DEFAULT_SIZE, bool encoding = false);
 	~DateColumnVector();
 	void print(int rowCount) override;
 	void close() override;

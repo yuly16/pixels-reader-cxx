@@ -16,7 +16,7 @@ public:
     * Use this constructor by default. All column vectors
     * should normally be the default size.
     */
-    ByteColumnVector(int len = VectorizedRowBatch::DEFAULT_SIZE);
+    ByteColumnVector(int len = VectorizedRowBatch::DEFAULT_SIZE, bool encoding = false);
 
     void close() override;
 };

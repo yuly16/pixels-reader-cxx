@@ -39,7 +39,7 @@ public:
     * Use this constructor by default. All column vectors
     * should normally be the default size.
     */
-    BinaryColumnVector(int len = VectorizedRowBatch::DEFAULT_SIZE);
+    BinaryColumnVector(int len = VectorizedRowBatch::DEFAULT_SIZE, bool encoding = false);
 
 	~BinaryColumnVector();
     /**

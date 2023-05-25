@@ -4,14 +4,21 @@
 
 #include "vector/DateColumnVector.h"
 
-DateColumnVector::DateColumnVector(int len): ColumnVector(len) {
-	dates = nullptr;
+DateColumnVector::DateColumnVector(int len, bool encoding): ColumnVector(len, encoding) {
+	if(encoding) {
+		this->dates = new int[len];
+	} else {
+		this->dates = nullptr;
+	}
 	memoryUsage += (long) sizeof(int) * len;
-
 }
 
 void DateColumnVector::close() {
 	if(!closed) {
+		if(encoding && dates != nullptr) {
+			delete[] dates;
+		}
+		dates = nullptr;
 		ColumnVector::close();
 	}
 }

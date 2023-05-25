@@ -8,7 +8,7 @@ PixelsReaderOption::PixelsReaderOption() {
     // TODO: pixelsPredicate
     skipCorruptRecords = false;
     tolerantSchemaEvolution = true;
-    enableEncodedColumnVector = false;
+    enableEncodedColumnVector = true;
     queryId = -1L;
     rgStart = 0;
     rgLen = -1;  // -1 means reading to the end of the file

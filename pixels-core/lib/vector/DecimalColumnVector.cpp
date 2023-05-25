@@ -18,12 +18,13 @@
  * Author: hank
  */
 
-DecimalColumnVector::DecimalColumnVector(int precision, int scale) {
-    DecimalColumnVector(VectorizedRowBatch::DEFAULT_SIZE, precision, scale);
+DecimalColumnVector::DecimalColumnVector(int precision, int scale, bool encoding) {
+    DecimalColumnVector(VectorizedRowBatch::DEFAULT_SIZE, precision, scale, encoding);
 }
 
-DecimalColumnVector::DecimalColumnVector(int len, int precision, int scale): ColumnVector(len) {
-    this->vector = nullptr;
+DecimalColumnVector::DecimalColumnVector(int len, int precision, int scale, bool encoding): ColumnVector(len, encoding) {
+	// decimal column vector has no encoding so we don't allocate memory to this->vector
+	this->vector = nullptr;
     this->precision = precision;
     this->scale = scale;
     memoryUsage += (long) sizeof(long) * len;
@@ -32,7 +33,7 @@ DecimalColumnVector::DecimalColumnVector(int len, int precision, int scale): Col
 void DecimalColumnVector::close() {
     if(!closed) {
         ColumnVector::close();
-        vector = nullptr;
+		vector = nullptr;
     }
 }
 
@@ -42,6 +43,7 @@ void DecimalColumnVector::print(int rowCount) {
         std::cout<<vector[i]<<std::endl;
     }
 }
+
 DecimalColumnVector::~DecimalColumnVector() {
     if(!closed) {
         DecimalColumnVector::close();

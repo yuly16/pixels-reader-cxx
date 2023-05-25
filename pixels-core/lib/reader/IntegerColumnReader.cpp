@@ -22,15 +22,15 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
     if(offset == 0) {
         decoder = std::make_shared<RunLenIntDecoder>(input, true);
         ColumnReader::elementIndex = 0;
-        if(encoding.kind() == pixels::proto::ColumnEncoding_Kind_NONE) {
-            isLong = type->getCategory() == TypeDescription::Category::LONG;
-        }
+		isLong = type->getCategory() == TypeDescription::Category::LONG;
     }
     if(encoding.kind() == pixels::proto::ColumnEncoding_Kind_RUNLENGTH) {
         for(int i = 0; i < size; i++) {
-			// now we don't support encoding
-			assert(false);
-            columnVector->longVector[i + vectorIndex] = decoder->next();
+			if(isLong) {
+				columnVector->longVector[i + vectorIndex] = decoder->next();
+			} else {
+				columnVector->intVector[i + vectorIndex] = decoder->next();
+			}
             elementIndex++;
         }
     } else {

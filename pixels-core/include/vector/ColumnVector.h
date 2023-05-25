@@ -45,8 +45,9 @@ public:
     int writeIndex;
     long memoryUsage;
 	bool closed;
+	bool encoding;
     ColumnVector() = default;
-    explicit ColumnVector(int len);
+    explicit ColumnVector(int len, bool encoding);
 
     virtual void close();
     virtual void reset();
