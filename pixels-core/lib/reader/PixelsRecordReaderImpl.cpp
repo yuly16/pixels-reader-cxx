@@ -310,11 +310,19 @@ bool PixelsRecordReaderImpl::read() {
     if(!diskChunks.empty()) {
         RequestBatch requestBatch((int)diskChunks.size());
         Scheduler * scheduler = SchedulerFactory::Instance()->getScheduler();
+		std::vector<uint32_t> colIds;
+		std::vector<uint64_t> bytes;
         for(ChunkId chunk : diskChunks) {
             requestBatch.add(queryId, chunk.offset, (int)chunk.length);
+			colIds.emplace_back(chunk.columnId);
+			bytes.emplace_back(chunk.length);
         }
-        std::vector<std::shared_ptr<ByteBuffer>> byteBuffers =
-                scheduler->executeBatch(physicalReader, requestBatch, queryId);
+		::BufferPool::Instance().Initialize(targetRGNum, colIds, bytes);
+		std::vector<std::shared_ptr<ByteBuffer>> originalByteBuffers;
+		for(auto colId: colIds) {
+			originalByteBuffers.emplace_back(::BufferPool::Instance().GetBuffer(curRGIdx, colId));
+		}
+		auto byteBuffers = scheduler->executeBatch(physicalReader, requestBatch, originalByteBuffers, queryId);
         for(int index = 0; index < diskChunks.size(); index++) {
             ChunkId chunk = diskChunks.at(index);
             std::shared_ptr<ByteBuffer> bb = byteBuffers.at(index);

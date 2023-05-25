@@ -18,7 +18,6 @@ std::vector<std::shared_ptr<ByteBuffer>> NoopScheduler::executeBatch(std::shared
         return std::vector<std::shared_ptr<ByteBuffer>>{};
     }
 
-
     auto requests = batch.getRequests();
     std::vector<std::shared_ptr<ByteBuffer>> bbs;
 //	bbs.resize(batch.getSize());
@@ -37,6 +36,34 @@ std::vector<std::shared_ptr<ByteBuffer>> NoopScheduler::executeBatch(std::shared
 
     return bbs;
 }
+
+std::vector<std::shared_ptr<ByteBuffer>> NoopScheduler::executeBatch(std::shared_ptr<PhysicalReader> reader, RequestBatch batch,
+                                      std::vector<std::shared_ptr<ByteBuffer>> bbs, long queryId) {
+	if(batch.getSize() < 0) {
+		return std::vector<std::shared_ptr<ByteBuffer>>{};
+	}
+
+	auto requests = batch.getRequests();
+	std::vector<std::shared_ptr<ByteBuffer>> results;
+	//	bbs.resize(batch.getSize());
+	for(int i = 0; i < batch.getSize(); i++) {
+		Request request = requests[i];
+		reader->seek(request.start);
+		//		reader->readAsync(request.length, i);
+		results.emplace_back(reader->readFully(request.length, bbs.at(i)));
+	}
+	//	for(int i = 0; i < batch.getSize(); i++) {
+	//		auto result = reader->completeAsync();
+	//		int idx = result.first;
+	//		auto bb = result.second;
+	//		bbs.at(idx) = bb;
+	//	}
+
+	return results;
+}
+
+
+
 NoopScheduler::~NoopScheduler() {
 	delete instance;
 	instance = nullptr;

@@ -20,6 +20,7 @@ public:
     explicit DirectRandomAccessFile(const std::string& file);
     void close() override;
     std::shared_ptr<ByteBuffer> readFully(int len) override;
+	std::shared_ptr<ByteBuffer> readFully(int len, std::shared_ptr<ByteBuffer> bb) override;
 	void readAsync(int len, int uringRequestId = 0);
 	// must be called after readAsync
 	std::pair<int, std::shared_ptr<ByteBuffer>>  completeAsync();

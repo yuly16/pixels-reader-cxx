@@ -16,6 +16,7 @@ class PhysicalLocalReader: public PhysicalReader {
 public:
     PhysicalLocalReader(std::shared_ptr<Storage> storage, std::string path);
     std::shared_ptr<ByteBuffer> readFully(int length) override;
+	std::shared_ptr<ByteBuffer> readFully(int length, std::shared_ptr<ByteBuffer> bb) override;
 	void readAsync(int length, int asyncRequestId = 0) override;
 	std::pair<int, std::shared_ptr<ByteBuffer>> completeAsync() override;
     void close() override;

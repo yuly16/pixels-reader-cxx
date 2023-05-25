@@ -29,6 +29,11 @@ std::shared_ptr<ByteBuffer> PhysicalLocalReader::readFully(int length) {
     return raf->readFully(length);
 }
 
+std::shared_ptr<ByteBuffer> PhysicalLocalReader::readFully(int length, std::shared_ptr<ByteBuffer> bb) {
+	numRequests++;
+	return raf->readFully(length, bb);
+}
+
 void PhysicalLocalReader::close() {
     numRequests++;
     raf->close();
@@ -74,3 +79,4 @@ std::pair<int, std::shared_ptr<ByteBuffer>> PhysicalLocalReader::completeAsync()
 	auto result = directRaf->completeAsync();
 	return result;
 }
+

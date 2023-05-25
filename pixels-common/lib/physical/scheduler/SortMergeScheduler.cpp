@@ -56,5 +56,7 @@ std::vector<std::shared_ptr<MergedRequest>> SortMergeScheduler::sortMerge(Reques
     return mergedRequests;
 }
 
-
-
+std::vector<std::shared_ptr<ByteBuffer>> SortMergeScheduler::executeBatch(std::shared_ptr<PhysicalReader> reader, RequestBatch batch,
+                                      std::vector<std::shared_ptr<ByteBuffer>> bbs, long queryId) {
+	throw InvalidArgumentException("SortMergeScheduler::executeBatch: not support this API yet. ");
+}

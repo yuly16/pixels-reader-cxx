@@ -67,17 +67,30 @@ std::shared_ptr<ByteBuffer> DirectRandomAccessFile::readFully(int len) {
 		return buffer;
 	} else {
 		auto buffer = allocator->allocate(len);
-		::TimeProfiler::Instance().Start("read");
 		if(pread(fd, buffer->getPointer(), len, offset) == -1) {
 			throw std::runtime_error("pread fail");
 		}
-		::TimeProfiler::Instance().End("read");
 		seek(offset + len);
 		largeBuffers.emplace_back(buffer);
 		return buffer;
 	}
 
 }
+
+std::shared_ptr<ByteBuffer> DirectRandomAccessFile::readFully(int len, std::shared_ptr<ByteBuffer> bb) {
+	if(enableDirect) {
+		auto buffer = directIoLib->read(fd, offset, bb, len);
+		seek(offset + len);
+		return buffer;
+	} else {
+		if(pread(fd, bb->getPointer(), len, offset) == -1) {
+			throw std::runtime_error("pread fail");
+		}
+		seek(offset + len);
+		return std::make_shared<ByteBuffer>(*bb, 0, len);
+	}
+}
+
 
 long DirectRandomAccessFile::length() {
     return len;
@@ -146,3 +159,5 @@ std::pair<int, std::shared_ptr<ByteBuffer>> DirectRandomAccessFile::completeAsyn
 DirectRandomAccessFile::~DirectRandomAccessFile() {
 //	io_uring_queue_exit(&ring);
 }
+
+

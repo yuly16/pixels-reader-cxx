@@ -8,12 +8,14 @@
 #include "physical/Scheduler.h"
 #include "physical/MergedRequest.h"
 #include<algorithm>
+#include "exception/InvalidArgumentException.h"
 
 class SortMergeScheduler : public Scheduler {
     // TODO: logger
 public:
     static Scheduler * Instance();
     std::vector<std::shared_ptr<ByteBuffer>> executeBatch(std::shared_ptr<PhysicalReader> reader, RequestBatch batch, long queryId) override;
+	std::vector<std::shared_ptr<ByteBuffer>> executeBatch(std::shared_ptr<PhysicalReader> reader, RequestBatch batch, std::vector<std::shared_ptr<ByteBuffer>> bbs, long queryId) override;
     std::vector<std::shared_ptr<MergedRequest>> sortMerge(RequestBatch batch, long queryId);
 
 private:

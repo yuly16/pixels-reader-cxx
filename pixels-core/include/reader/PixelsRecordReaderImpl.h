@@ -18,6 +18,7 @@
 #include "reader/ColumnReader.h"
 #include "reader/ColumnReaderBuilder.h"
 #include "profiler/TimeProfiler.h"
+#include "physical/BufferPool.h"
 
 class ChunkId {
 public:
@@ -89,8 +90,8 @@ private:
     std::vector<std::shared_ptr<ByteBuffer>> chunkBuffers;
     // column readers for each target columns
     std::vector<std::shared_ptr<ColumnReader>> readers;
-    std::vector<int> targetColumns;
-    std::vector<int> resultColumns;
+    std::vector<uint32_t> targetColumns;
+    std::vector<uint32_t> resultColumns;
     std::vector<bool> resultColumnsEncoded;
     bool enableEncodedVector;
     std::vector<std::shared_ptr<pixels::proto::RowGroupFooter>> rowGroupFooters;
