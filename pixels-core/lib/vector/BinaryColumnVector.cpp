@@ -5,9 +5,7 @@
 #include "vector/BinaryColumnVector.h"
 
 BinaryColumnVector::BinaryColumnVector(int len, bool encoding): ColumnVector(len, encoding) {
-    vector = new uint8_t *[len];
-    start = new int[len];
-    lens = new int[len];
+    vector = new duckdb::string_t[len];
     memoryUsage += (long) sizeof(uint8_t) * len;
 }
 
@@ -16,10 +14,6 @@ void BinaryColumnVector::close() {
 		ColumnVector::close();
 		delete[] vector;
 		vector = nullptr;
-		delete[] start;
-		start = nullptr;
-		delete[] lens;
-		lens = nullptr;
 	}
 }
 
@@ -27,20 +21,16 @@ void BinaryColumnVector::setRef(int elementNum, uint8_t * const &sourceBuf, int 
     if(elementNum >= writeIndex) {
         writeIndex = elementNum + 1;
     }
-    this->vector[elementNum] = sourceBuf;
-    this->start[elementNum] = start;
-    this->lens[elementNum] = length;
-    // TODO: isNull should implemented, but not now.
-
+    this->vector[elementNum] = duckdb::string_t((const char *)sourceBuf + start, length);
 }
 
 void BinaryColumnVector::print(int rowCount) {
 //	throw InvalidArgumentException("not support print binarycolumnvector.");
     for(int i = 0; i < rowCount; i++) {
-        int s = start[i];
-        int l = lens[i];
-        for(int j = 0; j < l; j++) {
-            std::cout<<(char)(*(vector[i] + s + j));
+        auto str = this->vector[i].GetData();
+        int len = this->vector[i].GetSize();
+        for(int j = 0; j < len; j++) {
+            std::cout<<(char)(*(str + j));
         }
         std::cout<<std::endl;
     }

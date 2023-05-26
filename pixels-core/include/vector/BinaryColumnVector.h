@@ -7,7 +7,7 @@
 
 #include "vector/ColumnVector.h"
 #include "vector/VectorizedRowBatch.h"
-
+#include "duckdb.hpp"
 /**
  * BinaryColumnVector derived from org.apache.hadoop.hive.ql.exec.vector.
  * <p>
@@ -28,13 +28,7 @@
 
 class BinaryColumnVector: public ColumnVector {
 public:
-    uint8_t ** vector;
-    int * start;         // start offset of each field
-    /*
-     * The length of each field. If the value repeats for every entry, then it is stored
-     * in vector[0] and isRepeating from the superclass is set to true.
-     */
-    int * lens;
+    duckdb::string_t * vector;
     /**
     * Use this constructor by default. All column vectors
     * should normally be the default size.
