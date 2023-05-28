@@ -34,7 +34,7 @@ std::shared_ptr<PixelsReader> PixelsReaderBuilder::build() {
 	    PhysicalReaderUtil::newPhysicalReader(builderStorage, builderPath);
     // try to get file tail from cache
     std::string fileName = fsReader->getName();
-    pixels::proto::FileTail fileTail;
+    std::shared_ptr<pixels::proto::FileTail> fileTail;
     if(builderPixelsFooterCache != nullptr && builderPixelsFooterCache->containsFileTail(fileName)) {
         fileTail = builderPixelsFooterCache->getFileTail(fileName);
     } else {
@@ -49,7 +49,8 @@ std::shared_ptr<PixelsReader> PixelsReaderBuilder::build() {
         int fileTailLength = (int) (fileLen - fileTailOffset - sizeof(long));
         fsReader->seek(fileTailOffset);
         std::shared_ptr<ByteBuffer> fileTailBuffer = fsReader->readFully(fileTailLength);
-        if(!fileTail.ParseFromArray(fileTailBuffer->getPointer(),
+		fileTail = std::make_shared<pixels::proto::FileTail>();
+        if(!fileTail->ParseFromArray(fileTailBuffer->getPointer(),
                                     fileTailLength)) {
             throw InvalidArgumentException("PixelsReaderBuilder::build: paring FileTail error!");
         }
@@ -59,7 +60,7 @@ std::shared_ptr<PixelsReader> PixelsReaderBuilder::build() {
     }
 
     // check file MAGIC and file version
-    pixels::proto::PostScript postScript = fileTail.postscript();
+    pixels::proto::PostScript postScript = fileTail->postscript();
     uint32_t fileVersion = postScript.version();
     const std::string& fileMagic = postScript.magic();
     if(PixelsVersion::currentVersion() != fileVersion) {
@@ -70,9 +71,9 @@ std::shared_ptr<PixelsReader> PixelsReaderBuilder::build() {
     }
 
 
-	auto fileColTypes = std::vector<pixels::proto::Type>{};
-	for(const auto& type : fileTail.footer().types()) {
-		fileColTypes.emplace_back(type);
+	auto fileColTypes = std::vector<std::shared_ptr<pixels::proto::Type>>{};
+	for(const auto& type : fileTail->footer().types()) {
+		fileColTypes.emplace_back(std::make_shared<pixels::proto::Type>(type));
 	}
 	builderSchema = TypeDescription::createSchema(fileColTypes);
 

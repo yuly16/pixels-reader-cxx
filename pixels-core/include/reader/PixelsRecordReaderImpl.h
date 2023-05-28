@@ -71,10 +71,10 @@ private:
     long rowIndex;
 	bool endOfFile;
 	int curRGRowCount;
-	pixels::proto::RowGroupFooter curRGFooter;
-	std::vector<pixels::proto::ColumnEncoding> curEncoding;
+	std::shared_ptr<pixels::proto::RowGroupFooter> curRGFooter;
+	std::vector<std::shared_ptr<pixels::proto::ColumnEncoding>> curEncoding;
 	std::vector<int> curChunkBufferIndex;
-	std::vector<pixels::proto::ColumnChunkIndex> curChunkIndex;
+	std::vector<std::shared_ptr<pixels::proto::ColumnChunkIndex>> curChunkIndex;
     /**
      * Columns included by reader option; if included, set true
      */
@@ -93,10 +93,10 @@ private:
     std::vector<int> resultColumns;
     std::vector<bool> resultColumnsEncoded;
     bool enableEncodedVector;
-    std::vector<pixels::proto::RowGroupFooter> rowGroupFooters;
+    std::vector<std::shared_ptr<pixels::proto::RowGroupFooter>> rowGroupFooters;
 
     int includedColumnNum; // the number of columns to read
-    std::vector<pixels::proto::Type> includedColumnTypes;
+    std::vector<std::shared_ptr<pixels::proto::Type>> includedColumnTypes;
 
     std::shared_ptr<TypeDescription> fileSchema;
     std::shared_ptr<TypeDescription> resultSchema;

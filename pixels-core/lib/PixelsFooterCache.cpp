@@ -9,14 +9,14 @@ PixelsFooterCache::PixelsFooterCache() {
     rowGroupFooterCacheMap = RGFooterTable(200);
 }
 
-void PixelsFooterCache::putFileTail(const std::string& id, FileTail fileTail) {
+void PixelsFooterCache::putFileTail(const std::string& id, std::shared_ptr<FileTail> fileTail) {
     FileTailTable::accessor accessor;
     if(fileTailCacheMap.insert(accessor, id)) {
         accessor->second = fileTail;
     }
 }
 
-FileTail PixelsFooterCache::getFileTail(const std::string& id) {
+std::shared_ptr<FileTail> PixelsFooterCache::getFileTail(const std::string& id) {
     FileTailTable::accessor accessor;
     if(fileTailCacheMap.find(accessor, id)) {
         return accessor->second;
@@ -25,7 +25,7 @@ FileTail PixelsFooterCache::getFileTail(const std::string& id) {
     }
 }
 
-void PixelsFooterCache::putRGFooter(const std::string& id, RowGroupFooter footer) {
+void PixelsFooterCache::putRGFooter(const std::string& id, std::shared_ptr<RowGroupFooter> footer) {
     RGFooterTable::accessor accessor;
     if(rowGroupFooterCacheMap.insert(accessor, id)) {
         accessor->second = footer;
@@ -36,7 +36,7 @@ bool PixelsFooterCache::containsFileTail(const std::string &id) {
     return fileTailCacheMap.count(id) > 0;
 }
 
-RowGroupFooter PixelsFooterCache::getRGFooter(const std::string& id) {
+std::shared_ptr<RowGroupFooter> PixelsFooterCache::getRGFooter(const std::string& id) {
     RGFooterTable::accessor accessor;
     if(rowGroupFooterCacheMap.find(accessor, id)) {
         return accessor->second;

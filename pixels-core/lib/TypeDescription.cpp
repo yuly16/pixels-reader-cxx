@@ -90,12 +90,12 @@ TypeDescription::TypeDescription(Category c) {
     category = c;
 }
 
-std::shared_ptr<TypeDescription> TypeDescription::createSchema(const std::vector<pixels::proto::Type>& types) {
+std::shared_ptr<TypeDescription> TypeDescription::createSchema(const std::vector<std::shared_ptr<pixels::proto::Type>>& types) {
 	std::shared_ptr<TypeDescription> schema = createStruct();
     for(const auto& type : types) {
-        const std::string& fieldName = type.name();
+        const std::string& fieldName = type->name();
         std::shared_ptr<TypeDescription> fieldType;
-        switch (type.kind()) {
+        switch (type->kind()) {
             case pixels::proto::Type_Kind_BOOLEAN:
                 fieldType = TypeDescription::createBoolean();
                 break;
@@ -118,15 +118,15 @@ std::shared_ptr<TypeDescription> TypeDescription::createSchema(const std::vector
                 fieldType = TypeDescription::createDouble();
                 break;
 		    case pixels::proto::Type_Kind_DECIMAL:
-			    fieldType = TypeDescription::createDecimal(type.precision(), type.scale());
+			    fieldType = TypeDescription::createDecimal(type->precision(), type->scale());
 			    break;
             case pixels::proto::Type_Kind_VARCHAR:
                 fieldType = TypeDescription::createVarchar();
-                fieldType->maxLength = type.maximumlength();
+                fieldType->maxLength = type->maximumlength();
                 break;
             case pixels::proto::Type_Kind_CHAR:
                 fieldType = TypeDescription::createChar();
-                fieldType->maxLength = type.maximumlength();
+                fieldType->maxLength = type->maximumlength();
                 break;
             case pixels::proto::Type_Kind_STRING:
                 fieldType = TypeDescription::createString();
@@ -138,7 +138,7 @@ std::shared_ptr<TypeDescription> TypeDescription::createSchema(const std::vector
                 fieldType = TypeDescription::createTime();
                 break;
             default:
-                throw InvalidArgumentException("Unknown type: " + type.name());
+                throw InvalidArgumentException("Unknown type: " + type->name());
         }
         schema->addField(fieldName, fieldType);
     }

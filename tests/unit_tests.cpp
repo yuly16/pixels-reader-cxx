@@ -351,7 +351,7 @@ TEST(reader, fileTail) {
     for(int i = 0; i < 2; i++) {
         if(pixelsFooterCache.containsFileTail(filename)) {
             EXPECT_EQ(i, 1);
-            fileTail = pixelsFooterCache.getFileTail(filename);
+            fileTail = *pixelsFooterCache.getFileTail(filename);
         } else {
             // get FileTail
             EXPECT_EQ(i, 0);
@@ -365,7 +365,7 @@ TEST(reader, fileTail) {
                                         fileTailLength)) {
                 throw std::runtime_error("paring FileTail error!");
             }
-            pixelsFooterCache.putFileTail(filename, fileTail);
+            pixelsFooterCache.putFileTail(filename, std::make_shared<pixels::proto::FileTail>(fileTail));
         }
     }
 }

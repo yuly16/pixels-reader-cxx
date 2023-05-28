@@ -69,7 +69,7 @@ public:
     static std::shared_ptr<TypeDescription> createVarchar();
     static std::shared_ptr<TypeDescription> createChar();
     static std::shared_ptr<TypeDescription> createStruct();
-    static std::shared_ptr<TypeDescription> createSchema(const std::vector<pixels::proto::Type>& types);
+    static std::shared_ptr<TypeDescription> createSchema(const std::vector<std::shared_ptr<pixels::proto::Type>>& types);
     std::shared_ptr<TypeDescription> addField(const std::string& field, const std::shared_ptr<TypeDescription>& fieldType);
     void setParent(const std::shared_ptr<TypeDescription>& p);
 	std::shared_ptr<VectorizedRowBatch> createRowBatch(int maxSize);

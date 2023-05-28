@@ -21,7 +21,7 @@ public:
     std::shared_ptr<PixelsRecordReader> read(PixelsReaderOption option);
 	PixelsReaderImpl(std::shared_ptr<TypeDescription> fileSchema,
 	                 std::shared_ptr<PhysicalReader> reader,
-	                 const pixels::proto::FileTail& fileTail,
+	                 std::shared_ptr<pixels::proto::FileTail> fileTail,
 	                 std::shared_ptr<PixelsFooterCache> footerCache);
 	~PixelsReaderImpl();
 	std::shared_ptr<TypeDescription> getFileSchema() override;
