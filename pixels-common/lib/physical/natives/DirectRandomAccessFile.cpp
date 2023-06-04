@@ -41,10 +41,7 @@ DirectRandomAccessFile::DirectRandomAccessFile(const std::string& file) {
         throw std::runtime_error("failed to allocate buffer");
     }
 	allocator = std::make_shared<BufferPoolAllocator>();
-	// initialize io_uring ring
-//	if(io_uring_queue_init(4096, &ring, 0) < 0) {
-//		throw InvalidArgumentException("DirectRandomAccessFile: initialize io_uring fails.");
-//	}
+
 }
 
 void DirectRandomAccessFile::close() {
@@ -144,20 +141,7 @@ void DirectRandomAccessFile::populatedBuffer() {
 
 }
 
-void DirectRandomAccessFile::readAsync(int len, int uringRequestId) {
-	auto directBuffer = directIoLib->allocateDirectBuffer(len);
-    directIoLib->uringSubmitReadRequest(ring, fd, uringRequestId, offset, directBuffer, len);
-	seek(offset + len);
-    largeBuffers.emplace_back(directBuffer);
-}
 
-std::pair<int, std::shared_ptr<ByteBuffer>> DirectRandomAccessFile::completeAsync() {
-	auto result = directIoLib->uringGetCompletion(ring);
-	return result;
-}
 
-DirectRandomAccessFile::~DirectRandomAccessFile() {
-//	io_uring_queue_exit(&ring);
-}
 
 

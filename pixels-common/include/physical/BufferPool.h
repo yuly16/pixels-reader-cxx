@@ -12,6 +12,12 @@
 #include "physical/natives/DirectIoLib.h"
 #include "exception/InvalidArgumentException.h"
 #include <map>
+
+// when allocating buffer pool, we use the size of the first pxl file. Consider that
+// the remaining pxl file has larger size than the first file, we allocate some extra
+// size (1MB) to each column.
+#define EXTRA_POOL_SIZE 1024*1024
+
 // This class is global class. The variable is shared by each thread
 class BufferPool {
 public:

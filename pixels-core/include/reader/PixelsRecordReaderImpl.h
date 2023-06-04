@@ -19,6 +19,7 @@
 #include "reader/ColumnReaderBuilder.h"
 #include "profiler/TimeProfiler.h"
 #include "physical/BufferPool.h"
+#include "physical/natives/DirectUringRandomAccessFile.h"
 
 class ChunkId {
 public:

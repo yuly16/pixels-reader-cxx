@@ -68,15 +68,52 @@ std::string PhysicalLocalReader::getName() {
     return path.substr(path.find_last_of('/') + 1);
 }
 
-void PhysicalLocalReader::readAsync(int length, int asyncRequestId) {
+std::shared_ptr<ByteBuffer> PhysicalLocalReader::readAsync(int length, std::shared_ptr<ByteBuffer> buffer, int index) {
 	numRequests++;
-	auto directRaf = std::static_pointer_cast<DirectRandomAccessFile>(raf);
-	directRaf->readAsync(length, asyncRequestId);
+	if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "iouring") {
+		auto directRaf = std::static_pointer_cast<DirectUringRandomAccessFile>(raf);
+		return directRaf->readAsync(length, std::move(buffer), index);
+	} else if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "aio") {
+		throw InvalidArgumentException("PhysicalLocalReader::readAsync: We don't support aio for our async read yet.");
+	} else {
+		throw InvalidArgumentException("PhysicalLocalReader::readAsync: the async read method is unknown. ");
+	}
+
 }
 
-std::pair<int, std::shared_ptr<ByteBuffer>> PhysicalLocalReader::completeAsync() {
-	auto directRaf = std::static_pointer_cast<DirectRandomAccessFile>(raf);
-	auto result = directRaf->completeAsync();
-	return result;
+void PhysicalLocalReader::readAsyncSubmit(uint32_t size) {
+	numRequests++;
+	if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "iouring") {
+		auto directRaf = std::static_pointer_cast<DirectUringRandomAccessFile>(raf);
+		directRaf->readAsyncSubmit(size);
+	} else if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "aio") {
+		throw InvalidArgumentException("PhysicalLocalReader::readAsync: We don't support aio for our async read yet.");
+	} else {
+		throw InvalidArgumentException("PhysicalLocalReader::readAsync: the async read method is unknown. ");
+	}
 }
 
+void PhysicalLocalReader::readAsyncComplete(uint32_t size) {
+	numRequests++;
+	if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "iouring") {
+		auto directRaf = std::static_pointer_cast<DirectUringRandomAccessFile>(raf);
+		directRaf->readAsyncComplete(size);
+	} else if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "aio") {
+		throw InvalidArgumentException("PhysicalLocalReader::readAsync: We don't support aio for our async read yet.");
+	} else {
+		throw InvalidArgumentException("PhysicalLocalReader::readAsync: the async read method is unknown. ");
+	}
+}
+
+void PhysicalLocalReader::readAsyncSubmitAndComplete(uint32_t size){
+	numRequests++;
+	if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "iouring") {
+		auto directRaf = std::static_pointer_cast<DirectUringRandomAccessFile>(raf);
+		directRaf->readAsyncSubmit(size);
+		directRaf->readAsyncComplete(size);
+	} else if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "aio") {
+		throw InvalidArgumentException("PhysicalLocalReader::readAsync: We don't support aio for our async read yet.");
+	} else {
+		throw InvalidArgumentException("PhysicalLocalReader::readAsync: the async read method is unknown. ");
+	}
+}

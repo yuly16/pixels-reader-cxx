@@ -38,10 +38,6 @@ public:
 	DirectIoLib(int fsBlockSize);
 	std::shared_ptr<ByteBuffer> allocateDirectBuffer(long size);
 	std::shared_ptr<ByteBuffer> read(int fd, long fileOffset, std::shared_ptr<ByteBuffer> directBuffer, long length);
-	void uringSubmitReadRequest(struct io_uring & ring, int fd, int idx, long fileOffset,
-	                                      std::shared_ptr<ByteBuffer> directBuffer, long length);
-	std::pair<int, std::shared_ptr<ByteBuffer>> uringGetCompletion(struct io_uring & ring);
-
 	long blockStart(long value);
 	long blockEnd(long value);
 private:

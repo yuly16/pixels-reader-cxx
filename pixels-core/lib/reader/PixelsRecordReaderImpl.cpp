@@ -322,6 +322,16 @@ bool PixelsRecordReaderImpl::read() {
 		for(auto colId: colIds) {
 			originalByteBuffers.emplace_back(::BufferPool::Instance().GetBuffer(curRGIdx, colId));
 		}
+
+		// we should register byte buffer if asyno io is enabled.
+//		if(ConfigFactory::Instance().boolCheckProperty("localfs.enable.async.io")) {
+//			if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "iouring") {
+//				DirectUringRandomAccessFile::RegisterBuffer(originalByteBuffers);
+//			} else if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "aio") {
+//				throw InvalidArgumentException("PhysicalLocalReader::readAsync: We don't support aio for our async read yet.");
+//			}
+//		}
+
 		auto byteBuffers = scheduler->executeBatch(physicalReader, requestBatch, originalByteBuffers, queryId);
         for(int index = 0; index < diskChunks.size(); index++) {
             ChunkId chunk = diskChunks.at(index);

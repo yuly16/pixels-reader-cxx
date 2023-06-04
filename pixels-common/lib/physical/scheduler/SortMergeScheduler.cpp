@@ -15,7 +15,15 @@ Scheduler * SortMergeScheduler::Instance() {
     return instance;
 }
 
-std::vector<std::shared_ptr<ByteBuffer>> SortMergeScheduler::executeBatch(std::shared_ptr<PhysicalReader> reader, RequestBatch batch, long queryId) {
+
+std::vector<std::shared_ptr<ByteBuffer>> SortMergeScheduler::executeBatch(std::shared_ptr<PhysicalReader> reader,
+                                                                     RequestBatch batch, long queryId) {
+	return executeBatch(reader, batch, {}, queryId);
+}
+
+
+std::vector<std::shared_ptr<ByteBuffer>> SortMergeScheduler::executeBatch(std::shared_ptr<PhysicalReader> reader, RequestBatch batch,
+                                                      std::vector<std::shared_ptr<ByteBuffer>> reuseBuffers, long queryId) {
     if(batch.getSize() < 0) {
         return std::vector<std::shared_ptr<ByteBuffer>>{};
     }
@@ -27,7 +35,6 @@ std::vector<std::shared_ptr<ByteBuffer>> SortMergeScheduler::executeBatch(std::s
         auto separateBuffers = merged->complete(buffer);
         bbs.insert(bbs.end(), separateBuffers.begin(), separateBuffers.end());
     }
-
     return bbs;
 }
 
@@ -54,9 +61,4 @@ std::vector<std::shared_ptr<MergedRequest>> SortMergeScheduler::sortMerge(Reques
     }
     mergedRequests.emplace_back(mr2);
     return mergedRequests;
-}
-
-std::vector<std::shared_ptr<ByteBuffer>> SortMergeScheduler::executeBatch(std::shared_ptr<PhysicalReader> reader, RequestBatch batch,
-                                      std::vector<std::shared_ptr<ByteBuffer>> bbs, long queryId) {
-	throw InvalidArgumentException("SortMergeScheduler::executeBatch: not support this API yet. ");
 }

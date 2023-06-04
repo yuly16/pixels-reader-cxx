@@ -28,8 +28,8 @@ void BufferPool::Initialize(uint32_t rgCount, std::vector<uint32_t> colIds, std:
 			for(int i = 0; i < colIds.size(); i++) {
 				uint32_t colId = colIds.at(i);
 				uint64_t byte = bytes.at(i);
-				BufferPool::nrBytes[rgId][colId] = byte;
-				auto buffer = BufferPool::directIoLib->allocateDirectBuffer(byte);
+				auto buffer = BufferPool::directIoLib->allocateDirectBuffer(byte + static_cast<int64_t>(EXTRA_POOL_SIZE));
+				BufferPool::nrBytes[rgId][colId] = buffer->size();
 				BufferPool::buffers[rgId][colId] = buffer;
 			}
 		}
@@ -47,12 +47,9 @@ void BufferPool::Initialize(uint32_t rgCount, std::vector<uint32_t> colIds, std:
 				if (BufferPool::nrBytes[rgId].find(colId) == BufferPool::nrBytes[rgId].end()) {
 					throw InvalidArgumentException("BufferPool::Initialize: no such the column id.");
 				}
-				// Note: this code should never happen in the pixels scenario, so just for fault tolerance
+				// Note: this code should never happen in the pixels scenario
 				if (BufferPool::nrBytes[rgId][colId] < byte) {
-					// do the resize
-					BufferPool::nrBytes[rgId][colId] = byte;
-					auto buffer = BufferPool::directIoLib->allocateDirectBuffer(byte);
-					BufferPool::buffers[rgId][colId] = buffer;
+					throw InvalidArgumentException("the new buffer byte cannot larger than the previous buffer byte. ");
 				}
 			}
 		}

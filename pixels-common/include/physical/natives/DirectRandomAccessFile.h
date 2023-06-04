@@ -10,8 +10,6 @@
 #include "physical/natives/DirectIoLib.h"
 #include <fcntl.h>
 #include <unistd.h>
-#include "liburing.h"
-#include "liburing/io_uring.h"
 #include "profiler/TimeProfiler.h"
 #include "physical/allocator/OrdinaryAllocator.h"
 
@@ -21,15 +19,11 @@ public:
     void close() override;
     std::shared_ptr<ByteBuffer> readFully(int len) override;
 	std::shared_ptr<ByteBuffer> readFully(int len, std::shared_ptr<ByteBuffer> bb) override;
-	void readAsync(int len, int uringRequestId = 0);
-	// must be called after readAsync
-	std::pair<int, std::shared_ptr<ByteBuffer>>  completeAsync();
     long length() override;
     void seek(long off) override;
     long readLong() override;
     char readChar() override;
     int readInt() override;
-    ~DirectRandomAccessFile();
 private:
     void populatedBuffer();
 	std::shared_ptr<Allocator> allocator;
@@ -37,16 +31,13 @@ private:
 	/* smallDirectBuffer align to blockSize. smallBuffer adds the offset to smallDirectBuffer. */
     std::shared_ptr<ByteBuffer> smallBuffer;
 	std::shared_ptr<ByteBuffer> smallDirectBuffer;
-	std::shared_ptr<DirectIoLib> directIoLib;
-	// this is for async io
-	struct io_uring ring;
     bool bufferValid;
+	long len;
+protected:
+	int fd;
+	long offset;
+	std::shared_ptr<DirectIoLib> directIoLib;
 	bool enableDirect;
-    long offset;
-    long len;
-    int fd;
 	int fsBlockSize;
-
-
 };
 #endif //PIXELS_DIRECTRANDOMACCESSFILE_H

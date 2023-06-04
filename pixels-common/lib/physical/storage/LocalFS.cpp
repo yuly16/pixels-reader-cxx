@@ -4,7 +4,7 @@
 
 #include "physical/storage/LocalFS.h"
 #include "physical/natives/DirectRandomAccessFile.h"
-
+#include "physical/natives/DirectUringRandomAccessFile.h"
 
 std::string LocalFS::SchemePrefix = "file://";
 
@@ -30,7 +30,7 @@ std::string LocalFS::ensureSchemePrefix(std::string path) {
 std::shared_ptr<PixelsRandomAccessFile> LocalFS::openRaf(const std::string& path) {
     if(true) {
         // TODO: change this class to mmap class in the future.
-        return std::make_shared<DirectRandomAccessFile>(path);
+        return std::make_shared<DirectUringRandomAccessFile>(path);
     } else {
         return std::make_shared<DirectRandomAccessFile>(path);
     }

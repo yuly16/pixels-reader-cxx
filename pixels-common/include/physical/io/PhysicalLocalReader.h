@@ -8,6 +8,7 @@
 #include "physical/PhysicalReader.h"
 #include "physical/storage/LocalFS.h"
 #include "physical/natives/DirectRandomAccessFile.h"
+#include "physical/natives/DirectUringRandomAccessFile.h"
 #include <iostream>
 #include <atomic>
 
@@ -17,8 +18,10 @@ public:
     PhysicalLocalReader(std::shared_ptr<Storage> storage, std::string path);
     std::shared_ptr<ByteBuffer> readFully(int length) override;
 	std::shared_ptr<ByteBuffer> readFully(int length, std::shared_ptr<ByteBuffer> bb) override;
-	void readAsync(int length, int asyncRequestId = 0) override;
-	std::pair<int, std::shared_ptr<ByteBuffer>> completeAsync() override;
+	std::shared_ptr<ByteBuffer> readAsync(int length, std::shared_ptr<ByteBuffer> bb, int index);
+	void readAsyncSubmit(uint32_t size);
+	void readAsyncComplete(uint32_t size);
+	void readAsyncSubmitAndComplete(uint32_t size);
     void close() override;
     long getFileLength() override;
     void seek(long desired) override;

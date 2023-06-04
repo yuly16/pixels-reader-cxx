@@ -36,8 +36,8 @@ void IntegerColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
     } else {
         if(isLong) {
             // if long
-			columnVector->longVector = (long *)(input->getPointer() + input->getReadPos());
-			input->setReadPos(input->getReadPos() + size * sizeof(long));
+			columnVector->longVector = (int64_t *)(input->getPointer() + input->getReadPos());
+			input->setReadPos(input->getReadPos() + size * sizeof(int64_t));
         } else {
             // if int
 			columnVector->intVector = (int *)(input->getPointer() + input->getReadPos());
