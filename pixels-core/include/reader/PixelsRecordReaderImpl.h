@@ -65,6 +65,7 @@ private:
     int RGStart;
     int RGLen;
     bool everRead;
+	bool everPrepareRead;
     int targetRGNum;
     int curRGIdx;
     int curRowInRG;

@@ -19,6 +19,7 @@ PixelsRecordReaderImpl::PixelsRecordReaderImpl(std::shared_ptr<PhysicalReader> r
     RGStart = option.getRGStart();
     RGLen = option.getRGLen();
     everRead = false;
+	everPrepareRead = false;
     targetRGNum = 0;
     curRGIdx = 0;
     curRowInRG = 0;
@@ -112,13 +113,14 @@ void PixelsRecordReaderImpl::UpdateRowGroupInfo() {
 		            .kind() != pixels::proto::ColumnEncoding_Kind_NONE
 		    && enableEncodedVector;
 	}
-	// update cur
 	for(int i = 0; i < resultColumns.size(); i++) {
 		curEncoding.at(i) = std::make_shared<pixels::proto::ColumnEncoding>(rgEncoding.columnchunkencodings(resultColumns.at(i)));
-		curChunkBufferIndex.at(i) = curRGIdx * includedColumns.size() + resultColumns.at(i);
+		curChunkBufferIndex.at(i) = resultColumns.at(i);
 		curChunkIndex.at(i) = std::make_shared<pixels::proto::ColumnChunkIndex>(curRGFooter->rowgroupindexentry()
 		                          .columnchunkindexentries(resultColumns.at(i)));
 	}
+	// This flag makes sure that each row group invokes read()
+	everRead = false;
 }
 
 std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readRowGroup(bool reuse) {
@@ -200,6 +202,7 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchS
 
 
 void PixelsRecordReaderImpl::prepareRead() {
+	everPrepareRead = true;
     std::vector<bool> includedRGs;
     includedRGs.resize(RGLen);
 
@@ -283,29 +286,32 @@ void PixelsRecordReaderImpl::prepareRead() {
 }
 
 bool PixelsRecordReaderImpl::read() {
-    prepareRead();
+	if(!everPrepareRead) {
+		prepareRead();
+	}
+
     everRead = true;
 
     // read chunk offset and length of each target column chunks
 
     // TODO: this should remove later
     chunkBuffers.clear();
-    chunkBuffers.resize(targetRGNum * includedColumns.size());
+    chunkBuffers.resize(includedColumns.size());
     std::vector<ChunkId> diskChunks;
-    diskChunks.reserve(targetRGNum * targetColumns.size());
+    diskChunks.reserve(targetColumns.size());
 
 
     // TODO: support cache read
-    for(int rgIdx = 0; rgIdx < targetRGNum; rgIdx++) {
-        const pixels::proto::RowGroupIndex& rowGroupIndex =
-                rowGroupFooters[rgIdx]->rowgroupindexentry();
-        for(int colId: targetColumns) {
-            const pixels::proto::ColumnChunkIndex& chunkIndex =
-                    rowGroupIndex.columnchunkindexentries(colId);
-            ChunkId chunk(rgIdx, colId, chunkIndex.chunkoffset(), chunkIndex.chunklength());
-            diskChunks.emplace_back(chunk);
-        }
-    }
+
+	const pixels::proto::RowGroupIndex& rowGroupIndex =
+			rowGroupFooters[curRGIdx]->rowgroupindexentry();
+	for(int colId: targetColumns) {
+		const pixels::proto::ColumnChunkIndex& chunkIndex =
+				rowGroupIndex.columnchunkindexentries(colId);
+		ChunkId chunk(curRGIdx, colId, chunkIndex.chunkoffset(), chunkIndex.chunklength());
+		diskChunks.emplace_back(chunk);
+	}
+
 
     if(!diskChunks.empty()) {
         RequestBatch requestBatch((int)diskChunks.size());
@@ -317,30 +323,19 @@ bool PixelsRecordReaderImpl::read() {
 			colIds.emplace_back(chunk.columnId);
 			bytes.emplace_back(chunk.length);
         }
-		::BufferPool::Instance().Initialize(targetRGNum, colIds, bytes);
+		::BufferPool::Initialize(colIds, bytes);
 		std::vector<std::shared_ptr<ByteBuffer>> originalByteBuffers;
 		for(auto colId: colIds) {
-			originalByteBuffers.emplace_back(::BufferPool::Instance().GetBuffer(curRGIdx, colId));
+			originalByteBuffers.emplace_back(::BufferPool::GetBuffer(colId));
 		}
-
-		// we should register byte buffer if asyno io is enabled.
-//		if(ConfigFactory::Instance().boolCheckProperty("localfs.enable.async.io")) {
-//			if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "iouring") {
-//				DirectUringRandomAccessFile::RegisterBuffer(originalByteBuffers);
-//			} else if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "aio") {
-//				throw InvalidArgumentException("PhysicalLocalReader::readAsync: We don't support aio for our async read yet.");
-//			}
-//		}
 
 		auto byteBuffers = scheduler->executeBatch(physicalReader, requestBatch, originalByteBuffers, queryId);
         for(int index = 0; index < diskChunks.size(); index++) {
             ChunkId chunk = diskChunks.at(index);
             std::shared_ptr<ByteBuffer> bb = byteBuffers.at(index);
-            uint32_t rgIdx = chunk.rowGroupId;
-            uint32_t numCols = includedColumns.size();
             uint32_t colId = chunk.columnId;
             if(bb != nullptr) {
-                chunkBuffers.at(rgIdx * numCols + colId) = bb;
+                chunkBuffers.at(colId) = bb;
             }
         }
     }

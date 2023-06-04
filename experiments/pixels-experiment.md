@@ -101,3 +101,16 @@ pixels v1 vs v2 micro benchmark with encoding:
 
 <img src="plot/pixels-encoding-micro-v1-v2.png">
 
+## Optimization 3: iouring
+
+We use iouring to replace pread. iouring is an async io library. It has its specific optimization on IO and we expect it is faster than pread.
+
+### Code design
+
+For each table, we would create `#threads` threads to execute it. We create `#threads` iouring instances to proceed it instead of creating iouring instance for each pxl file. In this way, the initialization and exit cost would be decreased, which means that `ring` is thread local.
+
+### performance
+
+<img src="plot/parquet-vs-pixels.png">
+
+pixels-v2 is reuse buffer optimization (discussed above).

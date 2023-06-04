@@ -5,7 +5,7 @@
 #include "physical/io/PhysicalLocalReader.h"
 
 #include <utility>
-
+#include "profiler/TimeProfiler.h"
 PhysicalLocalReader::PhysicalLocalReader(std::shared_ptr<Storage> storage, std::string path_) {
     // TODO: should support async
     if(std::dynamic_pointer_cast<LocalFS>(storage).get() != nullptr) {
@@ -110,7 +110,9 @@ void PhysicalLocalReader::readAsyncSubmitAndComplete(uint32_t size){
 	if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "iouring") {
 		auto directRaf = std::static_pointer_cast<DirectUringRandomAccessFile>(raf);
 		directRaf->readAsyncSubmit(size);
+		::TimeProfiler::Instance().Start("async wait");
 		directRaf->readAsyncComplete(size);
+		::TimeProfiler::Instance().End("async wait");
 	} else if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "aio") {
 		throw InvalidArgumentException("PhysicalLocalReader::readAsync: We don't support aio for our async read yet.");
 	} else {
