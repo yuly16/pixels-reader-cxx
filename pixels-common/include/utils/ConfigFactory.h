@@ -20,8 +20,10 @@ public:
 	void Print();
 	std::string getProperty(std::string key);
     bool boolCheckProperty(std::string key);
+	std::string getPixelsDirectory();
 private:
 	ConfigFactory();
 	std::map<std::string, std::string> prop;
+	std::string pixelsHome;
 };
 #endif // DUCKDB_CONFIGFACTORY_H

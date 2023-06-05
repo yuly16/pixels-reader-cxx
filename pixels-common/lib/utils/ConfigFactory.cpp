@@ -11,15 +11,14 @@ ConfigFactory & ConfigFactory::Instance() {
 
 ConfigFactory::ConfigFactory() {
 	if(std::getenv("PIXELS_HOME") == nullptr) {
-		throw InvalidArgumentException("The environment variable 'PIXELS_HOME' is not set. ");
+		throw InvalidArgumentException("The environment variable 'PIXELS_CXX_HOME' is not set. ");
 	}
-	std::string pixelsHome = std::string(std::getenv("PIXELS_HOME"));
+	pixelsHome = std::string(std::getenv("PIXELS_HOME"));
 	std::cout<<"PIXELS_HOME is "<<pixelsHome<<std::endl;
-    if(pixelsHome.back() != '/') {
+	if(pixelsHome.back() != '/') {
 		pixelsHome += "/";
 	}
-	pixelsHome += "pixels.properties";
-	std::ifstream infile(pixelsHome);
+	std::ifstream infile(pixelsHome + "pixels.properties");
 	std::string line;
 	while (std::getline(infile, line)) {
 		if (line.find('=') != std::string::npos && line.at(0) != '#') {
@@ -44,11 +43,15 @@ std::string ConfigFactory::getProperty(std::string key) {
 }
 
 bool ConfigFactory::boolCheckProperty(std::string key) {
-    if(getProperty(key) == "true") {
-        return true;
-    } else if (getProperty(key) == "false") {
-        return false;
-    } else {
-        throw InvalidArgumentException("ConfigFactory: The key is not boolean type.");
-    }
+	if(getProperty(key) == "true") {
+		return true;
+	} else if (getProperty(key) == "false") {
+		return false;
+	} else {
+		throw InvalidArgumentException("ConfigFactory: The key is not boolean type.");
+	}
+}
+
+std::string ConfigFactory::getPixelsDirectory() {
+	return pixelsHome;
 }
