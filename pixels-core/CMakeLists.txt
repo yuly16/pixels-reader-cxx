@@ -16,7 +16,9 @@ set(pixels_core_cxx
         lib/vector/VectorizedRowBatch.cpp
         lib/vector/ColumnVector.cpp
         lib/vector/ByteColumnVector.cpp
-        lib/vector/BinaryColumnVector.cpp lib/reader/ColumnReader.cpp lib/reader/ColumnReaderBuilder.cpp lib/reader/IntegerColumnReader.cpp lib/reader/CharColumnReader.cpp lib/reader/VarcharColumnReader.cpp lib/reader/StringColumnReader.cpp lib/encoding/Decoder.cpp lib/encoding/RunLenIntDecoder.cpp lib/encoding/Encoder.cpp lib/encoding/RunLenIntEncoder.cpp lib/utils/EncodingUtils.cpp lib/utils/EncodingUtils.cpp include/vector/DecimalColumnVector.h lib/vector/DecimalColumnVector.cpp include/reader/DecimalColumnReader.h lib/reader/DecimalColumnReader.cpp lib/vector/DateColumnVector.cpp include/vector/DateColumnVector.h include/reader/DateColumnReader.h lib/reader/DateColumnReader.cpp)
+        lib/vector/BinaryColumnVector.cpp lib/reader/ColumnReader.cpp lib/reader/ColumnReaderBuilder.cpp lib/reader/IntegerColumnReader.cpp lib/reader/CharColumnReader.cpp lib/reader/VarcharColumnReader.cpp lib/reader/StringColumnReader.cpp lib/encoding/Decoder.cpp lib/encoding/RunLenIntDecoder.cpp lib/encoding/Encoder.cpp lib/encoding/RunLenIntEncoder.cpp lib/utils/EncodingUtils.cpp lib/utils/EncodingUtils.cpp include/vector/DecimalColumnVector.h lib/vector/DecimalColumnVector.cpp include/reader/DecimalColumnReader.h lib/reader/DecimalColumnReader.cpp lib/vector/DateColumnVector.cpp include/vector/DateColumnVector.h include/reader/DateColumnReader.h lib/reader/DateColumnReader.cpp include/PixelsFilter.h lib/PixelsFilter.cpp
+        include/PixelsFilterMask.h
+        lib/PixelsFilterMask.cpp)
 
 add_library(pixels-core ${pixels_core_cxx})
 
@@ -24,6 +26,7 @@ target_link_libraries(
         pixels-core
         pixels-common
 )
+SET(CMAKE_CXX_FLAGS "-mavx2")
 
 include_directories(../pixels-common/include)
 include_directories(include)

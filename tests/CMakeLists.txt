@@ -11,22 +11,11 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(
-        hello_test
-        physical/dev.cpp
-)
-target_link_libraries(
-        hello_test
-        GTest::gtest_main
-        pixels-common
-        pixels-core
-#        uring
-)
 
 add_executable(
         unit_tests
-        unit_tests.cpp
-        performance_test.cpp)
+        unit_tests.cpp)
+
 target_link_libraries(
         unit_tests
         GTest::gtest_main
@@ -38,5 +27,4 @@ target_link_libraries(
 include(GoogleTest)
 include_directories(../pixels-core/include)
 include_directories(../pixels-common/include)
-gtest_discover_tests(hello_test)
 gtest_discover_tests(unit_tests)
