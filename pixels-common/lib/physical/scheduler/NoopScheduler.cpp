@@ -32,9 +32,9 @@ std::vector<std::shared_ptr<ByteBuffer>> NoopScheduler::executeBatch(std::shared
 		for(int i = 0; i < batch.getSize(); i++) {
 			Request request = requests[i];
 			localReader->seek(request.start);
-			results.at(i) = localReader->readAsync(request.length, reuseBuffers.at(i), i);
+			results.at(i) = localReader->readAsync(request.length, reuseBuffers.at(i), request.bufferId);
 		}
-		localReader->readAsyncSubmitAndComplete(batch.getSize());
+        localReader->readAsyncSubmit(batch.getSize());
 	} else {
 		// sync read
 		for(int i = 0; i < batch.getSize(); i++) {

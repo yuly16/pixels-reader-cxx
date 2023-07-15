@@ -18,18 +18,24 @@
 // size (1MB) to each column.
 #define EXTRA_POOL_SIZE 1024*1024
 
+class DirectUringRandomAccessFile;
 // This class is global class. The variable is shared by each thread
 class BufferPool {
 public:
 	static void Initialize(std::vector<uint32_t> colIds, std::vector<uint64_t> bytes);
 	static std::shared_ptr<ByteBuffer> GetBuffer(uint32_t colId);
+    static int64_t GetBufferId(uint32_t index);
+    static void Switch();
 	static void Reset();
 private:
 	BufferPool() = default;
 	static thread_local int colCount;
 	static thread_local std::map<uint32_t, uint64_t> nrBytes;
 	static thread_local bool isInitialized;
-	static thread_local std::map<uint32_t, std::shared_ptr<ByteBuffer>> buffers;
+	static thread_local std::map<uint32_t, std::shared_ptr<ByteBuffer>> buffers[2];
 	static std::shared_ptr<DirectIoLib> directIoLib;
+    static thread_local int currBufferIdx;
+    static thread_local int nextBufferIdx;
+    friend class DirectUringRandomAccessFile;
 };
 #endif // DUCKDB_BUFFERPOOL_H

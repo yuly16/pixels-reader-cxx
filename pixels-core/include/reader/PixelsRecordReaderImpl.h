@@ -44,14 +44,18 @@ public:
                                     const PixelsReaderOption& opt,
                                     std::shared_ptr<PixelsFooterCache> pixelsFooterCache
                                     );
+
+    void asyncReadComplete(int requestSize);
 	std::shared_ptr<VectorizedRowBatch> readRowGroup(bool reuse) override;
     std::shared_ptr<VectorizedRowBatch> readBatch(int batchSize, bool reuse) override;
+
 	std::shared_ptr<TypeDescription> getResultSchema() override;
 	bool isEndOfFile() override;
     ~PixelsRecordReaderImpl();
 	void close() override;
-private:
     bool read();
+private:
+    std::vector<int64_t> bufferIds;
     void prepareRead();
     void checkBeforeRead();
 	std::shared_ptr<VectorizedRowBatch> createEmptyEOFRowBatch(int size);

@@ -3,6 +3,7 @@
 //
 
 #include "reader/PixelsRecordReaderImpl.h"
+#include "physical/io/PhysicalLocalReader.h"
 
 PixelsRecordReaderImpl::PixelsRecordReaderImpl(std::shared_ptr<PhysicalReader> reader,
                                                const pixels::proto::PostScript& pixelsPostScript,
@@ -166,7 +167,7 @@ std::shared_ptr<VectorizedRowBatch> PixelsRecordReaderImpl::readBatch(int batchS
 			curBatchSize = batchSize - resultRowBatch->rowCount;
 		}
 
-		// read vectors
+		// Read vectors. Don't touch the BufferPool here, because bufferPool is switched
 		for(int i = 0; i < resultColumns.size(); i++) {
 			// TODO: if !columnVectors[i].duplicate
 			int index = curChunkBufferIndex.at(i);
@@ -271,7 +272,6 @@ void PixelsRecordReaderImpl::prepareRead() {
 			if(footerCache != nullptr) {
 				footerCache->putRGFooter(rgCacheIds[fis[i]], parsed);
 			}
-
         }
     }
 
@@ -283,6 +283,18 @@ void PixelsRecordReaderImpl::prepareRead() {
 	curChunkBufferIndex.resize(resultColumns.size());
 	curChunkIndex.resize(resultColumns.size());
 	UpdateRowGroupInfo();
+}
+
+void PixelsRecordReaderImpl::asyncReadComplete(int requestSize) {
+    if(ConfigFactory::Instance().boolCheckProperty("localfs.enable.async.io")) {
+        if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "iouring") {
+            auto localReader = std::static_pointer_cast<PhysicalLocalReader>(physicalReader);
+            localReader->readAsyncComplete(requestSize);
+        } else if(ConfigFactory::Instance().getProperty("localfs.async.lib") == "aio") {
+            throw InvalidArgumentException("PhysicalLocalReader::readAsync: We don't support aio for our async read yet.");
+        }
+    }
+
 }
 
 bool PixelsRecordReaderImpl::read() {
@@ -318,18 +330,22 @@ bool PixelsRecordReaderImpl::read() {
         Scheduler * scheduler = SchedulerFactory::Instance()->getScheduler();
 		std::vector<uint32_t> colIds;
 		std::vector<uint64_t> bytes;
-        for(ChunkId chunk : diskChunks) {
-            requestBatch.add(queryId, chunk.offset, (int)chunk.length);
+        for(int i = 0; i < diskChunks.size(); i++) {
+            ChunkId chunk = diskChunks.at(i);
+            requestBatch.add(queryId, chunk.offset, (int)chunk.length, ::BufferPool::GetBufferId(i));
 			colIds.emplace_back(chunk.columnId);
 			bytes.emplace_back(chunk.length);
         }
 		::BufferPool::Initialize(colIds, bytes);
+        ::DirectUringRandomAccessFile::RegisterBufferFromPool(colIds);
 		std::vector<std::shared_ptr<ByteBuffer>> originalByteBuffers;
-		for(auto colId: colIds) {
+		for(int i = 0; i < colIds.size(); i++) {
+            auto colId = colIds.at(i);
 			originalByteBuffers.emplace_back(::BufferPool::GetBuffer(colId));
 		}
 
 		auto byteBuffers = scheduler->executeBatch(physicalReader, requestBatch, originalByteBuffers, queryId);
+
         for(int index = 0; index < diskChunks.size(); index++) {
             ChunkId chunk = diskChunks.at(index);
             std::shared_ptr<ByteBuffer> bb = byteBuffers.at(index);
@@ -380,5 +396,7 @@ void PixelsRecordReaderImpl::close() {
 	includedColumnTypes.clear();
 	endOfFile = true;
 }
+
+
 
 

@@ -12,23 +12,49 @@ DirectUringRandomAccessFile::DirectUringRandomAccessFile(const std::string &file
 
 }
 
-//void DirectUringRandomAccessFile::RegisterBuffer(std::vector<std::shared_ptr<ByteBuffer>> buffers) {
-//	if(!isRegistered) {
-//		iovecs = (iovec *)calloc(buffers.size() ,sizeof(struct iovec));
-//		iovecSize = buffers.size();
-//		for(auto i = 0; i < buffers.size(); i++) {
-//			auto buffer = buffers.at(i);
-//			iovecs[i].iov_base = buffer->getPointer();
-//			iovecs[i].iov_len = buffer->size();
-//			memset(iovecs[i].iov_base, 0, buffer->size());
-//		}
-//		int ret = io_uring_register_buffers(ring, iovecs, iovecSize);
-//		if(ret != 0) {
-//			throw InvalidArgumentException("DirectUringRandomAccessFile::RegisterBuffer: register buffer fails. ");
-//		}
-//		isRegistered = true;
-//	}
-//}
+void DirectUringRandomAccessFile::RegisterBufferFromPool(std::vector<uint32_t> colIds) {
+    std::vector<std::shared_ptr<ByteBuffer>> tmpBuffers;
+    if(!isRegistered) {
+        for(auto buffer : ::BufferPool::buffers) {
+            for(auto colId : colIds) {
+                tmpBuffers.emplace_back(buffer[colId]);
+            }
+        }
+        iovecs = (iovec *)calloc(tmpBuffers.size() ,sizeof(struct iovec));
+        iovecSize = tmpBuffers.size();
+        for(auto i = 0; i < tmpBuffers.size(); i++) {
+            auto buffer = tmpBuffers.at(i);
+            iovecs[i].iov_base = buffer->getPointer();
+            iovecs[i].iov_len = buffer->size();
+            memset(iovecs[i].iov_base, 0, buffer->size());
+        }
+        int ret = io_uring_register_buffers(ring, iovecs, iovecSize);
+        if(ret != 0) {
+            throw InvalidArgumentException("DirectUringRandomAccessFile::RegisterBuffer: register buffer fails. ");
+        }
+        isRegistered = true;
+    }
+}
+
+
+
+void DirectUringRandomAccessFile::RegisterBuffer(std::vector<std::shared_ptr<ByteBuffer>> buffers) {
+	if(!isRegistered) {
+		iovecs = (iovec *)calloc(buffers.size() ,sizeof(struct iovec));
+		iovecSize = buffers.size();
+		for(auto i = 0; i < buffers.size(); i++) {
+			auto buffer = buffers.at(i);
+			iovecs[i].iov_base = buffer->getPointer();
+			iovecs[i].iov_len = buffer->size();
+			memset(iovecs[i].iov_base, 0, buffer->size());
+		}
+		int ret = io_uring_register_buffers(ring, iovecs, iovecSize);
+		if(ret != 0) {
+			throw InvalidArgumentException("DirectUringRandomAccessFile::RegisterBuffer: register buffer fails. ");
+		}
+		isRegistered = true;
+	}
+}
 
 void DirectUringRandomAccessFile::Initialize() {
 	// initialize io_uring ring
@@ -45,11 +71,12 @@ void DirectUringRandomAccessFile::Reset() {
 	// For example, two threads A and B share the same global state. If A finish all files while B just starts,
 	// B would execute Reset function from InitLocal. If we don't set this 'if' branch, ring would be double freed.
 	if(ring != nullptr) {
-//		if(io_uring_unregister_buffers(ring) != 0) {
-//			throw InvalidArgumentException("DirectUringRandomAccessFile::UnregisterBuffer: unregister buffer fails. ");
-//		}
+        // We don't use this function anymore since it slows down the speed
+        //		if(io_uring_unregister_buffers(ring) != 0) {
+        //			throw InvalidArgumentException("DirectUringRandomAccessFile::UnregisterBuffer: unregister buffer fails. ");
+        //		}
 		io_uring_queue_exit(ring);
-//		free(iovecs);
+		free(iovecs);
 		delete(ring);
 		ring = nullptr;
 		isRegistered = false;
@@ -70,8 +97,8 @@ std::shared_ptr<ByteBuffer> DirectUringRandomAccessFile::readAsync(int length, s
 		// the file will be read from blockStart(fileOffset), and the first fileDelta bytes should be ignored.
 		uint64_t fileOffsetAligned = directIoLib->blockStart(offset);
 		uint64_t toRead = directIoLib->blockEnd(offset + length) - directIoLib->blockStart(offset);
-		io_uring_prep_read(sqe, fd, buffer->getPointer(), toRead,
-		                         fileOffsetAligned);
+        io_uring_prep_read_fixed(sqe, fd, buffer->getPointer(), toRead,
+		                         fileOffsetAligned, index);
 		auto bb = std::make_shared<ByteBuffer>(*buffer,
 		                                       offset - fileOffsetAligned, length);
 		seek(offset + length);
@@ -81,7 +108,7 @@ std::shared_ptr<ByteBuffer> DirectUringRandomAccessFile::readAsync(int length, s
 //		if(length > iovecs[index].iov_len) {
 //			throw InvalidArgumentException("DirectUringRandomAccessFile::readAsync: the length is larger than buffer length.");
 //		}
-		io_uring_prep_read(sqe, fd, buffer->getPointer(), length, offset);
+		io_uring_prep_read_fixed(sqe, fd, buffer->getPointer(), length, offset, index);
 		seek(offset + length);
 		auto result = std::make_shared<ByteBuffer>(*buffer, 0, length);
 		return result;
@@ -108,4 +135,5 @@ void DirectUringRandomAccessFile::readAsyncComplete(int size) {
 		io_uring_cqe_seen(ring, cqe);
 	}
 }
+
 
